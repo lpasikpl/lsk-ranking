@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { RankingEntry } from "@/types/database";
-import { formatDistance, formatTime, getCountryFlag } from "@/lib/format";
+import { formatDistance, formatTime, getCountryFlag, formatNumber } from "@/lib/format";
 
 interface Top3PodiumProps {
   entries: RankingEntry[];
@@ -12,7 +12,7 @@ interface Top3PodiumProps {
 function getValue(entry: RankingEntry, metric: Top3PodiumProps["metric"]): string {
   switch (metric) {
     case "distance": return formatDistance(entry.total_distance);
-    case "elevation": return Math.round(entry.total_elevation).toLocaleString("pl-PL");
+    case "elevation": return formatNumber(entry.total_elevation);
     case "time": return formatTime(entry.total_time);
     case "count": return entry.activity_count.toString();
   }

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { RankingEntry } from "@/types/database";
-import { formatDistance, formatTime, getCountryFlag } from "@/lib/format";
+import { formatDistance, formatTime, getCountryFlag, formatNumber } from "@/lib/format";
 
 interface RankingTableDarkProps {
   entries: RankingEntry[];
@@ -45,8 +45,8 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
   };
 
   const gridCols = isAdmin
-    ? "grid-cols-[40px_1fr_100px_90px_80px_32px]"
-    : "grid-cols-[40px_1fr_100px_90px_80px]";
+    ? "grid-cols-[40px_1fr_90px_80px_110px_32px]"
+    : "grid-cols-[40px_1fr_90px_80px_110px]";
 
   return (
     <div className="glass rounded-2xl overflow-hidden">
@@ -110,7 +110,7 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
                   </div>
 
                   <div className="text-right">
-                    <div className="text-sm text-white/70">{Math.round(entry.total_elevation).toLocaleString("pl-PL")}</div>
+                    <div className="text-sm text-white/70">{formatNumber(entry.total_elevation)}</div>
                     <div className="text-xs text-gray-600">m</div>
                   </div>
 
@@ -142,7 +142,7 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
           <div />
           <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">Suma</div>
           <div className="text-right text-sm font-bold text-gradient-orange">{formatDistance(totalDistance)}</div>
-          <div className="text-right text-sm font-semibold text-white/60">{Math.round(totalElevation).toLocaleString("pl-PL")}</div>
+          <div className="text-right text-sm font-semibold text-white/60">{formatNumber(totalElevation)}</div>
           <div className="text-right text-sm font-semibold text-white/60">{formatTime(totalTime)}</div>
           {isAdmin && <div />}
         </div>

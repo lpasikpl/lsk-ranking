@@ -8,7 +8,7 @@ import Top3Podium from "@/components/Top3Podium";
 import RankingTableDark from "@/components/RankingTableDark";
 import MonthlyChart from "@/components/MonthlyChart";
 import Footer from "@/components/Footer";
-import { formatDistance, formatTime } from "@/lib/strava";
+import { formatDistance, formatTime, formatNumber } from "@/lib/format";
 
 interface PageProps {
   searchParams: Promise<{ chart?: string }>;
@@ -57,9 +57,9 @@ function StatsCards({ entries }: { entries: RankingEntry[] }) {
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
       {[
         { label: "Dystans", value: formatDistance(totalDistance), unit: "km", icon: "🚴" },
-        { label: "Przewyższenie", value: Math.round(totalElevation).toLocaleString("pl-PL"), unit: "m", icon: "⛰️" },
+        { label: "Przewyższenie", value: formatNumber(totalElevation), unit: "m", icon: "⛰️" },
         { label: "Czas jazdy", value: formatTime(totalTime), unit: "h", icon: "⏱️" },
-        { label: "Aktywności", value: totalActivities.toLocaleString("pl-PL"), unit: "szt.", icon: "📊" },
+        { label: "Aktywności", value: formatNumber(totalActivities), unit: "szt.", icon: "📊" },
       ].map((stat) => (
         <div key={stat.label} className="glass glass-hover rounded-2xl p-4">
           <div className="text-2xl mb-2">{stat.icon}</div>

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
-import { formatDistance, formatTime, getCountryFlag } from "@/lib/strava";
+import { formatDistance, formatTime, getCountryFlag, formatNumber } from "@/lib/format";
 import { startOfYear, endOfYear } from "date-fns";
 import MonthlyChart from "@/components/MonthlyChart";
 import Footer from "@/components/Footer";
@@ -46,18 +46,18 @@ export default async function AthletePage({ params }: PageProps) {
       label: "Ten rok",
       items: [
         { name: "Dystans", value: formatDistance(year?.total_distance || 0), unit: "km" },
-        { name: "Przewyższenie", value: Math.round(year?.total_elevation || 0).toLocaleString("pl-PL"), unit: "m" },
+        { name: "Przewyższenie", value: formatNumber(year?.total_elevation || 0), unit: "m" },
         { name: "Czas", value: formatTime(year?.total_time || 0), unit: "h" },
-        { name: "Aktywności", value: (year?.activity_count || 0).toLocaleString("pl-PL"), unit: "szt." },
+        { name: "Aktywności", value: formatNumber(year?.activity_count || 0), unit: "szt." },
       ],
     },
     {
       label: "Wszystkie czasy",
       items: [
         { name: "Dystans", value: formatDistance(allTime?.total_distance || 0), unit: "km" },
-        { name: "Przewyższenie", value: Math.round(allTime?.total_elevation || 0).toLocaleString("pl-PL"), unit: "m" },
+        { name: "Przewyższenie", value: formatNumber(allTime?.total_elevation || 0), unit: "m" },
         { name: "Czas", value: formatTime(allTime?.total_time || 0), unit: "h" },
-        { name: "Aktywności", value: (allTime?.activity_count || 0).toLocaleString("pl-PL"), unit: "szt." },
+        { name: "Aktywności", value: formatNumber(allTime?.activity_count || 0), unit: "szt." },
       ],
     },
   ];

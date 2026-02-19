@@ -12,9 +12,12 @@ export function formatTime(seconds: number): string {
   return `${totalHours}:${minutes.toString().padStart(2, "0")}`;
 }
 
+export function formatNumber(n: number): string {
+  return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
+}
+
 export function formatDistance(meters: number): string {
-  const km = Math.round(meters / 1000);
-  return km.toLocaleString("pl-PL");
+  return formatNumber(meters / 1000);
 }
 
 export function getCountryFlag(country: string | null): string {

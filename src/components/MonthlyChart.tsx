@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 interface MonthlyData {
   month: number;
   total_distance: number;
@@ -34,7 +36,8 @@ function formatValue(val: number, metric: MonthlyChartProps["metric"]): string {
   }
 }
 
-export default function MonthlyChart({ data, year, metric }: MonthlyChartProps) {
+export default function MonthlyChart({ data, year, metric: initialMetric }: MonthlyChartProps) {
+  const [metric, setMetric] = useState(initialMetric);
   // Wypełnij brakujące miesiące zerami
   const fullYear: MonthlyData[] = Array.from({ length: 12 }, (_, i) => {
     const found = data.find(d => d.month === i + 1);
@@ -58,12 +61,7 @@ export default function MonthlyChart({ data, year, metric }: MonthlyChartProps) 
           {(["distance", "elevation", "time", "count"] as const).map(m => (
             <button
               key={m}
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set("chart", m);
-                window.history.pushState({}, "", url.toString());
-                window.dispatchEvent(new CustomEvent("chartMetricChange", { detail: m }));
-              }}
+              onClick={() => setMetric(m)}
               className={`px-2 py-1 rounded-lg text-xs transition-all ${
                 metric === m
                   ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
