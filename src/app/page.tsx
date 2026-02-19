@@ -59,9 +59,11 @@ export default async function HomePage({ searchParams }: PageProps) {
   const month = params.month ? parseInt(params.month) : now.getMonth() + 1;
   const chartMetric = (params.chart || "distance") as "distance" | "elevation" | "time" | "count";
 
-  const [user, rankingData, monthlyData] = await Promise.all([
+  const [user, rankingData, monthData, yearData, monthlyData] = await Promise.all([
     getCurrentUser(userId),
     getRankingData(period, year, month),
+    getRankingData("month", now.getFullYear(), now.getMonth() + 1),
+    getRankingData("year", now.getFullYear(), now.getMonth() + 1),
     getMonthlyData(year),
   ]);
 
@@ -76,6 +78,21 @@ export default async function HomePage({ searchParams }: PageProps) {
   const totalTime = rankingData.reduce((s, e) => s + e.total_time, 0);
   const totalActivities = rankingData.reduce((s, e) => s + (e.activity_count || 0), 0);
 
+  const monthLabel = format(now, "LLLL yyyy", { locale: pl }).toUpperCase();
+
+  const summaryStats = [
+    {
+      label: monthLabel,
+      sublabel: "Ten miesiąc",
+      data: monthData,
+    },
+    {
+      label: now.getFullYear().toString(),
+      sublabel: "Ten rok",
+      data: yearData,
+    },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
       <RankingHeader title={periodLabel} subtitle={subtitle} user={user} />
@@ -86,22 +103,36 @@ export default async function HomePage({ searchParams }: PageProps) {
           <PeriodNav period={period} year={year} month={month} />
         </div>
 
-        {/* Hero stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
-          {[
-            { label: "Dystans", value: formatDistance(totalDistance), unit: "km", icon: "🚴" },
-            { label: "Przewyższenie", value: Math.round(totalElevation).toLocaleString("pl-PL"), unit: "m", icon: "⛰️" },
-            { label: "Czas jazdy", value: formatTime(totalTime), unit: "h", icon: "⏱️" },
-            { label: "Aktywności", value: totalActivities.toLocaleString("pl-PL"), unit: "szt.", icon: "📊" },
-          ].map((stat) => (
-            <div key={stat.label} className="glass glass-hover rounded-2xl p-4">
-              <div className="text-2xl mb-2">{stat.icon}</div>
-              <div className="text-2xl font-bold text-white">{stat.value}</div>
-              <div className="text-xs text-gray-600 mt-0.5">{stat.unit}</div>
-              <div className="text-xs text-gray-500 mt-1 uppercase tracking-wider">{stat.label}</div>
+        {/* Hero stats - miesięczne i roczne */}
+        {summaryStats.map(({ label, sublabel, data }) => {
+          const dist = data.reduce((s, e) => s + e.total_distance, 0);
+          const elev = data.reduce((s, e) => s + e.total_elevation, 0);
+          const time = data.reduce((s, e) => s + e.total_time, 0);
+          const acts = data.reduce((s, e) => s + (e.activity_count || 0), 0);
+          return (
+            <div key={sublabel} className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest">{sublabel}</h2>
+                <span className="text-xs text-gray-700">{label}</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { label: "Dystans", value: formatDistance(dist), unit: "km", icon: "🚴" },
+                  { label: "Przewyższenie", value: Math.round(elev).toLocaleString("pl-PL"), unit: "m", icon: "⛰️" },
+                  { label: "Czas jazdy", value: formatTime(time), unit: "h", icon: "⏱️" },
+                  { label: "Aktywności", value: acts.toLocaleString("pl-PL"), unit: "szt.", icon: "📊" },
+                ].map((stat) => (
+                  <div key={stat.label} className="glass glass-hover rounded-2xl p-4">
+                    <div className="text-2xl mb-2">{stat.icon}</div>
+                    <div className="text-2xl font-bold text-white">{stat.value}</div>
+                    <div className="text-xs text-gray-600 mt-0.5">{stat.unit}</div>
+                    <div className="text-xs text-gray-500 mt-1 uppercase tracking-wider">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
 
         {/* Top 3 */}
         <div className="mb-10">
