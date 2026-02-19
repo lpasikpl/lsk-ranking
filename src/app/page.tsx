@@ -4,7 +4,6 @@ import { RankingEntry, User } from "@/types/database";
 import { startOfMonth, endOfMonth, startOfYear, endOfYear, format } from "date-fns";
 import { pl } from "date-fns/locale";
 import RankingHeader from "@/components/RankingHeader";
-import PeriodNav from "@/components/PeriodNav";
 import Top3Podium from "@/components/Top3Podium";
 import RankingTableDark from "@/components/RankingTableDark";
 import MonthlyChart from "@/components/MonthlyChart";
@@ -12,7 +11,7 @@ import Footer from "@/components/Footer";
 import { formatDistance, formatTime } from "@/lib/strava";
 
 interface PageProps {
-  searchParams: Promise<{ period?: string; year?: string; month?: string; chart?: string }>;
+  searchParams: Promise<{ chart?: string }>;
 }
 
 async function getCurrentUser(userId: string | undefined) {
@@ -48,113 +47,117 @@ async function getMonthlyData(year: number) {
   return data || [];
 }
 
+function StatsCards({ entries }: { entries: RankingEntry[] }) {
+  const totalDistance = entries.reduce((s, e) => s + e.total_distance, 0);
+  const totalElevation = entries.reduce((s, e) => s + e.total_elevation, 0);
+  const totalTime = entries.reduce((s, e) => s + e.total_time, 0);
+  const totalActivities = entries.reduce((s, e) => s + (e.activity_count || 0), 0);
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      {[
+        { label: "Dystans", value: formatDistance(totalDistance), unit: "km", icon: "🚴" },
+        { label: "Przewyższenie", value: Math.round(totalElevation).toLocaleString("pl-PL"), unit: "m", icon: "⛰️" },
+        { label: "Czas jazdy", value: formatTime(totalTime), unit: "h", icon: "⏱️" },
+        { label: "Aktywności", value: totalActivities.toLocaleString("pl-PL"), unit: "szt.", icon: "📊" },
+      ].map((stat) => (
+        <div key={stat.label} className="glass glass-hover rounded-2xl p-4">
+          <div className="text-2xl mb-2">{stat.icon}</div>
+          <div className="text-2xl font-bold text-white">{stat.value}</div>
+          <div className="text-xs text-gray-600 mt-0.5">{stat.unit}</div>
+          <div className="text-xs text-gray-500 mt-1 uppercase tracking-wider">{stat.label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default async function HomePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const cookieStore = await cookies();
   const userId = cookieStore.get("lsk_user_id")?.value;
 
-  const period = (params.period === "year" ? "year" : "month") as "month" | "year";
   const now = new Date();
-  const year = params.year ? parseInt(params.year) : now.getFullYear();
-  const month = params.month ? parseInt(params.month) : now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
   const chartMetric = (params.chart || "distance") as "distance" | "elevation" | "time" | "count";
 
-  const [user, rankingData, monthData, yearData, monthlyData] = await Promise.all([
+  const [user, monthData, yearData, monthlyData] = await Promise.all([
     getCurrentUser(userId),
-    getRankingData(period, year, month),
-    getRankingData("month", now.getFullYear(), now.getMonth() + 1),
-    getRankingData("year", now.getFullYear(), now.getMonth() + 1),
-    getMonthlyData(year),
+    getRankingData("month", currentYear, currentMonth),
+    getRankingData("year", currentYear, currentMonth),
+    getMonthlyData(currentYear),
   ]);
 
-  const currentDate = new Date(year, month - 1, 1);
-  const periodLabel = period === "month"
-    ? format(currentDate, "LLLL yyyy", { locale: pl }).toUpperCase()
-    : year.toString();
-  const subtitle = period === "month" ? "Ranking Miesiąca" : "Ranking Roczny";
-
-  const totalDistance = rankingData.reduce((s, e) => s + e.total_distance, 0);
-  const totalElevation = rankingData.reduce((s, e) => s + e.total_elevation, 0);
-  const totalTime = rankingData.reduce((s, e) => s + e.total_time, 0);
-  const totalActivities = rankingData.reduce((s, e) => s + (e.activity_count || 0), 0);
-
   const monthLabel = format(now, "LLLL yyyy", { locale: pl }).toUpperCase();
-
-  const summaryStats = [
-    {
-      label: monthLabel,
-      sublabel: "Ten miesiąc",
-      data: monthData,
-    },
-    {
-      label: now.getFullYear().toString(),
-      sublabel: "Ten rok",
-      data: yearData,
-    },
-  ];
+  const isAdmin = user?.is_admin === true;
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
-      <RankingHeader title={periodLabel} subtitle={subtitle} user={user} />
+      <RankingHeader title="Ranking LSK" subtitle="Kolarstwo" user={user} />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
-        {/* Period nav */}
-        <div className="flex justify-center mb-10">
-          <PeriodNav period={period} year={year} month={month} />
-        </div>
 
-        {/* Hero stats - miesięczne i roczne */}
-        {summaryStats.map(({ label, sublabel, data }) => {
-          const dist = data.reduce((s, e) => s + e.total_distance, 0);
-          const elev = data.reduce((s, e) => s + e.total_elevation, 0);
-          const time = data.reduce((s, e) => s + e.total_time, 0);
-          const acts = data.reduce((s, e) => s + (e.activity_count || 0), 0);
-          return (
-            <div key={sublabel} className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest">{sublabel}</h2>
-                <span className="text-xs text-gray-700">{label}</span>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { label: "Dystans", value: formatDistance(dist), unit: "km", icon: "🚴" },
-                  { label: "Przewyższenie", value: Math.round(elev).toLocaleString("pl-PL"), unit: "m", icon: "⛰️" },
-                  { label: "Czas jazdy", value: formatTime(time), unit: "h", icon: "⏱️" },
-                  { label: "Aktywności", value: acts.toLocaleString("pl-PL"), unit: "szt.", icon: "📊" },
-                ].map((stat) => (
-                  <div key={stat.label} className="glass glass-hover rounded-2xl p-4">
-                    <div className="text-2xl mb-2">{stat.icon}</div>
-                    <div className="text-2xl font-bold text-white">{stat.value}</div>
-                    <div className="text-xs text-gray-600 mt-0.5">{stat.unit}</div>
-                    <div className="text-xs text-gray-500 mt-1 uppercase tracking-wider">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
+        {/* ===== MIESIĄC ===== */}
+        <div className="mb-14">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-1 h-6 rounded-full bg-orange-500" />
+            <div>
+              <div className="text-xs text-gray-600 uppercase tracking-widest">Ranking miesiąca</div>
+              <div className="text-lg font-bold text-white">{monthLabel}</div>
             </div>
-          );
-        })}
+          </div>
 
-        {/* Top 3 */}
-        <div className="mb-10">
-          <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Top 3</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Top3Podium entries={rankingData} metric="distance" title="Dystans" unit="km" />
-            <Top3Podium entries={rankingData} metric="elevation" title="Przewyższenie" unit="m" />
-            <Top3Podium entries={rankingData} metric="time" title="Czas" unit="h" />
+          <StatsCards entries={monthData} />
+
+          <div className="mb-6">
+            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Top 3</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Top3Podium entries={monthData} metric="distance" title="Dystans" unit="km" />
+              <Top3Podium entries={monthData} metric="elevation" title="Przewyższenie" unit="m" />
+              <Top3Podium entries={monthData} metric="time" title="Czas" unit="h" />
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Ranking dystansu</h2>
+            <RankingTableDark entries={monthData} isAdmin={isAdmin} />
           </div>
         </div>
 
-        {/* Pełny ranking */}
-        <div className="mb-10">
-          <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">
-            Ranking dystansu
-          </h2>
-          <RankingTableDark entries={rankingData} isAdmin={user?.is_admin === true} />
+        {/* Separator */}
+        <div className="border-t border-white/[0.06] mb-14" />
+
+        {/* ===== ROK ===== */}
+        <div className="mb-14">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-1 h-6 rounded-full bg-blue-500" />
+            <div>
+              <div className="text-xs text-gray-600 uppercase tracking-widest">Ranking roczny</div>
+              <div className="text-lg font-bold text-white">{currentYear}</div>
+            </div>
+          </div>
+
+          <StatsCards entries={yearData} />
+
+          <div className="mb-6">
+            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Top 3</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Top3Podium entries={yearData} metric="distance" title="Dystans" unit="km" />
+              <Top3Podium entries={yearData} metric="elevation" title="Przewyższenie" unit="m" />
+              <Top3Podium entries={yearData} metric="time" title="Czas" unit="h" />
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Ranking dystansu</h2>
+            <RankingTableDark entries={yearData} isAdmin={isAdmin} />
+          </div>
         </div>
 
         {/* Wykres miesięczny */}
         <div className="mb-10">
-          <MonthlyChart data={monthlyData} year={year} metric={chartMetric} />
+          <MonthlyChart data={monthlyData} year={currentYear} metric={chartMetric} />
         </div>
 
         {/* CTA */}
