@@ -37,6 +37,11 @@ function formatLabel(val: number, metric: Metric): string {
   }
 }
 
+const BAR_HEIGHT = 88; // px - wysokość obszaru słupków
+
+const MONTH_NAMES = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec",
+  "Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
+
 export default function DailyChart({ data, year, month, daysInMonth }: DailyChartProps) {
   const [metric, setMetric] = useState<Metric>("distance");
 
@@ -51,9 +56,6 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
 
   const values = fullMonth.map(d => getValue(d, metric));
   const maxVal = Math.max(...values, 1);
-
-  const MONTH_NAMES = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec",
-    "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
 
   return (
     <div className="glass rounded-2xl p-6">
@@ -72,20 +74,20 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
         </div>
       </div>
 
-      <div className="flex items-end gap-0.5" style={{ height: "140px" }}>
+      <div className="flex gap-0.5 items-end">
         {fullMonth.map((d, i) => {
           const val = values[i];
-          const heightPct = maxVal > 0 ? (val / maxVal) * 88 : 0;
+          const barPx = maxVal > 0 ? Math.max((val / maxVal) * BAR_HEIGHT, val > 0 ? 3 : 0) : 0;
           const isFuture = isCurrentMonth && d.day > today;
           const isToday = isCurrentMonth && d.day === today;
           const hasActivity = val > 0;
 
           return (
-            <div key={i} className="flex-1 flex flex-col items-center justify-end gap-0.5 group">
-              {/* etykieta */}
-              <div className="h-5 flex items-end justify-center">
+            <div key={i} className="flex-1 flex flex-col items-center" style={{ height: `${BAR_HEIGHT + 32}px` }}>
+              {/* etykieta wartości */}
+              <div className="flex-1 flex items-end justify-center pb-0.5">
                 {hasActivity && (
-                  <span className={`text-[9px] font-semibold leading-none ${isToday ? "text-orange-400" : "text-gray-500"}`}>
+                  <span className={`text-[8px] font-semibold leading-none ${isToday ? "text-orange-400" : "text-gray-500"}`}>
                     {formatLabel(val, metric)}
                   </span>
                 )}
@@ -94,7 +96,7 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
               <div
                 className="w-full rounded-t transition-all duration-300"
                 style={{
-                  height: `${Math.max(heightPct, hasActivity ? 3 : 0)}%`,
+                  height: `${barPx}px`,
                   background: isToday
                     ? "linear-gradient(to top, #fc4c02, #ff8c00)"
                     : isFuture
@@ -102,12 +104,15 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
                     : hasActivity
                     ? "rgba(252, 76, 2, 0.45)"
                     : "rgba(255,255,255,0.03)",
+                  flexShrink: 0,
                 }}
               />
-              {/* dzień - pokazuj co 5 */}
-              <span className={`text-[9px] ${isToday ? "text-orange-400 font-semibold" : "text-gray-700"}`}>
-                {d.day % 5 === 0 || d.day === 1 ? d.day : ""}
-              </span>
+              {/* dzień */}
+              <div className="h-4 flex items-center justify-center">
+                <span className={`text-[8px] ${isToday ? "text-orange-400 font-semibold" : "text-gray-700"}`}>
+                  {d.day % 5 === 0 || d.day === 1 ? d.day : ""}
+                </span>
+              </div>
             </div>
           );
         })}

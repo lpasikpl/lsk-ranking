@@ -50,6 +50,8 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
+  const BAR_HEIGHT = 96;
+
   return (
     <div className="glass rounded-2xl p-6">
       <div className="flex items-center justify-between mb-6">
@@ -67,17 +69,17 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
         </div>
       </div>
 
-      <div className="flex items-end gap-1.5" style={{ height: "140px" }}>
+      <div className="flex gap-1.5 items-end">
         {fullYear.map((d, i) => {
           const val = values[i];
-          const heightPct = maxVal > 0 ? (val / maxVal) * 88 : 0;
+          const barPx = maxVal > 0 ? Math.max((val / maxVal) * BAR_HEIGHT, val > 0 ? 3 : 0) : 0;
           const isPast = year < currentYear || (year === currentYear && i < currentMonth);
           const isCurrent = year === currentYear && i === currentMonth;
 
           return (
-            <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1">
+            <div key={i} className="flex-1 flex flex-col items-center" style={{ height: `${BAR_HEIGHT + 36}px` }}>
               {/* etykieta */}
-              <div className="h-5 flex items-end justify-center">
+              <div className="flex-1 flex items-end justify-center pb-1">
                 {val > 0 && (
                   <span className={`text-[10px] font-semibold leading-none ${isCurrent ? "text-orange-400" : "text-gray-500"}`}>
                     {formatLabel(val, metric)}
@@ -88,7 +90,8 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
               <div
                 className="w-full rounded-t transition-all duration-500"
                 style={{
-                  height: `${Math.max(heightPct, val > 0 ? 3 : 0)}%`,
+                  height: `${barPx}px`,
+                  flexShrink: 0,
                   background: isCurrent
                     ? "linear-gradient(to top, #fc4c02, #ff8c00)"
                     : isPast
@@ -97,9 +100,11 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
                 }}
               />
               {/* miesiąc */}
-              <span className={`text-[10px] ${isCurrent ? "text-orange-400 font-semibold" : "text-gray-700"}`}>
-                {MONTHS[i]}
-              </span>
+              <div className="h-5 flex items-center justify-center">
+                <span className={`text-[10px] ${isCurrent ? "text-orange-400 font-semibold" : "text-gray-700"}`}>
+                  {MONTHS[i]}
+                </span>
+              </div>
             </div>
           );
         })}
