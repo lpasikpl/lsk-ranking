@@ -7,6 +7,7 @@ import RankingHeader from "@/components/RankingHeader";
 import Top3Podium from "@/components/Top3Podium";
 import RankingTableDark from "@/components/RankingTableDark";
 import MonthlyChart from "@/components/MonthlyChart";
+import TopEfforts from "@/components/TopEfforts";
 import DailyChart from "@/components/DailyChart";
 import SectionNav from "@/components/SectionNav";
 import AnimatedStatCard from "@/components/AnimatedStatCard";
@@ -168,6 +169,14 @@ export default async function HomePage({ searchParams }: PageProps) {
             <RankingTableDark entries={yearData} isAdmin={isAdmin} />
           </div>
         </div>
+
+        {/* Top prędkości - all time */}
+        <div className="mb-14">
+          <TopEfforts />
+        </div>
+
+        {/* Separator */}
+        <div className="section-separator" />
 
         {/* Wykres miesięczny */}
         <div className="mb-10">

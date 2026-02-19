@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getValidAccessToken } from "@/lib/strava";
+import { fetchAndSaveBestEfforts } from "@/lib/efforts";
 
 const VERIFY_TOKEN = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN || "lsk_webhook_secret";
 
@@ -85,6 +86,9 @@ export async function POST(request: NextRequest) {
         start_date: activity.start_date,
         start_date_local: activity.start_date_local,
       }, { onConflict: "strava_id" });
+
+      // Zapisz best efforts (tylko outdoor Ride)
+      await fetchAndSaveBestEfforts(user.id, object_id);
 
     } catch (err) {
       console.error("Webhook sync error:", err);

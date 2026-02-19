@@ -49,6 +49,7 @@ export default function AdminClient({
   const [users, setUsers] = useState(initialUsers);
   const [activeTab, setActiveTab] = useState<"users" | "logs">("users");
   const [syncingAll, setSyncingAll] = useState(false);
+  const [backfillingEfforts, setBackfillingEfforts] = useState(false);
   const [syncingUser, setSyncingUser] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -201,6 +202,21 @@ export default function AdminClient({
             className="px-4 py-2 bg-strava text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {syncingAll ? "Synchronizuję..." : "Sync wszystkich"}
+          </button>
+          <button
+            onClick={async () => {
+              if (!confirm("Pobierze best efforts dla wszystkich aktywności (~500 req). Może potrwać kilka minut. Kontynuować?")) return;
+              setBackfillingEfforts(true);
+              const res = await fetch("/api/admin/backfill-efforts", { method: "POST" });
+              const data = await res.json();
+              setBackfillingEfforts(false);
+              if (res.ok) showMessage("success", `Zapisano ${data.total} wyników z ${data.processed} aktywności`);
+              else showMessage("error", "Błąd backfilla");
+            }}
+            disabled={backfillingEfforts}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {backfillingEfforts ? "Pobieranie best efforts..." : "Backfill best efforts"}
           </button>
         </div>
 
