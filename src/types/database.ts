@@ -79,7 +79,7 @@ export interface Database {
           updated_at?: string;
         };
       };
-      activities: {
+      lsk_activities: {
         Row: {
           id: string;
           strava_id: number;
@@ -142,7 +142,7 @@ export interface Database {
 
 export type User = Database["public"]["Tables"]["users"]["Row"];
 export type StravaToken = Database["public"]["Tables"]["strava_tokens"]["Row"];
-export type Activity = Database["public"]["Tables"]["activities"]["Row"];
+export type Activity = Database["public"]["Tables"]["lsk_activities"]["Row"];
 export type SyncLog = Database["public"]["Tables"]["sync_logs"]["Row"];
 
 export interface RankingEntry {
@@ -155,4 +155,7 @@ export interface RankingEntry {
   total_distance: number;
   total_elevation: number;
   total_time: number;
+  activity_count: number;
+  avg_speed: number;
+  longest_ride: number;
 }

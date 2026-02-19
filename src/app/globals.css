@@ -3,17 +3,90 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
+  --bg: #0a0b0f;
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-card-hover: rgba(255, 255, 255, 0.06);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --text: #f0f0f0;
+  --text-muted: #6b7280;
+  --text-subtle: #374151;
+  --orange: #fc4c02;
+  --orange-light: #ff7a3d;
+  --gold: #f59e0b;
+  --silver: #9ca3af;
+  --bronze: #b45309;
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .glass {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(12px);
   }
+
+  .glass-hover {
+    transition: all 0.2s ease;
+  }
+
+  .glass-hover:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-hover);
+  }
+
+  .gradient-orange {
+    background: linear-gradient(135deg, #fc4c02, #ff8c00);
+  }
+
+  .gradient-gold {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  }
+
+  .gradient-silver {
+    background: linear-gradient(135deg, #9ca3af, #d1d5db);
+  }
+
+  .gradient-bronze {
+    background: linear-gradient(135deg, #b45309, #d97706);
+  }
+
+  .text-gradient-orange {
+    background: linear-gradient(135deg, #fc4c02, #ff8c00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow-orange {
+    box-shadow: 0 0 30px rgba(252, 76, 2, 0.15);
+  }
+
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.2);
 }

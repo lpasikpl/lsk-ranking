@@ -1,18 +1,15 @@
 export default function Footer() {
   return (
-    <footer className="mt-12 pb-8 px-4">
-      <div className="max-w-5xl mx-auto flex items-center justify-between text-xs text-gray-400">
-        <div className="flex items-center gap-2">
-          <span>© LSK Ranking</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span>Powered by</span>
+    <footer className="mt-16 pb-8 px-4 border-t border-white/[0.04]">
+      <div className="max-w-5xl mx-auto pt-6 flex items-center justify-between">
+        <span className="text-xs text-gray-700">© LSK Ranking {new Date().getFullYear()}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-gray-700">Powered by</span>
           <a
             href="https://www.strava.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-bold tracking-wider"
-            style={{ color: "#fc4c02" }}
+            className="text-xs font-bold tracking-wider text-orange-600 hover:text-orange-500 transition-colors"
           >
             STRAVA
           </a>
