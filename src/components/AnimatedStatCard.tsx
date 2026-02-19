@@ -14,14 +14,9 @@ interface AnimatedStatCardProps {
 
 function formatTimeFromSeconds(seconds: number): string {
   const totalMinutes = Math.floor(seconds / 60);
-  const totalHours = Math.floor(totalMinutes / 60);
+  const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  if (totalHours >= 24) {
-    const days = Math.floor(totalHours / 24);
-    const hours = totalHours % 24;
-    return `${days}d ${hours}h ${minutes}min`;
-  }
-  return `${totalHours}:${minutes.toString().padStart(2, "0")}`;
+  return `${hours}h ${minutes}m`;
 }
 
 export default function AnimatedStatCard({ icon, rawValue, formattedValue, unit, label, delay = 0, isTime = false }: AnimatedStatCardProps) {
