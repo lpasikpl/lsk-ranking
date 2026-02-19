@@ -56,10 +56,10 @@ function StatsCards({ entries }: { entries: RankingEntry[] }) {
   const totalActivities = entries.reduce((s, e) => s + (e.activity_count || 0), 0);
 
   const stats = [
-    { icon: "🚴", raw: Math.round(totalDistance / 1000), formatted: formatDistance(totalDistance), unit: "km", label: "Dystans", delay: 0 },
-    { icon: "⛰️", raw: Math.round(totalElevation), formatted: formatNumber(totalElevation), unit: "m", label: "Przewyższenie", delay: 80 },
-    { icon: "⏱️", raw: 0, formatted: formatTime(totalTime), unit: "h", label: "Czas jazdy", delay: 160 },
-    { icon: "📊", raw: totalActivities, formatted: formatNumber(totalActivities), unit: "szt.", label: "Aktywności", delay: 240 },
+    { icon: "🚴", raw: Math.round(totalDistance / 1000), formatted: formatDistance(totalDistance), unit: "km", label: "Dystans", delay: 0, isTime: false },
+    { icon: "⛰️", raw: Math.round(totalElevation), formatted: formatNumber(totalElevation), unit: "m", label: "Przewyższenie", delay: 120, isTime: false },
+    { icon: "⏱️", raw: totalTime, formatted: formatTime(totalTime), unit: "h", label: "Czas jazdy", delay: 240, isTime: true },
+    { icon: "📊", raw: totalActivities, formatted: formatNumber(totalActivities), unit: "szt.", label: "Aktywności", delay: 360, isTime: false },
   ];
 
   return (
@@ -73,6 +73,7 @@ function StatsCards({ entries }: { entries: RankingEntry[] }) {
           unit={s.unit}
           label={s.label}
           delay={s.delay}
+          isTime={s.isTime}
         />
       ))}
     </div>

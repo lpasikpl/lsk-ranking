@@ -9,10 +9,23 @@ interface AnimatedStatCardProps {
   unit: string;
   label: string;
   delay?: number;
+  isTime?: boolean;
 }
 
-export default function AnimatedStatCard({ icon, rawValue, formattedValue, unit, label, delay = 0 }: AnimatedStatCardProps) {
-  const [display, setDisplay] = useState("0");
+function formatTimeFromSeconds(seconds: number): string {
+  const totalMinutes = Math.floor(seconds / 60);
+  const totalHours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (totalHours >= 24) {
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+    return `${days}d ${hours}h ${minutes}min`;
+  }
+  return `${totalHours}:${minutes.toString().padStart(2, "0")}`;
+}
+
+export default function AnimatedStatCard({ icon, rawValue, formattedValue, unit, label, delay = 0, isTime = false }: AnimatedStatCardProps) {
+  const [display, setDisplay] = useState(isTime ? "0:00" : "0");
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -28,22 +41,23 @@ export default function AnimatedStatCard({ icon, rawValue, formattedValue, unit,
   useEffect(() => {
     if (!visible) return;
     const timer = setTimeout(() => {
-      const duration = 1200;
-      const steps = 60;
+      const duration = 2000;
+      const steps = 80;
       const interval = duration / steps;
       let step = 0;
 
       const tick = setInterval(() => {
         step++;
         const progress = step / steps;
-        // easeOutCubic
         const eased = 1 - Math.pow(1 - progress, 3);
         const current = rawValue * eased;
 
-        // Formatuj tak samo jak docelowa wartość (z separatorami)
-        const rounded = Math.round(current);
-        const formatted = rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
-        setDisplay(formatted);
+        if (isTime) {
+          setDisplay(formatTimeFromSeconds(current));
+        } else {
+          const rounded = Math.round(current);
+          setDisplay(rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0"));
+        }
 
         if (step >= steps) {
           clearInterval(tick);
@@ -55,7 +69,7 @@ export default function AnimatedStatCard({ icon, rawValue, formattedValue, unit,
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [visible, rawValue, formattedValue, delay]);
+  }, [visible, rawValue, formattedValue, delay, isTime]);
 
   return (
     <div ref={ref} className="stat-card glass glass-hover rounded-2xl p-5 relative overflow-hidden">
