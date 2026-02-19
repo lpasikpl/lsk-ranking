@@ -1,0 +1,383 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+interface AdminUser {
+  id: string;
+  strava_id: number;
+  firstname: string | null;
+  lastname: string | null;
+  is_admin: boolean;
+}
+
+interface UserRow {
+  id: string;
+  strava_id: number;
+  firstname: string | null;
+  lastname: string | null;
+  profile_medium: string | null;
+  is_active: boolean;
+  is_admin: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface SyncLogRow {
+  id: string;
+  user_id: string | null;
+  status: string;
+  activities_synced: number | null;
+  error_message: string | null;
+  created_at: string;
+  users: { firstname: string | null; lastname: string | null } | null;
+}
+
+interface AdminClientProps {
+  adminUser: AdminUser;
+  initialUsers: UserRow[];
+  syncLogs: SyncLogRow[];
+}
+
+export default function AdminClient({
+  adminUser,
+  initialUsers,
+  syncLogs,
+}: AdminClientProps) {
+  const router = useRouter();
+  const [users, setUsers] = useState(initialUsers);
+  const [activeTab, setActiveTab] = useState<"users" | "logs">("users");
+  const [syncingAll, setSyncingAll] = useState(false);
+  const [syncingUser, setSyncingUser] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const showMessage = (type: "success" | "error", text: string) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage(null), 4000);
+  };
+
+  const toggleActive = async (userId: string, currentActive: boolean) => {
+    const res = await fetch(`/api/admin/users/${userId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_active: !currentActive }),
+    });
+
+    if (res.ok) {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId ? { ...u, is_active: !currentActive } : u
+        )
+      );
+      showMessage("success", `Użytkownik ${!currentActive ? "aktywowany" : "dezaktywowany"}`);
+    } else {
+      showMessage("error", "Błąd podczas zmiany statusu");
+    }
+  };
+
+  const toggleAdmin = async (userId: string, currentAdmin: boolean) => {
+    const res = await fetch(`/api/admin/users/${userId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_admin: !currentAdmin }),
+    });
+
+    if (res.ok) {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId ? { ...u, is_admin: !currentAdmin } : u
+        )
+      );
+      showMessage("success", "Uprawnienia zmienione");
+    } else {
+      showMessage("error", "Błąd podczas zmiany uprawnień");
+    }
+  };
+
+  const syncUser = async (userId: string) => {
+    setSyncingUser(userId);
+    const res = await fetch(`/api/sync/user/${userId}`, { method: "POST" });
+    const data = await res.json();
+    setSyncingUser(null);
+
+    if (data.success) {
+      showMessage("success", `Zsynchronizowano ${data.synced} aktywności`);
+      router.refresh();
+    } else {
+      showMessage("error", `Błąd sync: ${data.error}`);
+    }
+  };
+
+  const syncAll = async () => {
+    setSyncingAll(true);
+    const secret = prompt("Podaj SYNC_WEBHOOK_SECRET:");
+    if (!secret) {
+      setSyncingAll(false);
+      return;
+    }
+
+    const res = await fetch("/api/sync/all", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+    const data = await res.json();
+    setSyncingAll(false);
+
+    if (data.success) {
+      showMessage(
+        "success",
+        `Sync zakończony: ${data.results?.reduce((s: number, r: { synced: number }) => s + r.synced, 0)} aktywności dla ${data.users_processed} użytkowników`
+      );
+      router.refresh();
+    } else {
+      showMessage("error", "Błąd synchronizacji");
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString("pl-PL", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-gray-900 text-white px-6 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold">Panel Admina</h1>
+            <p className="text-gray-400 text-sm mt-0.5">
+              Zalogowany: {adminUser.firstname} {adminUser.lastname}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              ← Ranking
+            </Link>
+            <a
+              href="/api/auth/logout"
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              Wyloguj
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* Komunikat */}
+        {message && (
+          <div
+            className={`mb-4 p-3 rounded-lg text-sm ${
+              message.type === "success"
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-red-50 text-red-800 border border-red-200"
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
+
+        {/* Akcje globalne */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-gray-800">Synchronizacja</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Pobierz aktywności wszystkich użytkowników ze Stravy
+            </p>
+          </div>
+          <button
+            onClick={syncAll}
+            disabled={syncingAll}
+            className="px-4 py-2 bg-strava text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {syncingAll ? "Synchronizuję..." : "Sync wszystkich"}
+          </button>
+        </div>
+
+        {/* Zakładki */}
+        <div className="flex gap-1 mb-4">
+          <button
+            onClick={() => setActiveTab("users")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === "users"
+                ? "bg-gray-800 text-white"
+                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+            }`}
+          >
+            Użytkownicy ({users.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("logs")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === "logs"
+                ? "bg-gray-800 text-white"
+                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+            }`}
+          >
+            Logi sync ({syncLogs.length})
+          </button>
+        </div>
+
+        {/* Tabela użytkowników */}
+        {activeTab === "users" && (
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-800 text-white">
+                    <th className="text-left py-3 px-4 font-semibold">Użytkownik</th>
+                    <th className="text-left py-3 px-4 font-semibold">Strava ID</th>
+                    <th className="text-center py-3 px-4 font-semibold">Aktywny</th>
+                    <th className="text-center py-3 px-4 font-semibold">Admin</th>
+                    <th className="text-left py-3 px-4 font-semibold">Dołączył</th>
+                    <th className="text-right py-3 px-4 font-semibold">Akcje</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user, index) => (
+                    <tr
+                      key={user.id}
+                      className={`border-b border-gray-100 ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                      }`}
+                    >
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          {user.profile_medium ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={user.profile_medium}
+                              alt=""
+                              className="w-7 h-7 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-7 h-7 rounded-full bg-gray-200" />
+                          )}
+                          <span className="font-medium text-gray-800">
+                            {user.firstname} {user.lastname}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <a
+                          href={`https://www.strava.com/athletes/${user.strava_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          {user.strava_id}
+                        </a>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          onClick={() => toggleActive(user.id, user.is_active)}
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                            user.is_active
+                              ? "bg-green-100 text-green-700 hover:bg-green-200"
+                              : "bg-red-100 text-red-700 hover:bg-red-200"
+                          }`}
+                        >
+                          {user.is_active ? "Tak" : "Nie"}
+                        </button>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          onClick={() => toggleAdmin(user.id, user.is_admin)}
+                          disabled={user.id === adminUser.id}
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-default ${
+                            user.is_admin
+                              ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
+                        >
+                          {user.is_admin ? "Tak" : "Nie"}
+                        </button>
+                      </td>
+                      <td className="py-3 px-4 text-gray-500 text-xs">
+                        {formatDate(user.created_at)}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          onClick={() => syncUser(user.id)}
+                          disabled={syncingUser === user.id}
+                          className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors disabled:opacity-50"
+                        >
+                          {syncingUser === user.id ? "Sync..." : "Sync"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Logi synchronizacji */}
+        {activeTab === "logs" && (
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-800 text-white">
+                    <th className="text-left py-3 px-4 font-semibold">Data</th>
+                    <th className="text-left py-3 px-4 font-semibold">Użytkownik</th>
+                    <th className="text-center py-3 px-4 font-semibold">Status</th>
+                    <th className="text-right py-3 px-4 font-semibold">Aktywności</th>
+                    <th className="text-left py-3 px-4 font-semibold">Błąd</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {syncLogs.map((log, index) => (
+                    <tr
+                      key={log.id}
+                      className={`border-b border-gray-100 ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                      }`}
+                    >
+                      <td className="py-2.5 px-4 text-gray-500 text-xs whitespace-nowrap">
+                        {formatDate(log.created_at)}
+                      </td>
+                      <td className="py-2.5 px-4 text-gray-700">
+                        {log.users
+                          ? `${log.users.firstname} ${log.users.lastname}`
+                          : "—"}
+                      </td>
+                      <td className="py-2.5 px-4 text-center">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            log.status === "success"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {log.status === "success" ? "OK" : "Błąd"}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-4 text-right text-gray-700">
+                        {log.activities_synced ?? 0}
+                      </td>
+                      <td className="py-2.5 px-4 text-gray-500 text-xs max-w-xs truncate">
+                        {log.error_message || "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

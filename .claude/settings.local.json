@@ -1,0 +1,11 @@
+{
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "n8n-mcp"
+  ],
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)"
+    ]
+  }
+}
