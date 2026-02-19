@@ -8,6 +8,7 @@ import Top3Podium from "@/components/Top3Podium";
 import RankingTableDark from "@/components/RankingTableDark";
 import MonthlyChart from "@/components/MonthlyChart";
 import SectionNav from "@/components/SectionNav";
+import AnimatedStatCard from "@/components/AnimatedStatCard";
 import Footer from "@/components/Footer";
 import { formatDistance, formatTime, formatNumber } from "@/lib/format";
 
@@ -54,20 +55,25 @@ function StatsCards({ entries }: { entries: RankingEntry[] }) {
   const totalTime = entries.reduce((s, e) => s + e.total_time, 0);
   const totalActivities = entries.reduce((s, e) => s + (e.activity_count || 0), 0);
 
+  const stats = [
+    { icon: "🚴", raw: Math.round(totalDistance / 1000), formatted: formatDistance(totalDistance), unit: "km", label: "Dystans", delay: 0 },
+    { icon: "⛰️", raw: Math.round(totalElevation), formatted: formatNumber(totalElevation), unit: "m", label: "Przewyższenie", delay: 80 },
+    { icon: "⏱️", raw: 0, formatted: formatTime(totalTime), unit: "h", label: "Czas jazdy", delay: 160 },
+    { icon: "📊", raw: totalActivities, formatted: formatNumber(totalActivities), unit: "szt.", label: "Aktywności", delay: 240 },
+  ];
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-      {[
-        { label: "Dystans", value: formatDistance(totalDistance), unit: "km", icon: "🚴" },
-        { label: "Przewyższenie", value: formatNumber(totalElevation), unit: "m", icon: "⛰️" },
-        { label: "Czas jazdy", value: formatTime(totalTime), unit: "h", icon: "⏱️" },
-        { label: "Aktywności", value: formatNumber(totalActivities), unit: "szt.", icon: "📊" },
-      ].map((stat) => (
-        <div key={stat.label} className="glass glass-hover rounded-2xl p-4">
-          <div className="text-2xl mb-2">{stat.icon}</div>
-          <div className="text-2xl font-bold text-white">{stat.value}</div>
-          <div className="text-xs text-gray-600 mt-0.5">{stat.unit}</div>
-          <div className="text-xs text-gray-500 mt-1 uppercase tracking-wider">{stat.label}</div>
-        </div>
+      {stats.map((s) => (
+        <AnimatedStatCard
+          key={s.label}
+          icon={s.icon}
+          rawValue={s.raw}
+          formattedValue={s.formatted}
+          unit={s.unit}
+          label={s.label}
+          delay={s.delay}
+        />
       ))}
     </div>
   );
@@ -102,7 +108,7 @@ export default async function HomePage({ searchParams }: PageProps) {
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
 
         {/* ===== MIESIĄC ===== */}
-        <div className="mb-14">
+        <div className="mb-14 section-enter">
           <SectionNav type="month" year={selYear} month={selMonth} color="orange" />
 
           <StatsCards entries={monthData} />
@@ -123,10 +129,10 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
 
         {/* Separator */}
-        <div className="border-t border-white/[0.06] mb-14" />
+        <div className="section-separator" />
 
         {/* ===== ROK ===== */}
-        <div className="mb-14">
+        <div className="mb-14 section-enter" style={{ animationDelay: "0.15s", opacity: 0 }}>
           <SectionNav type="year" year={selRYear} month={1} color="blue" />
 
           <StatsCards entries={yearData} />
