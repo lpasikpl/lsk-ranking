@@ -37,13 +37,70 @@ function formatLabel(val: number, metric: Metric): string {
   }
 }
 
-const BAR_HEIGHT = 200; // px - wysokość obszaru słupków
+// Oblicz Wielkanoc (algorytm anonimowy gregoriański)
+function getEaster(year: number): Date {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+// Polskie święta dla danego roku/miesiąca → zbiór dni
+function getPolishHolidays(year: number, month: number): Set<number> {
+  const holidays = new Set<number>();
+  const add = (m: number, d: number) => { if (m === month) holidays.add(d); };
+
+  // Stałe
+  add(1, 1);   // Nowy Rok
+  add(1, 6);   // Trzech Króli
+  add(5, 1);   // Święto Pracy
+  add(5, 3);   // Konstytucja 3 Maja
+  add(8, 15);  // Wniebowzięcie NMP
+  add(11, 1);  // Wszystkich Świętych
+  add(11, 11); // Święto Niepodległości
+  add(12, 25); // Boże Narodzenie
+  add(12, 26); // Drugi dzień BN
+
+  // Ruchome - Wielkanoc
+  const easter = getEaster(year);
+  const easterMonth = easter.getMonth() + 1;
+  const easterDay = easter.getDate();
+  add(easterMonth, easterDay);                          // Niedziela Wielkanocna
+
+  const easterMonday = new Date(easter); easterMonday.setDate(easter.getDate() + 1);
+  add(easterMonday.getMonth() + 1, easterMonday.getDate()); // Poniedziałek Wielkanocny
+
+  const whitsun = new Date(easter); whitsun.setDate(easter.getDate() + 49);
+  add(whitsun.getMonth() + 1, whitsun.getDate());       // Zesłanie Ducha Świętego
+
+  const corpusChristi = new Date(easter); corpusChristi.setDate(easter.getDate() + 60);
+  add(corpusChristi.getMonth() + 1, corpusChristi.getDate()); // Boże Ciało
+
+  return holidays;
+}
+
+// 0=Niedziela, 6=Sobota
+function getDayOfWeek(year: number, month: number, day: number): number {
+  return new Date(year, month - 1, day).getDay();
+}
+
+const BAR_HEIGHT = 200;
+const TOTAL_ANIM_MS = 1700;
+const BAR_TRANSITION_MS = 320;
 
 const MONTH_NAMES = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec",
   "Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
-
-const TOTAL_ANIM_MS = 1700;
-const BAR_TRANSITION_MS = 320;
 
 export default function DailyChart({ data, year, month, daysInMonth }: DailyChartProps) {
   const [metric, setMetric] = useState<Metric>("distance");
@@ -63,6 +120,8 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
   const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
   const today = now.getDate();
 
+  const holidays = getPolishHolidays(year, month);
+
   const fullMonth: DailyData[] = Array.from({ length: daysInMonth }, (_, i) => {
     const found = data.find(d => d.day === i + 1);
     return found || { day: i + 1, total_distance: 0, total_elevation: 0, total_time: 0, activity_count: 0 };
@@ -70,8 +129,6 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
 
   const values = fullMonth.map(d => getValue(d, metric));
   const maxVal = Math.max(...values, 1);
-
-  // delay per bar tak by ostatni kończył się w TOTAL_ANIM_MS
   const delayPerBar = daysInMonth > 1 ? (TOTAL_ANIM_MS - BAR_TRANSITION_MS) / (daysInMonth - 1) : 0;
 
   return (
@@ -94,17 +151,48 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
       <div className="flex gap-0.5 items-end">
         {fullMonth.map((d, i) => {
           const val = values[i];
-          const barPx = maxVal > 0 ? Math.max((val / maxVal) * BAR_HEIGHT, val > 0 ? 3 : 0) : 0;
+          const barPx = maxVal > 0 ? Math.max((val / maxVal) * BAR_HEIGHT, val > 0 ? 4 : 0) : 0;
           const isFuture = isCurrentMonth && d.day > today;
           const isToday = isCurrentMonth && d.day === today;
           const hasActivity = val > 0;
 
+          const dow = getDayOfWeek(year, month, d.day);
+          const isSunday = dow === 0;
+          const isSaturday = dow === 6;
+          const isHoliday = holidays.has(d.day);
+          const isRed = isSunday || isHoliday;
+
+          // Kolor słupka
+          let barBg: string;
+          if (isToday) {
+            barBg = "linear-gradient(to top, #fc4c02, #ff8c00)";
+          } else if (isFuture) {
+            barBg = "rgba(255,255,255,0.04)";
+          } else if (!hasActivity) {
+            barBg = "rgba(255,255,255,0.03)";
+          } else if (isRed) {
+            barBg = "rgba(239, 68, 68, 0.55)";
+          } else if (isSaturday) {
+            barBg = "rgba(99, 102, 241, 0.55)";
+          } else {
+            barBg = "rgba(252, 76, 2, 0.65)";
+          }
+
+          // Kolor etykiety dnia
+          const dayLabelColor = isToday
+            ? "text-orange-400 font-bold"
+            : isRed
+            ? "text-red-400 font-semibold"
+            : isSaturday
+            ? "text-indigo-400 font-semibold"
+            : "text-gray-600";
+
           return (
-            <div key={i} className="flex-1 flex flex-col items-center" style={{ height: `${BAR_HEIGHT + 32}px` }}>
+            <div key={i} className="flex-1 flex flex-col items-center" style={{ height: `${BAR_HEIGHT + 36}px` }}>
               {/* etykieta wartości */}
               <div className="flex-1 flex items-end justify-center pb-1">
                 {hasActivity && (
-                  <span className={`text-[10px] font-bold leading-none ${isToday ? "text-orange-400" : "text-gray-400"}`}>
+                  <span className={`text-[10px] font-bold leading-none ${isToday ? "text-orange-400" : isRed ? "text-red-400" : isSaturday ? "text-indigo-400" : "text-gray-400"}`}>
                     {formatLabel(val, metric)}
                   </span>
                 )}
@@ -116,25 +204,35 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
                   height: animated ? `${barPx}px` : "0px",
                   transition: `height ${BAR_TRANSITION_MS}ms ease`,
                   transitionDelay: animated ? `${i * delayPerBar}ms` : "0ms",
-                  background: isToday
-                    ? "linear-gradient(to top, #fc4c02, #ff8c00)"
-                    : isFuture
-                    ? "rgba(255,255,255,0.04)"
-                    : hasActivity
-                    ? "rgba(252, 76, 2, 0.65)"
-                    : "rgba(255,255,255,0.03)",
+                  background: barBg,
                   flexShrink: 0,
                 }}
               />
-              {/* dzień */}
+              {/* numer dnia */}
               <div className="h-5 flex items-center justify-center">
-                <span className={`text-[10px] font-medium ${isToday ? "text-orange-400 font-bold" : "text-gray-600"}`}>
-                  {d.day % 5 === 0 || d.day === 1 ? d.day : ""}
+                <span className={`text-[9px] leading-none ${dayLabelColor}`}>
+                  {d.day}
                 </span>
               </div>
             </div>
           );
         })}
+      </div>
+
+      {/* Legenda */}
+      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/5">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-sm bg-indigo-500/60" />
+          <span className="text-[10px] text-gray-600">Sobota</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-sm bg-red-500/60" />
+          <span className="text-[10px] text-gray-600">Niedziela / święto</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "linear-gradient(to top, #fc4c02, #ff8c00)" }} />
+          <span className="text-[10px] text-gray-600">Dziś</span>
+        </div>
       </div>
     </div>
   );
