@@ -44,9 +44,9 @@ export default function RankingHeader({ title, subtitle, user }: RankingHeaderPr
                 {user.is_admin && (
                   <Link
                     href="/admin"
-                    className="text-gray-500 hover:text-gray-300 transition-colors text-xs"
+                    className="flex items-center gap-1.5 glass rounded-lg px-3 py-1.5 text-xs font-medium text-purple-400 border border-purple-500/20 hover:border-purple-500/40 transition-colors"
                   >
-                    Admin
+                    ⚙️ Panel Admin
                   </Link>
                 )}
                 <SyncButton userId={user.id} />
