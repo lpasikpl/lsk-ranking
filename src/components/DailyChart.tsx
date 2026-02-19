@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface DailyData {
   day: number;
@@ -42,8 +42,22 @@ const BAR_HEIGHT = 88; // px - wysokość obszaru słupków
 const MONTH_NAMES = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec",
   "Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
 
+const TOTAL_ANIM_MS = 1700;
+const BAR_TRANSITION_MS = 320;
+
 export default function DailyChart({ data, year, month, daysInMonth }: DailyChartProps) {
   const [metric, setMetric] = useState<Metric>("distance");
+  const [animated, setAnimated] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setAnimated(true); observer.disconnect(); } },
+      { threshold: 0.2 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
 
   const now = new Date();
   const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
@@ -57,8 +71,11 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
   const values = fullMonth.map(d => getValue(d, metric));
   const maxVal = Math.max(...values, 1);
 
+  // delay per bar tak by ostatni kończył się w TOTAL_ANIM_MS
+  const delayPerBar = daysInMonth > 1 ? (TOTAL_ANIM_MS - BAR_TRANSITION_MS) / (daysInMonth - 1) : 0;
+
   return (
-    <div className="glass rounded-2xl p-6">
+    <div ref={ref} className="glass rounded-2xl p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-sm font-semibold text-white/80">Aktywność dzienna</h3>
@@ -94,9 +111,11 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
               </div>
               {/* słupek */}
               <div
-                className="w-full rounded-t transition-all duration-300"
+                className="w-full rounded-t"
                 style={{
-                  height: `${barPx}px`,
+                  height: animated ? `${barPx}px` : "0px",
+                  transition: `height ${BAR_TRANSITION_MS}ms ease`,
+                  transitionDelay: animated ? `${i * delayPerBar}ms` : "0ms",
                   background: isToday
                     ? "linear-gradient(to top, #fc4c02, #ff8c00)"
                     : isFuture

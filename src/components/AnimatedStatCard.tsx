@@ -36,7 +36,7 @@ export default function AnimatedStatCard({ icon, rawValue, formattedValue, unit,
   useEffect(() => {
     if (!visible) return;
     const timer = setTimeout(() => {
-      const duration = 2000;
+      const duration = 1700;
       const steps = 80;
       const interval = duration / steps;
       let step = 0;
