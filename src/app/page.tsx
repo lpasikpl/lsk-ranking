@@ -118,7 +118,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">
             Ranking dystansu
           </h2>
-          <RankingTableDark entries={rankingData} />
+          <RankingTableDark entries={rankingData} isAdmin={user?.is_admin === true} />
         </div>
 
         {/* Wykres miesięczny */}
