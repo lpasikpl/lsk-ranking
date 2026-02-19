@@ -50,7 +50,7 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
-  const BAR_HEIGHT = 96;
+  const BAR_HEIGHT = 200;
 
   return (
     <div className="glass rounded-2xl p-6">
@@ -81,7 +81,7 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
               {/* etykieta */}
               <div className="flex-1 flex items-end justify-center pb-1">
                 {val > 0 && (
-                  <span className={`text-[10px] font-semibold leading-none ${isCurrent ? "text-orange-400" : "text-gray-500"}`}>
+                  <span className={`text-xs font-bold leading-none ${isCurrent ? "text-orange-400" : "text-gray-400"}`}>
                     {formatLabel(val, metric)}
                   </span>
                 )}
@@ -95,13 +95,13 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
                   background: isCurrent
                     ? "linear-gradient(to top, #fc4c02, #ff8c00)"
                     : isPast
-                    ? "rgba(252, 76, 2, 0.45)"
+                    ? "rgba(252, 76, 2, 0.65)"
                     : "rgba(255,255,255,0.05)",
                 }}
               />
               {/* miesiąc */}
-              <div className="h-5 flex items-center justify-center">
-                <span className={`text-[10px] ${isCurrent ? "text-orange-400 font-semibold" : "text-gray-700"}`}>
+              <div className="h-6 flex items-center justify-center">
+                <span className={`text-xs font-medium ${isCurrent ? "text-orange-400 font-bold" : "text-gray-500"}`}>
                   {MONTHS[i]}
                 </span>
               </div>

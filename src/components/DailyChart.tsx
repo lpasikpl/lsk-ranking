@@ -37,7 +37,7 @@ function formatLabel(val: number, metric: Metric): string {
   }
 }
 
-const BAR_HEIGHT = 88; // px - wysokość obszaru słupków
+const BAR_HEIGHT = 200; // px - wysokość obszaru słupków
 
 const MONTH_NAMES = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec",
   "Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
@@ -102,9 +102,9 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
           return (
             <div key={i} className="flex-1 flex flex-col items-center" style={{ height: `${BAR_HEIGHT + 32}px` }}>
               {/* etykieta wartości */}
-              <div className="flex-1 flex items-end justify-center pb-0.5">
+              <div className="flex-1 flex items-end justify-center pb-1">
                 {hasActivity && (
-                  <span className={`text-[8px] font-semibold leading-none ${isToday ? "text-orange-400" : "text-gray-500"}`}>
+                  <span className={`text-[10px] font-bold leading-none ${isToday ? "text-orange-400" : "text-gray-400"}`}>
                     {formatLabel(val, metric)}
                   </span>
                 )}
@@ -121,14 +121,14 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
                     : isFuture
                     ? "rgba(255,255,255,0.04)"
                     : hasActivity
-                    ? "rgba(252, 76, 2, 0.45)"
+                    ? "rgba(252, 76, 2, 0.65)"
                     : "rgba(255,255,255,0.03)",
                   flexShrink: 0,
                 }}
               />
               {/* dzień */}
-              <div className="h-4 flex items-center justify-center">
-                <span className={`text-[8px] ${isToday ? "text-orange-400 font-semibold" : "text-gray-700"}`}>
+              <div className="h-5 flex items-center justify-center">
+                <span className={`text-[10px] font-medium ${isToday ? "text-orange-400 font-bold" : "text-gray-600"}`}>
                   {d.day % 5 === 0 || d.day === 1 ? d.day : ""}
                 </span>
               </div>
