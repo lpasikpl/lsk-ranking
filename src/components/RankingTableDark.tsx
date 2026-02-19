@@ -72,9 +72,7 @@ export default function RankingTableDark({ entries }: RankingTableDarkProps) {
                     )}
                     <div className="min-w-0">
                       <a
-                        href={`https://www.strava.com/athletes/${entry.strava_id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={`/athlete/${entry.user_id}`}
                         className="text-sm font-medium text-white/80 hover:text-white truncate block transition-colors"
                       >
                         {entry.firstname} {entry.lastname}

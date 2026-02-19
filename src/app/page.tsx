@@ -7,11 +7,12 @@ import RankingHeader from "@/components/RankingHeader";
 import PeriodNav from "@/components/PeriodNav";
 import Top3Podium from "@/components/Top3Podium";
 import RankingTableDark from "@/components/RankingTableDark";
+import MonthlyChart from "@/components/MonthlyChart";
 import Footer from "@/components/Footer";
 import { formatDistance, formatTime } from "@/lib/strava";
 
 interface PageProps {
-  searchParams: Promise<{ period?: string; year?: string; month?: string }>;
+  searchParams: Promise<{ period?: string; year?: string; month?: string; chart?: string }>;
 }
 
 async function getCurrentUser(userId: string | undefined) {
@@ -30,14 +31,21 @@ async function getRankingData(period: "month" | "year", year: number, month: num
   const date = new Date(year, month - 1, 1);
   const startDate = period === "month" ? startOfMonth(date) : startOfYear(date);
   const endDate = period === "month" ? endOfMonth(date) : endOfYear(date);
-
   const { data, error } = await supabase.rpc("get_ranking", {
     p_start_date: startDate.toISOString(),
     p_end_date: endDate.toISOString(),
   });
-
   if (error) { console.error("Ranking error:", error); return []; }
   return (data as RankingEntry[]) || [];
+}
+
+async function getMonthlyData(year: number) {
+  const supabase = createServiceClient();
+  const { data } = await supabase.rpc("get_monthly_stats", {
+    p_year: year,
+    p_user_id: null,
+  });
+  return data || [];
 }
 
 export default async function HomePage({ searchParams }: PageProps) {
@@ -49,10 +57,12 @@ export default async function HomePage({ searchParams }: PageProps) {
   const now = new Date();
   const year = params.year ? parseInt(params.year) : now.getFullYear();
   const month = params.month ? parseInt(params.month) : now.getMonth() + 1;
+  const chartMetric = (params.chart || "distance") as "distance" | "elevation" | "time" | "count";
 
-  const [user, rankingData] = await Promise.all([
+  const [user, rankingData, monthlyData] = await Promise.all([
     getCurrentUser(userId),
     getRankingData(period, year, month),
+    getMonthlyData(year),
   ]);
 
   const currentDate = new Date(year, month - 1, 1);
@@ -61,7 +71,6 @@ export default async function HomePage({ searchParams }: PageProps) {
     : year.toString();
   const subtitle = period === "month" ? "Ranking Miesiąca" : "Ranking Roczny";
 
-  // Sumy
   const totalDistance = rankingData.reduce((s, e) => s + e.total_distance, 0);
   const totalElevation = rankingData.reduce((s, e) => s + e.total_elevation, 0);
   const totalTime = rankingData.reduce((s, e) => s + e.total_time, 0);
@@ -105,20 +114,23 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
 
         {/* Pełny ranking */}
-        <div>
+        <div className="mb-10">
           <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">
             Ranking dystansu
           </h2>
           <RankingTableDark entries={rankingData} />
         </div>
 
+        {/* Wykres miesięczny */}
+        <div className="mb-10">
+          <MonthlyChart data={monthlyData} year={year} metric={chartMetric} />
+        </div>
+
         {/* CTA */}
         {!user && (
-          <div className="mt-10 glass rounded-2xl p-8 text-center border border-orange-500/10">
+          <div className="glass rounded-2xl p-8 text-center border border-orange-500/10">
             <div className="text-3xl mb-3">🚴‍♂️</div>
-            <p className="text-gray-400 mb-5 font-medium">
-              Dołącz do rankingu i ścigaj się ze znajomymi
-            </p>
+            <p className="text-gray-400 mb-5 font-medium">Dołącz do rankingu i ścigaj się ze znajomymi</p>
             <a
               href="/api/auth/strava"
               className="inline-flex items-center gap-2 gradient-orange text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity text-sm"

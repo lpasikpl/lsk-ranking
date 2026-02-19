@@ -70,9 +70,7 @@ export default function Top3Podium({ entries, metric, title, unit }: Top3PodiumP
                   )}
                   <div className="flex-1 min-w-0">
                     <a
-                      href={`https://www.strava.com/athletes/${entry.strava_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={`/athlete/${entry.user_id}`}
                       className="text-sm font-medium text-white/90 hover:text-white truncate block leading-tight"
                     >
                       {entry.firstname} {entry.lastname?.charAt(0)}.
