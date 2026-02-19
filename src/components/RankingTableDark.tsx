@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { RankingEntry } from "@/types/database";
-import { formatDistance, formatTime, getCountryFlag } from "@/lib/strava";
+import { formatDistance, formatTime, getCountryFlag } from "@/lib/format";
 
 interface RankingTableDarkProps {
   entries: RankingEntry[];

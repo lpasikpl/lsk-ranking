@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { RankingEntry } from "@/types/database";
-import { formatDistance, formatTime, getCountryFlag } from "@/lib/strava";
+import { formatDistance, formatTime, getCountryFlag } from "@/lib/format";
 
 interface Top3PodiumProps {
   entries: RankingEntry[];
