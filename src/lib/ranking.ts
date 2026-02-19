@@ -35,8 +35,8 @@ export async function getRanking(
   }
 
   const { data, error } = await supabase.rpc("get_ranking", {
-    start_date: startDate.toISOString(),
-    end_date: endDate.toISOString(),
+    p_start_date: startDate.toISOString(),
+    p_end_date: endDate.toISOString(),
   });
 
   if (error) {
