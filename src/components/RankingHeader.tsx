@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User } from "@/types/database";
+import SyncButton from "./SyncButton";
 
 interface RankingHeaderProps {
   title: string;
@@ -21,14 +22,12 @@ export default function RankingHeader({ title, user }: RankingHeaderProps) {
   return (
     <header className="w-full bg-white border-b border-gray-100">
       <div className="max-w-5xl mx-auto px-4 py-4">
-        {/* Tytuł główny */}
         <div className="text-center mb-2">
           <h1 className="text-3xl font-black tracking-widest uppercase text-gray-900">
             {title}
           </h1>
         </div>
 
-        {/* Pasek użytkownika */}
         <div className="flex items-center justify-end gap-3 text-sm">
           {user ? (
             <>
@@ -40,6 +39,7 @@ export default function RankingHeader({ title, user }: RankingHeaderProps) {
                   Admin
                 </Link>
               )}
+              <SyncButton userId={user.id} />
               <span className="text-gray-500">
                 {user.firstname} {user.lastname}
               </span>

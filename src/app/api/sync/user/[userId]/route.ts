@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { syncUserActivities } from "@/lib/strava";
+import { createServiceClient } from "@/lib/supabase/server";
 
-// Synchronizacja pojedynczego użytkownika
-// Wywołaj: POST /api/sync/user/[userId]
-// Header: Authorization: Bearer <SYNC_WEBHOOK_SECRET>
+export const maxDuration = 60; // Vercel Pro: 60s, Hobby: 10s (ignorowane ale nie zaszkodzi)
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
@@ -13,17 +13,37 @@ export async function POST(
   const authHeader = request.headers.get("authorization");
   const webhookSecret = process.env.SYNC_WEBHOOK_SECRET;
 
-  // Sprawdź token LUB czy to zalogowany admin (cookie)
   const cookieUserId = request.cookies.get("lsk_user_id")?.value;
   const isOwnSync = cookieUserId === userId;
-  const isAuthorized =
-    isOwnSync || authHeader === `Bearer ${webhookSecret}`;
+  const isAuthorized = isOwnSync || authHeader === `Bearer ${webhookSecret}`;
 
   if (!isAuthorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const result = await syncUserActivities(userId);
+  // Sprawdź kiedy była ostatnia udana synchronizacja
+  const supabase = createServiceClient();
+  const { data: lastSync } = await supabase
+    .from("sync_logs")
+    .select("created_at")
+    .eq("user_id", userId)
+    .eq("status", "success")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  let afterTimestamp: number | undefined;
+  if (lastSync) {
+    // Sync od ostatniej synchronizacji (z buforem -1h)
+    afterTimestamp = Math.floor(new Date(lastSync.created_at).getTime() / 1000) - 3600;
+  } else {
+    // Pierwsze logowanie - pobierz aktywności z ostatnich 2 lat
+    const twoYearsAgo = new Date();
+    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+    afterTimestamp = Math.floor(twoYearsAgo.getTime() / 1000);
+  }
+
+  const result = await syncUserActivities(userId, { afterTimestamp });
 
   return NextResponse.json({
     success: !result.error,
