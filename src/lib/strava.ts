@@ -196,7 +196,7 @@ export async function syncUserActivities(
     }
 
     // Upsert aktywności do bazy
-    const { error: upsertError } = await supabase.from("activities").upsert(
+    const { error: upsertError } = await supabase.from("lsk_activities").upsert(
       rideActivities.map((a) => ({
         strava_id: a.id,
         user_id: userId,
