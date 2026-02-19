@@ -7,11 +7,12 @@ import RankingHeader from "@/components/RankingHeader";
 import Top3Podium from "@/components/Top3Podium";
 import RankingTableDark from "@/components/RankingTableDark";
 import MonthlyChart from "@/components/MonthlyChart";
+import SectionNav from "@/components/SectionNav";
 import Footer from "@/components/Footer";
 import { formatDistance, formatTime, formatNumber } from "@/lib/format";
 
 interface PageProps {
-  searchParams: Promise<{ chart?: string }>;
+  searchParams: Promise<{ chart?: string; month?: string; year?: string; ryear?: string }>;
 }
 
 async function getCurrentUser(userId: string | undefined) {
@@ -82,31 +83,27 @@ export default async function HomePage({ searchParams }: PageProps) {
   const currentMonth = now.getMonth() + 1;
   const chartMetric = (params.chart || "distance") as "distance" | "elevation" | "time" | "count";
 
+  const selYear = params.year ? parseInt(params.year) : currentYear;
+  const selMonth = params.month ? parseInt(params.month) : currentMonth;
+  const selRYear = params.ryear ? parseInt(params.ryear) : currentYear;
+
   const [user, monthData, yearData, monthlyData] = await Promise.all([
     getCurrentUser(userId),
-    getRankingData("month", currentYear, currentMonth),
-    getRankingData("year", currentYear, currentMonth),
-    getMonthlyData(currentYear),
+    getRankingData("month", selYear, selMonth),
+    getRankingData("year", selRYear, 1),
+    getMonthlyData(selRYear),
   ]);
-
-  const monthLabel = format(now, "LLLL yyyy", { locale: pl }).toUpperCase();
   const isAdmin = user?.is_admin === true;
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
-      <RankingHeader title="Ranking LSK" subtitle="Kolarstwo" user={user} />
+      <RankingHeader title="Lubartowska Stadnina Koni" subtitle="Kolarstwo" user={user} />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
 
         {/* ===== MIESIĄC ===== */}
         <div className="mb-14">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-1 h-6 rounded-full bg-orange-500" />
-            <div>
-              <div className="text-xs text-gray-600 uppercase tracking-widest">Ranking miesiąca</div>
-              <div className="text-lg font-bold text-white">{monthLabel}</div>
-            </div>
-          </div>
+          <SectionNav type="month" year={selYear} month={selMonth} color="orange" />
 
           <StatsCards entries={monthData} />
 
@@ -130,13 +127,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
         {/* ===== ROK ===== */}
         <div className="mb-14">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-1 h-6 rounded-full bg-blue-500" />
-            <div>
-              <div className="text-xs text-gray-600 uppercase tracking-widest">Ranking roczny</div>
-              <div className="text-lg font-bold text-white">{currentYear}</div>
-            </div>
-          </div>
+          <SectionNav type="year" year={selRYear} month={1} color="blue" />
 
           <StatsCards entries={yearData} />
 
@@ -157,7 +148,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
         {/* Wykres miesięczny */}
         <div className="mb-10">
-          <MonthlyChart data={monthlyData} year={currentYear} metric={chartMetric} />
+          <MonthlyChart data={monthlyData} year={selRYear} metric={chartMetric} />
         </div>
 
         {/* CTA */}
