@@ -7,6 +7,7 @@ import RankingHeader from "@/components/RankingHeader";
 import Top3Podium from "@/components/Top3Podium";
 import RankingTableDark from "@/components/RankingTableDark";
 import MonthlyChart from "@/components/MonthlyChart";
+import DailyChart from "@/components/DailyChart";
 import SectionNav from "@/components/SectionNav";
 import AnimatedStatCard from "@/components/AnimatedStatCard";
 import Footer from "@/components/Footer";
@@ -44,6 +45,16 @@ async function getMonthlyData(year: number) {
   const supabase = createServiceClient();
   const { data } = await supabase.rpc("get_monthly_stats", {
     p_year: year,
+    p_user_id: null,
+  });
+  return data || [];
+}
+
+async function getDailyData(year: number, month: number) {
+  const supabase = createServiceClient();
+  const { data } = await supabase.rpc("get_daily_stats", {
+    p_year: year,
+    p_month: month,
     p_user_id: null,
   });
   return data || [];
@@ -94,12 +105,15 @@ export default async function HomePage({ searchParams }: PageProps) {
   const selMonth = params.month ? parseInt(params.month) : currentMonth;
   const selRYear = params.ryear ? parseInt(params.ryear) : currentYear;
 
-  const [user, monthData, yearData, monthlyData] = await Promise.all([
+  const [user, monthData, yearData, monthlyData, dailyData] = await Promise.all([
     getCurrentUser(userId),
     getRankingData("month", selYear, selMonth),
     getRankingData("year", selRYear, 1),
     getMonthlyData(selRYear),
+    getDailyData(selYear, selMonth),
   ]);
+
+  const daysInMonth = new Date(selYear, selMonth, 0).getDate();
   const isAdmin = user?.is_admin === true;
 
   return (
@@ -123,10 +137,12 @@ export default async function HomePage({ searchParams }: PageProps) {
             </div>
           </div>
 
-          <div>
+          <div className="mb-6">
             <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Ranking dystansu</h2>
             <RankingTableDark entries={monthData} isAdmin={isAdmin} />
           </div>
+
+          <DailyChart data={dailyData} year={selYear} month={selMonth} daysInMonth={daysInMonth} />
         </div>
 
         {/* Separator */}
