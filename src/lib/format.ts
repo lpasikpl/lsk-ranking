@@ -1,11 +1,20 @@
 export function formatTime(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  return `${h}:${m.toString().padStart(2, "0")}`;
+  const totalMinutes = Math.floor(seconds / 60);
+  const totalHours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (totalHours >= 24) {
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+    return `${days}d ${hours}h ${minutes}min`;
+  }
+
+  return `${totalHours}:${minutes.toString().padStart(2, "0")}`;
 }
 
 export function formatDistance(meters: number): string {
-  return (meters / 1000).toFixed(2);
+  const km = Math.round(meters / 1000);
+  return km.toLocaleString("pl-PL");
 }
 
 export function getCountryFlag(country: string | null): string {

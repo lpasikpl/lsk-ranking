@@ -92,7 +92,7 @@ export default async function HomePage({ searchParams }: PageProps) {
             { label: "Dystans", value: formatDistance(totalDistance), unit: "km", icon: "🚴" },
             { label: "Przewyższenie", value: Math.round(totalElevation).toLocaleString("pl-PL"), unit: "m", icon: "⛰️" },
             { label: "Czas jazdy", value: formatTime(totalTime), unit: "h", icon: "⏱️" },
-            { label: "Aktywności", value: totalActivities.toString(), unit: "szt.", icon: "📊" },
+            { label: "Aktywności", value: totalActivities.toLocaleString("pl-PL"), unit: "szt.", icon: "📊" },
           ].map((stat) => (
             <div key={stat.label} className="glass glass-hover rounded-2xl p-4">
               <div className="text-2xl mb-2">{stat.icon}</div>

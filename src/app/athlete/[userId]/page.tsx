@@ -48,7 +48,7 @@ export default async function AthletePage({ params }: PageProps) {
         { name: "Dystans", value: formatDistance(year?.total_distance || 0), unit: "km" },
         { name: "Przewyższenie", value: Math.round(year?.total_elevation || 0).toLocaleString("pl-PL"), unit: "m" },
         { name: "Czas", value: formatTime(year?.total_time || 0), unit: "h" },
-        { name: "Aktywności", value: (year?.activity_count || 0).toString(), unit: "szt." },
+        { name: "Aktywności", value: (year?.activity_count || 0).toLocaleString("pl-PL"), unit: "szt." },
       ],
     },
     {
@@ -57,7 +57,7 @@ export default async function AthletePage({ params }: PageProps) {
         { name: "Dystans", value: formatDistance(allTime?.total_distance || 0), unit: "km" },
         { name: "Przewyższenie", value: Math.round(allTime?.total_elevation || 0).toLocaleString("pl-PL"), unit: "m" },
         { name: "Czas", value: formatTime(allTime?.total_time || 0), unit: "h" },
-        { name: "Aktywności", value: (allTime?.activity_count || 0).toString(), unit: "szt." },
+        { name: "Aktywności", value: (allTime?.activity_count || 0).toLocaleString("pl-PL"), unit: "szt." },
       ],
     },
   ];
