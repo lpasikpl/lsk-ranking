@@ -170,10 +170,6 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
             barBg = "rgba(255,255,255,0.04)";
           } else if (!hasActivity) {
             barBg = "rgba(255,255,255,0.03)";
-          } else if (isRed) {
-            barBg = "rgba(239, 68, 68, 0.55)";
-          } else if (isSaturday) {
-            barBg = "rgba(99, 102, 241, 0.55)";
           } else {
             barBg = "rgba(252, 76, 2, 0.65)";
           }
@@ -192,7 +188,7 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
               {/* etykieta wartości */}
               <div className="flex-1 flex items-end justify-center pb-1">
                 {hasActivity && (
-                  <span className={`text-[10px] font-bold leading-none ${isToday ? "text-orange-400" : isRed ? "text-red-400" : isSaturday ? "text-indigo-400" : "text-gray-400"}`}>
+                  <span className={`text-[10px] font-bold leading-none ${isToday ? "text-orange-400" : "text-gray-400"}`}>
                     {formatLabel(val, metric)}
                   </span>
                 )}

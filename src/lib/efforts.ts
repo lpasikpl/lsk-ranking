@@ -39,26 +39,21 @@ export async function fetchAndSaveBestEfforts(userId: string, stravaActivityId: 
     const isOutdoorRide = activity.type === "Ride" || activity.sport_type === "Ride";
     if (!isOutdoorRide) return 0;
 
-    const efforts = activity.best_efforts;
-    if (!Array.isArray(efforts) || efforts.length === 0) return 0;
+    // Strava best_efforts dotyczy biegania. Dla Ride sprawdzamy dystans całej aktywności.
+    const distanceMeters = activity.distance;
+    const label = matchDistance(distanceMeters);
+    if (!label) return 0;
 
-    const toSave = [];
-
-    for (const effort of efforts) {
-      const label = matchDistance(effort.distance);
-      if (!label) continue;
-
-      toSave.push({
-        strava_activity_id: stravaActivityId,
-        user_id: userId,
-        effort_name: label,
-        distance: effort.distance,
-        moving_time: effort.moving_time,
-        elapsed_time: effort.elapsed_time,
-        avg_speed: effort.distance / effort.moving_time, // m/s
-        activity_date: effort.start_date,
-      });
-    }
+    const toSave = [{
+      strava_activity_id: stravaActivityId,
+      user_id: userId,
+      effort_name: label,
+      distance: distanceMeters,
+      moving_time: activity.moving_time,
+      elapsed_time: activity.elapsed_time,
+      avg_speed: distanceMeters / activity.moving_time, // m/s
+      activity_date: activity.start_date,
+    }];
 
     if (toSave.length === 0) return 0;
 
