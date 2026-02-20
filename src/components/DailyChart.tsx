@@ -192,7 +192,7 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
               {/* etykieta wartości */}
               <div className="flex-1 flex items-end justify-center pb-1">
                 {hasActivity && (
-                  <span className={`text-[10px] font-bold leading-none ${isToday ? "text-orange-400" : "text-gray-400"}`}>
+                  <span className={`text-[10px] font-bold leading-none whitespace-nowrap ${isToday ? "text-orange-400" : "text-gray-400"}`}>
                     {formatLabel(val, metric)}
                   </span>
                 )}
