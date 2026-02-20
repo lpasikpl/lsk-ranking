@@ -22,6 +22,7 @@ export interface StravaActivity {
   total_elevation_gain: number;
   start_date: string;
   start_date_local: string;
+  trainer: boolean;
 }
 
 export interface StravaTokenResponse {
@@ -208,6 +209,7 @@ export async function syncUserActivities(
         total_elevation_gain: a.total_elevation_gain,
         start_date: a.start_date,
         start_date_local: a.start_date_local,
+        trainer: a.trainer === true,
       })),
       { onConflict: "strava_id" }
     );

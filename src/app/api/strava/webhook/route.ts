@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
         start_date: activity.start_date,
         distance: activity.distance,
         name: activity.name,
+        trainer: activity.trainer === true,
       });
 
     } catch (err) {
