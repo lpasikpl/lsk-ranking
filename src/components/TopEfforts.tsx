@@ -125,12 +125,12 @@ export default async function TopEfforts() {
                         <div className="text-xs font-medium text-white/80 truncate">
                           {e.firstname} {e.lastname?.charAt(0)}.
                         </div>
-                        <div className={`text-xs font-bold tabular-nums ${i === 0 ? "text-yellow-400" : "text-white/70"}`}>
-                          {formatEffortTime(e.moving_time)}
+                        <div className={`text-xs font-bold ${i === 0 ? "text-yellow-400" : "text-white/70"}`}>
+                          {formatPace(e.moving_time, e.distance)}
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <div className="text-xs text-gray-500">{formatPace(e.moving_time, e.distance)}</div>
+                        <div className="text-xs text-gray-500 tabular-nums">{formatEffortTime(e.moving_time)}</div>
                       </div>
                     </a>
                   ))}
