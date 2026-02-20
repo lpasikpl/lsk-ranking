@@ -211,7 +211,10 @@ export default function AdminClient({
                 const res = await fetch("/api/admin/backfill-efforts", { method: "POST" });
                 const data = await res.json();
                 if (res.ok) {
-                  showMessage("success", `Gotowe! Zapisano ${data.total} wyników z ${data.processed} aktywności`);
+                  const details = Object.entries(data.perUser || {})
+                    .map(([, v]: [string, any]) => `${v.activities} aktywności → ${v.saved} wyników`)
+                    .join(", ");
+                  showMessage("success", `Gotowe! Zapisano ${data.total} wyników z ${data.processed} aktywności. [${details}]`);
                   router.refresh();
                 } else {
                   showMessage("error", data.error || "Błąd backfilla");
