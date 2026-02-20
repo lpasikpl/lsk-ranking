@@ -1,17 +1,19 @@
 // Ikony rankingowe w stylu Strava
 
 function CrownIcon() {
+  // 3 wierzchołki: lewy (0,0), środkowy (30,0), prawy (60,0)
+  // 2 wklęsłe łuki między nimi (sweep=1 = łuk idzie w dół)
+  // trapez: góra szersza (0–60), dół węższy (12–48)
   return (
-    <svg width="24" height="17" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* korpus korony: pełne boki, 3 wklęsłe łuki na górze */}
+    <svg width="26" height="18" viewBox="0 0 60 44" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
-        d="M 0 42 L 0 0 A 10 10 0 0 0 20 0 A 10 10 0 0 0 40 0 A 10 10 0 0 0 60 0 L 60 42 Z"
+        d="M 12 44 L 0 0 A 15.5 15.5 0 0 1 30 0 A 15.5 15.5 0 0 1 60 0 L 48 44 Z"
         fill="#F59E0B"
       />
       {/* diamenty */}
-      <polygon points="10,22 15,28 10,34 5,28"  fill="white" opacity="0.85" />
-      <polygon points="30,20 37,27 30,34 23,27" fill="white" opacity="0.85" />
-      <polygon points="50,22 55,28 50,34 45,28" fill="white" opacity="0.85" />
+      <polygon points="13,27 18,32 13,37 8,32"  fill="white" opacity="0.88" />
+      <polygon points="30,25 36,31 30,37 24,31" fill="white" opacity="0.88" />
+      <polygon points="47,27 52,32 47,37 42,32" fill="white" opacity="0.88" />
     </svg>
   );
 }
@@ -40,7 +42,7 @@ function TrophyIcon({ n }: { n: number }) {
         textAnchor="middle"
         dominantBaseline="middle"
         fill="white"
-        fontSize={n >= 10 ? "5" : "6"}
+        fontSize={n >= 10 ? "7" : "9"}
         fontWeight="bold"
         fontFamily="system-ui, sans-serif"
         style={{ userSelect: "none" }}
