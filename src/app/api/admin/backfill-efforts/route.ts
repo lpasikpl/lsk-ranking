@@ -18,30 +18,32 @@ export async function POST(_request: NextRequest) {
   const { data: users } = await supabase.from("users").select("id").eq("is_active", true);
   if (!users) return NextResponse.json({ error: "No users" }, { status: 500 });
 
-  let total = 0;
-  let processed = 0;
-  const perUser: Record<string, { activities: number; saved: number }> = {};
-
-  for (const u of users) {
+  // Przetwarzaj każdego usera równolegle - każdy ma osobny limit API na Stravie
+  const results = await Promise.all(users.map(async (u) => {
     const { data: activities } = await supabase
       .from("lsk_activities")
       .select("strava_id")
       .eq("user_id", u.id)
       .in("type", ["Ride"]);
 
-    if (!activities) continue;
-
-    perUser[u.id] = { activities: activities.length, saved: 0 };
-
-    for (const act of activities) {
-      processed++;
-      const saved = await fetchAndSaveBestEfforts(u.id, act.strava_id);
-      total += saved;
-      perUser[u.id].saved += saved;
-      // Rate limiting - maks 2 req/s (2 API calle na aktywność)
-      await new Promise(r => setTimeout(r, 600));
+    if (!activities || activities.length === 0) {
+      return { userId: u.id, activities: 0, saved: 0 };
     }
-  }
+
+    let saved = 0;
+    for (const act of activities) {
+      const n = await fetchAndSaveBestEfforts(u.id, act.strava_id);
+      saved += n;
+      // 300ms = maks ~3 aktywności/s, bezpieczny limit per user (200 req/15min per token)
+      await new Promise(r => setTimeout(r, 300));
+    }
+
+    return { userId: u.id, activities: activities.length, saved };
+  }));
+
+  const total = results.reduce((s, r) => s + r.saved, 0);
+  const processed = results.reduce((s, r) => s + r.activities, 0);
+  const perUser = Object.fromEntries(results.map(r => [r.userId, { activities: r.activities, saved: r.saved }]));
 
   return NextResponse.json({ processed, total, perUser });
 }
