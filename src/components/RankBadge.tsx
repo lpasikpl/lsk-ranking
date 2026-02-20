@@ -7,7 +7,7 @@ function CrownIcon() {
   return (
     <svg width="26" height="18" viewBox="0 0 60 44" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
-        d="M 12 44 L 0 0 A 15.5 15.5 0 0 1 30 0 A 15.5 15.5 0 0 1 60 0 L 48 44 Z"
+        d="M 12 44 L 0 0 A 15.5 15.5 0 0 0 30 0 A 15.5 15.5 0 0 0 60 0 L 48 44 Z"
         fill="#F59E0B"
       />
       {/* diamenty */}
@@ -38,11 +38,11 @@ function TrophyIcon({ n }: { n: number }) {
       {/* numer */}
       <text
         x="10"
-        y="10.5"
+        y="9"
         textAnchor="middle"
         dominantBaseline="middle"
         fill="white"
-        fontSize={n >= 10 ? "7" : "9"}
+        fontSize={n >= 10 ? "8" : "11"}
         fontWeight="bold"
         fontFamily="system-ui, sans-serif"
         style={{ userSelect: "none" }}
