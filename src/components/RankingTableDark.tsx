@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { RankingEntry } from "@/types/database";
 import { formatDistance, formatTime, getCountryFlag, formatNumber } from "@/lib/format";
+import RankBadge from "@/components/RankBadge";
 
 interface RankingTableDarkProps {
   entries: RankingEntry[];
@@ -81,7 +82,13 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
                 />
 
                 <div className={`grid ${gridCols} gap-0 items-center relative`}>
-                  <div className={`text-sm ${positionStyle(index)}`}>{index + 1}</div>
+                  <div className="flex items-center justify-start w-10">
+                    {index + 1 <= 10 ? (
+                      <RankBadge position={index + 1} showTrophyFrom={2} />
+                    ) : (
+                      <span className="text-sm text-gray-600">{index + 1}</span>
+                    )}
+                  </div>
 
                   <div className="flex items-center gap-3 min-w-0">
                     {entry.profile_medium ? (

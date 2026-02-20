@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { createServiceClient } from "@/lib/supabase/server";
+import RankBadge from "@/components/RankBadge";
 
 const DISTANCES = ["10 km", "20 km", "30 km", "40 km", "50 km", "100 km"] as const;
 
@@ -78,7 +79,6 @@ async function getTopEfforts(year: number, month?: number) {
   return results;
 }
 
-const medalColors = ["text-yellow-400", "text-gray-300", "text-orange-600"];
 const medalBg = ["border-yellow-500/20", "border-gray-400/20", "border-orange-700/20"];
 
 const MONTH_NAMES = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec",
@@ -119,7 +119,9 @@ export default async function TopEfforts({ year, month }: TopEffortsProps) {
                       rel="noopener noreferrer"
                       className={`flex items-center gap-3 rounded-xl px-3 py-2 border ${medalBg[i]} bg-white/[0.02] hover:bg-white/[0.05] transition-colors cursor-pointer`}
                     >
-                      <span className={`text-sm font-bold w-4 ${medalColors[i]}`}>{i + 1}</span>
+                      <span className="w-5 flex items-center justify-center flex-shrink-0">
+                        <RankBadge position={i + 1} showTrophyFrom={2} />
+                      </span>
                       {e.profile_medium ? (
                         <Image src={e.profile_medium} alt="" width={24} height={24} className="rounded-full flex-shrink-0" />
                       ) : (
