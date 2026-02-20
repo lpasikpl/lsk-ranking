@@ -156,6 +156,7 @@ export interface RankingEntry {
   total_elevation: number;
   total_time: number;
   activity_count: number;
+  active_days: number;
   avg_speed: number;
   longest_ride: number;
 }

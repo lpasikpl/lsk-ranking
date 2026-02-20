@@ -99,7 +99,7 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
                         )}
                       </a>
                       <div className="text-xs text-gray-600 mt-0.5">
-                        {entry.activity_count} {entry.activity_count === 1 ? "aktywność" : "aktywności"}
+                        {entry.active_days ?? entry.activity_count} {(entry.active_days ?? entry.activity_count) === 1 ? "aktywny dzień" : "aktywnych dni"}
                       </div>
                     </div>
                   </div>
