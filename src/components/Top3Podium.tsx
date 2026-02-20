@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { RankingEntry } from "@/types/database";
 import { formatDistance, formatTime, getCountryFlag, formatNumber } from "@/lib/format";
+import RankBadge from "@/components/RankBadge";
 
 interface Top3PodiumProps {
   entries: RankingEntry[];
@@ -56,7 +57,9 @@ export default function Top3Podium({ entries, metric, title, unit }: Top3PodiumP
                 className={`glass glass-hover rounded-xl p-3 bg-gradient-to-r ${medal.bg} border ${medal.border}`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-lg leading-none w-6 text-center flex-shrink-0">{medal.label}</span>
+                  <span className="flex items-center justify-center w-7 flex-shrink-0">
+                    <RankBadge position={index + 1} showTrophyFrom={2} />
+                  </span>
                   {entry.profile_medium ? (
                     <Image
                       src={entry.profile_medium}

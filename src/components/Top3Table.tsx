@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { RankingEntry } from "@/types/database";
 import { formatDistance, formatTime, getCountryFlag } from "@/lib/format";
+import RankBadge from "@/components/RankBadge";
 
 interface Top3TableProps {
   title: string;
@@ -73,7 +74,9 @@ export default function Top3Table({ title, entries, metric }: Top3TableProps) {
                 key={entry.user_id}
                 className={`border-b border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
               >
-                <td className="py-2 px-3 text-gray-500 font-medium">{index + 1}</td>
+                <td className="py-2 px-3">
+                  <RankBadge position={index + 1} showTrophyFrom={2} />
+                </td>
                 <td className="py-2 px-3">
                   <div className="flex items-center gap-2">
                     {entry.profile_medium ? (

@@ -20,7 +20,7 @@ function CrownIcon() {
 
 function TrophyIcon({ n }: { n: number }) {
   return (
-    <svg width="20" height="22" viewBox="0 0 20 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="24" height="26" viewBox="0 0 20 22" fill="none" xmlns="http://www.w3.org/2000/svg">
       {/* uchwyty */}
       <path d="M4 4H2C2 7 3.5 8.5 4 9" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" fill="none" />
       <path d="M16 4H18C18 7 16.5 8.5 16 9" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" fill="none" />
