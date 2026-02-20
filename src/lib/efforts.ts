@@ -11,17 +11,27 @@ const TARGET_DISTANCES: Record<string, number> = {
   "50 km": 50000,
 };
 
-// Dla best_efforts 3% (standardowe dystanse), dla fallback total distance 15%
-const DISTANCE_TOLERANCE_EFFORTS = 0.03;
-const DISTANCE_TOLERANCE_TOTAL = 0.15;
+// Najszybszy odcinek danego dystansu ze strumienia GPS (sliding window O(n))
+function fastestSegment(
+  distStream: number[],
+  timeStream: number[],
+  targetMeters: number
+): number | null {
+  let j = 0;
+  let minTime = Infinity;
 
-function matchDistance(distanceMeters: number, tolerance = DISTANCE_TOLERANCE_EFFORTS): string | null {
-  for (const [label, target] of Object.entries(TARGET_DISTANCES)) {
-    if (Math.abs(distanceMeters - target) / target < tolerance) {
-      return label;
+  for (let i = 0; i < distStream.length; i++) {
+    // Przesuń j do przodu aż pokryje target
+    while (j < distStream.length && distStream[j] - distStream[i] < targetMeters) {
+      j++;
+    }
+    if (j < distStream.length) {
+      const t = timeStream[j] - timeStream[i];
+      if (t < minTime) minTime = t;
     }
   }
-  return null;
+
+  return minTime === Infinity ? null : Math.round(minTime);
 }
 
 export async function fetchAndSaveBestEfforts(userId: string, stravaActivityId: number): Promise<number> {
@@ -29,62 +39,66 @@ export async function fetchAndSaveBestEfforts(userId: string, stravaActivityId: 
 
   try {
     const accessToken = await getValidAccessToken(userId);
-    const res = await fetch(`https://www.strava.com/api/v3/activities/${stravaActivityId}?include_all_efforts=true`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
 
-    if (!res.ok) return 0;
-
-    const activity = await res.json();
+    // 1. Pobierz dane aktywności (typ, data, dystans)
+    const actRes = await fetch(
+      `https://www.strava.com/api/v3/activities/${stravaActivityId}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (!actRes.ok) return 0;
+    const activity = await actRes.json();
 
     // Tylko outdoor Ride (nie VirtualRide)
-    const isOutdoorRide = activity.type === "Ride" || activity.sport_type === "Ride";
-    if (!isOutdoorRide) return 0;
+    const isRide = activity.type === "Ride" || activity.sport_type === "Ride";
+    if (!isRide) return 0;
 
-    // Próbuj best_efforts[] (Strava API - dla biegania pewne, dla Ride może być puste)
-    const bestEfforts: Array<{
+    // Pomiń aktywności krótsze niż 5km
+    if (activity.distance < 5000) return 0;
+
+    // 2. Pobierz strumień dystansu i czasu
+    const streamsRes = await fetch(
+      `https://www.strava.com/api/v3/activities/${stravaActivityId}/streams?keys=distance,time&key_by_type=true`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (!streamsRes.ok) return 0;
+    const streams = await streamsRes.json();
+
+    const distStream: number[] = streams.distance?.data ?? [];
+    const timeStream: number[] = streams.time?.data ?? [];
+    if (distStream.length === 0 || timeStream.length === 0) return 0;
+
+    // 3. Dla każdego docelowego dystansu znajdź najszybszy odcinek
+    const toSave: Array<{
+      strava_activity_id: number;
+      user_id: string;
+      effort_name: string;
       distance: number;
       moving_time: number;
       elapsed_time: number;
-    }> = activity.best_efforts || [];
+      avg_speed: number;
+      activity_date: string;
+    }> = [];
 
-    const byLabel: Record<string, { distance: number; moving_time: number; elapsed_time: number }> = {};
+    for (const [label, targetMeters] of Object.entries(TARGET_DISTANCES)) {
+      // Pomiń jeśli aktywność jest za krótka
+      if (activity.distance < targetMeters * 0.97) continue;
 
-    if (bestEfforts.length > 0) {
-      // Użyj segmentów dystansowych z API
-      for (const effort of bestEfforts) {
-        const label = matchDistance(effort.distance);
-        if (!label) continue;
-        if (!byLabel[label] || effort.moving_time < byLabel[label].moving_time) {
-          byLabel[label] = effort;
-        }
-      }
+      const movingTime = fastestSegment(distStream, timeStream, targetMeters);
+      if (movingTime === null) continue;
+
+      toSave.push({
+        strava_activity_id: stravaActivityId,
+        user_id: userId,
+        effort_name: label,
+        distance: targetMeters,
+        moving_time: movingTime,
+        elapsed_time: movingTime,
+        avg_speed: targetMeters / movingTime, // m/s
+        activity_date: activity.start_date,
+      });
     }
 
-    // Fallback: jeśli best_efforts puste, sprawdź czy cała aktywność pasuje do dystansu (±15%)
-    if (Object.keys(byLabel).length === 0) {
-      const label = matchDistance(activity.distance, DISTANCE_TOLERANCE_TOTAL);
-      if (label) {
-        byLabel[label] = {
-          distance: activity.distance,
-          moving_time: activity.moving_time,
-          elapsed_time: activity.elapsed_time,
-        };
-      }
-    }
-
-    if (Object.keys(byLabel).length === 0) return 0;
-
-    const toSave = Object.entries(byLabel).map(([label, effort]) => ({
-      strava_activity_id: stravaActivityId,
-      user_id: userId,
-      effort_name: label,
-      distance: effort.distance,
-      moving_time: effort.moving_time,
-      elapsed_time: effort.elapsed_time,
-      avg_speed: effort.distance / effort.moving_time, // m/s
-      activity_date: activity.start_date,
-    }));
+    if (toSave.length === 0) return 0;
 
     await supabase
       .from("lsk_best_efforts")
