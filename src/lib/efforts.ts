@@ -21,7 +21,6 @@ function fastestSegment(
   let minTime = Infinity;
 
   for (let i = 0; i < distStream.length; i++) {
-    // Przesuń j do przodu aż pokryje target
     while (j < distStream.length && distStream[j] - distStream[i] < targetMeters) {
       j++;
     }
@@ -34,30 +33,47 @@ function fastestSegment(
   return minTime === Infinity ? null : Math.round(minTime);
 }
 
-export async function fetchAndSaveBestEfforts(userId: string, stravaActivityId: number): Promise<number> {
+// activityMeta - opcjonalne dane z lsk_activities (unikamy zbędnego API call)
+export async function fetchAndSaveBestEfforts(
+  userId: string,
+  stravaActivityId: number,
+  activityMeta?: { start_date: string; distance: number }
+): Promise<number> {
   const supabase = createServiceClient();
 
   try {
     const accessToken = await getValidAccessToken(userId);
 
-    // 1. Pobierz dane aktywności (typ, data, dystans)
-    const actRes = await fetch(
-      `https://www.strava.com/api/v3/activities/${stravaActivityId}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    if (!actRes.ok) return 0;
-    const activity = await actRes.json();
+    let activityDate: string;
+    let activityDistance: number;
 
-    // Tylko outdoor Ride - wyklucz VirtualRide i indoor (trainer)
-    const isVirtual = activity.type === "VirtualRide" || activity.sport_type === "VirtualRide";
-    const isIndoor = activity.trainer === true;
-    const isRide = activity.type === "Ride" || activity.sport_type === "Ride";
-    if (!isRide || isVirtual || isIndoor) return 0;
+    if (activityMeta) {
+      // Dane z bazy - bez API call
+      activityDate = activityMeta.start_date;
+      activityDistance = activityMeta.distance;
+    } else {
+      // Webhook: pobierz dane z API (pojedyncza aktywność, nie ma problemu z rate limit)
+      const actRes = await fetch(
+        `https://www.strava.com/api/v3/activities/${stravaActivityId}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (!actRes.ok) return 0;
+      const activity = await actRes.json();
+
+      // Tylko outdoor Ride - wyklucz VirtualRide i indoor (trainer)
+      const isVirtual = activity.type === "VirtualRide" || activity.sport_type === "VirtualRide";
+      const isIndoor = activity.trainer === true;
+      const isRide = activity.type === "Ride" || activity.sport_type === "Ride";
+      if (!isRide || isVirtual || isIndoor) return 0;
+
+      activityDate = activity.start_date;
+      activityDistance = activity.distance;
+    }
 
     // Pomiń aktywności krótsze niż 5km
-    if (activity.distance < 5000) return 0;
+    if (activityDistance < 5000) return 0;
 
-    // 2. Pobierz strumień dystansu i czasu
+    // Pobierz strumień dystansu i czasu
     const streamsRes = await fetch(
       `https://www.strava.com/api/v3/activities/${stravaActivityId}/streams?keys=distance,time&key_by_type=true`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -69,7 +85,7 @@ export async function fetchAndSaveBestEfforts(userId: string, stravaActivityId: 
     const timeStream: number[] = streams.time?.data ?? [];
     if (distStream.length === 0 || timeStream.length === 0) return 0;
 
-    // 3. Dla każdego docelowego dystansu znajdź najszybszy odcinek
+    // Dla każdego docelowego dystansu znajdź najszybszy odcinek
     const toSave: Array<{
       strava_activity_id: number;
       user_id: string;
@@ -82,8 +98,7 @@ export async function fetchAndSaveBestEfforts(userId: string, stravaActivityId: 
     }> = [];
 
     for (const [label, targetMeters] of Object.entries(TARGET_DISTANCES)) {
-      // Pomiń jeśli aktywność jest za krótka
-      if (activity.distance < targetMeters * 0.97) continue;
+      if (activityDistance < targetMeters * 0.97) continue;
 
       const movingTime = fastestSegment(distStream, timeStream, targetMeters);
       if (movingTime === null) continue;
@@ -95,8 +110,8 @@ export async function fetchAndSaveBestEfforts(userId: string, stravaActivityId: 
         distance: targetMeters,
         moving_time: movingTime,
         elapsed_time: movingTime,
-        avg_speed: targetMeters / movingTime, // m/s
-        activity_date: activity.start_date,
+        avg_speed: targetMeters / movingTime,
+        activity_date: activityDate,
       });
     }
 

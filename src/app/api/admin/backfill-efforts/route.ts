@@ -22,7 +22,7 @@ export async function POST(_request: NextRequest) {
   const results = await Promise.all(users.map(async (u) => {
     const { data: activities } = await supabase
       .from("lsk_activities")
-      .select("strava_id")
+      .select("strava_id, start_date, distance")
       .eq("user_id", u.id)
       .in("type", ["Ride"]);
 
@@ -32,7 +32,11 @@ export async function POST(_request: NextRequest) {
 
     let saved = 0;
     for (const act of activities) {
-      const n = await fetchAndSaveBestEfforts(u.id, act.strava_id);
+      // Przekazujemy dane z bazy — pomijamy API call dla activity details (rate limit!)
+      const n = await fetchAndSaveBestEfforts(u.id, act.strava_id, {
+        start_date: act.start_date,
+        distance: act.distance,
+      });
       saved += n;
       // 300ms = maks ~3 aktywności/s, bezpieczny limit per user (200 req/15min per token)
       await new Promise(r => setTimeout(r, 300));
