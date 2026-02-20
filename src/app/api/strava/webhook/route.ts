@@ -87,8 +87,11 @@ export async function POST(request: NextRequest) {
         start_date_local: activity.start_date_local,
       }, { onConflict: "strava_id" });
 
-      // Zapisz best efforts (tylko outdoor Ride)
-      await fetchAndSaveBestEfforts(user.id, object_id);
+      // Zapisz best efforts (tylko outdoor Ride) - przekazujemy dane które już mamy
+      await fetchAndSaveBestEfforts(user.id, object_id, {
+        start_date: activity.start_date,
+        distance: activity.distance,
+      });
 
     } catch (err) {
       console.error("Webhook sync error:", err);
