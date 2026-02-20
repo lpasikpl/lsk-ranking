@@ -32,6 +32,7 @@ async function getTopEfforts() {
   }>> = {};
 
   for (const dist of DISTANCES) {
+    // Pobieramy więcej wyników i deduplikujemy - każdy user tylko raz (jego najlepszy czas)
     const { data } = await supabase
       .from("lsk_best_efforts")
       .select(`
@@ -41,10 +42,17 @@ async function getTopEfforts() {
       .eq("effort_name", dist)
       .eq("users.is_active", true)
       .order("moving_time", { ascending: true })
-      .limit(3);
+      .limit(50);
 
     if (data && data.length > 0) {
-      results[dist] = data.map((r: any) => ({
+      const seen = new Set<string>();
+      const deduped = data.filter((r: any) => {
+        if (seen.has(r.users.id)) return false;
+        seen.add(r.users.id);
+        return true;
+      }).slice(0, 3);
+
+      results[dist] = deduped.map((r: any) => ({
         user_id: r.users.id,
         firstname: r.users.firstname,
         lastname: r.users.lastname,
@@ -117,12 +125,12 @@ export default async function TopEfforts() {
                         <div className="text-xs font-medium text-white/80 truncate">
                           {e.firstname} {e.lastname?.charAt(0)}.
                         </div>
-                        <div className="text-xs text-gray-600">{formatPace(e.moving_time, e.distance)}</div>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <div className={`text-sm font-bold tabular-nums ${i === 0 ? "text-yellow-400" : "text-white/70"}`}>
+                        <div className={`text-xs font-bold tabular-nums ${i === 0 ? "text-yellow-400" : "text-white/70"}`}>
                           {formatEffortTime(e.moving_time)}
                         </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <div className="text-xs text-gray-500">{formatPace(e.moving_time, e.distance)}</div>
                       </div>
                     </a>
                   ))}
