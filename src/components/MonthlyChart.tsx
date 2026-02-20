@@ -27,17 +27,50 @@ function getValue(d: MonthlyData, metric: MonthlyChartProps["metric"]): number {
   }
 }
 
-function formatLabel(val: number, metric: MonthlyChartProps["metric"]): string {
+function formatTooltip(val: number, metric: MonthlyChartProps["metric"]): string {
   switch (metric) {
-    case "distance": return `${Math.round(val)}`;
-    case "elevation": return `${Math.round(val)}`;
-    case "time": return `${val.toFixed(1)}`;
+    case "distance": return `${Math.round(val)} km`;
+    case "elevation": return `${Math.round(val)} m`;
+    case "time": {
+      const h = Math.floor(val);
+      const m = Math.round((val - h) * 60);
+      if (h > 0 && m > 0) return `${h}h ${m}m`;
+      if (h > 0) return `${h}h`;
+      return `${m}m`;
+    }
     case "count": return `${Math.round(val)}`;
   }
 }
 
+function getNiceTicks(maxVal: number, count = 4): number[] {
+  if (maxVal <= 0) return [];
+  const rough = maxVal / count;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const norm = rough / mag;
+  const step = norm <= 1 ? mag : norm <= 2 ? 2 * mag : norm <= 5 ? 5 * mag : 10 * mag;
+  const ticks: number[] = [];
+  for (let v = step; v <= maxVal * 1.05 && ticks.length < count; v += step) {
+    ticks.push(v);
+  }
+  return ticks;
+}
+
+function formatAxisLabel(val: number, metric: MonthlyChartProps["metric"]): string {
+  if (metric === "time") {
+    const h = Math.floor(val);
+    const m = Math.round((val - h) * 60);
+    if (h > 0 && m > 0) return `${h}h${m}`;
+    if (h > 0) return `${h}h`;
+    return `${m}m`;
+  }
+  return String(Math.round(val));
+}
+
+const BAR_HEIGHT = 200;
+
 export default function MonthlyChart({ data, year, metric: initialMetric }: MonthlyChartProps) {
   const [metric, setMetric] = useState(initialMetric);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   const fullYear: MonthlyData[] = Array.from({ length: 12 }, (_, i) => {
     const found = data.find(d => d.month === i + 1);
@@ -46,11 +79,11 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
 
   const values = fullYear.map(d => getValue(d, metric));
   const maxVal = Math.max(...values, 1);
+  const ticks = getNiceTicks(maxVal);
+
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
-
-  const BAR_HEIGHT = 200;
 
   return (
     <div className="glass rounded-2xl p-6">
@@ -69,45 +102,95 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
         </div>
       </div>
 
-      <div className="flex gap-1.5 items-end">
-        {fullYear.map((d, i) => {
-          const val = values[i];
-          const barPx = maxVal > 0 ? Math.max((val / maxVal) * BAR_HEIGHT, val > 0 ? 3 : 0) : 0;
-          const isPast = year < currentYear || (year === currentYear && i < currentMonth);
-          const isCurrent = year === currentYear && i === currentMonth;
+      <div className="flex gap-2">
+        {/* Oś Y */}
+        <div className="relative flex-shrink-0 w-7" style={{ height: `${BAR_HEIGHT + 24}px` }}>
+          {ticks.map(tick => {
+            const yPct = (1 - tick / maxVal) * BAR_HEIGHT;
+            return (
+              <span
+                key={tick}
+                className="absolute right-0 text-[9px] text-gray-600 leading-none -translate-y-1/2"
+                style={{ top: `${yPct}px` }}
+              >
+                {formatAxisLabel(tick, metric)}
+              </span>
+            );
+          })}
+        </div>
 
-          return (
-            <div key={i} className="flex-1 flex flex-col items-center" style={{ height: `${BAR_HEIGHT + 36}px` }}>
-              {/* etykieta */}
-              <div className="flex-1 flex items-end justify-center pb-1">
-                {val > 0 && (
-                  <span className={`text-xs font-bold leading-none ${isCurrent ? "text-orange-400" : "text-gray-400"}`}>
-                    {formatLabel(val, metric)}
-                  </span>
-                )}
-              </div>
-              {/* słupek */}
+        {/* Obszar wykresu */}
+        <div className="flex-1 relative">
+          {/* Linie siatki */}
+          {ticks.map(tick => {
+            const fromBottom = (tick / maxVal) * BAR_HEIGHT + 24;
+            return (
               <div
-                className="w-full rounded-t transition-all duration-500"
-                style={{
-                  height: `${barPx}px`,
-                  flexShrink: 0,
-                  background: isCurrent
-                    ? "linear-gradient(to top, #fc4c02, #ff8c00)"
-                    : isPast
-                    ? "rgba(252, 76, 2, 0.65)"
-                    : "rgba(255,255,255,0.05)",
-                }}
+                key={tick}
+                className="absolute left-0 right-0 pointer-events-none"
+                style={{ bottom: `${fromBottom}px`, borderTop: "1px solid rgba(255,255,255,0.06)" }}
               />
-              {/* miesiąc */}
-              <div className="h-6 flex items-center justify-center">
-                <span className={`text-xs font-medium ${isCurrent ? "text-orange-400 font-bold" : "text-gray-500"}`}>
-                  {MONTHS[i]}
-                </span>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+
+          {/* Słupki */}
+          <div className="flex gap-1.5 items-end">
+            {fullYear.map((d, i) => {
+              const val = values[i];
+              const barPx = maxVal > 0 ? Math.max((val / maxVal) * BAR_HEIGHT, val > 0 ? 3 : 0) : 0;
+              const isPast = year < currentYear || (year === currentYear && i < currentMonth);
+              const isCurrent = year === currentYear && i === currentMonth;
+              const hasActivity = val > 0;
+              const isHovered = hoveredIdx === i;
+
+              const barBg = isCurrent
+                ? "linear-gradient(to top, #fc4c02, #ff8c00)"
+                : isPast && hasActivity
+                ? "rgba(252, 76, 2, 0.65)"
+                : "rgba(255,255,255,0.05)";
+
+              return (
+                <div
+                  key={i}
+                  className="flex-1 flex flex-col items-center relative"
+                  style={{ height: `${BAR_HEIGHT + 24}px` }}
+                  onMouseEnter={() => hasActivity && setHoveredIdx(i)}
+                  onMouseLeave={() => setHoveredIdx(null)}
+                >
+                  {/* tooltip */}
+                  {isHovered && hasActivity && (
+                    <div className="absolute bottom-full mb-1 z-10 pointer-events-none"
+                      style={{ left: "50%", transform: "translateX(-50%)" }}>
+                      <div className="bg-gray-900 border border-white/10 rounded-lg px-2 py-1 whitespace-nowrap shadow-lg">
+                        <span className={`text-[11px] font-bold ${isCurrent ? "text-orange-400" : "text-white/90"}`}>
+                          {formatTooltip(val, metric)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex-1" />
+                  {/* słupek */}
+                  <div
+                    className="w-full rounded-t cursor-pointer transition-all duration-300"
+                    style={{
+                      height: `${barPx}px`,
+                      flexShrink: 0,
+                      background: isHovered && hasActivity
+                        ? isCurrent ? "linear-gradient(to top, #fc4c02, #ff8c00)" : "rgba(252, 76, 2, 0.9)"
+                        : barBg,
+                    }}
+                  />
+                  {/* miesiąc */}
+                  <div className="h-6 flex items-center justify-center">
+                    <span className={`text-xs font-medium ${isCurrent ? "text-orange-400 font-bold" : "text-gray-500"}`}>
+                      {MONTHS[i]}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
