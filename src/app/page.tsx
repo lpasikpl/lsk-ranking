@@ -170,8 +170,6 @@ export default async function HomePage({ searchParams }: PageProps) {
             <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Ranking dystansu</h2>
             <RankingTableDark key={`year-${selRYear}`} entries={yearData} isAdmin={isAdmin} />
           </div>
-
-          <TopEfforts year={selRYear} />
         </div>
 
         {/* Separator */}
@@ -180,6 +178,7 @@ export default async function HomePage({ searchParams }: PageProps) {
         {/* Wykres miesięczny */}
         <div className="mb-10">
           <MonthlyChart data={monthlyData} year={selRYear} metric={chartMetric} />
+          <TopEfforts year={selRYear} />
         </div>
 
         {/* CTA */}
