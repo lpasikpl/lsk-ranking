@@ -11,12 +11,13 @@ const TARGET_DISTANCES: Record<string, number> = {
   "50 km": 50000,
 };
 
-// Tolerancja 3% - best_efforts Stravy mają standardowe dystanse, nie ma potrzeby szerokiej tolerancji
-const DISTANCE_TOLERANCE = 0.03;
+// Dla best_efforts 3% (standardowe dystanse), dla fallback total distance 15%
+const DISTANCE_TOLERANCE_EFFORTS = 0.03;
+const DISTANCE_TOLERANCE_TOTAL = 0.15;
 
-function matchDistance(distanceMeters: number): string | null {
+function matchDistance(distanceMeters: number, tolerance = DISTANCE_TOLERANCE_EFFORTS): string | null {
   for (const [label, target] of Object.entries(TARGET_DISTANCES)) {
-    if (Math.abs(distanceMeters - target) / target < DISTANCE_TOLERANCE) {
+    if (Math.abs(distanceMeters - target) / target < tolerance) {
       return label;
     }
   }
@@ -28,7 +29,7 @@ export async function fetchAndSaveBestEfforts(userId: string, stravaActivityId: 
 
   try {
     const accessToken = await getValidAccessToken(userId);
-    const res = await fetch(`https://www.strava.com/api/v3/activities/${stravaActivityId}`, {
+    const res = await fetch(`https://www.strava.com/api/v3/activities/${stravaActivityId}?include_all_efforts=true`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
@@ -40,23 +41,35 @@ export async function fetchAndSaveBestEfforts(userId: string, stravaActivityId: 
     const isOutdoorRide = activity.type === "Ride" || activity.sport_type === "Ride";
     if (!isOutdoorRide) return 0;
 
-    // Strava zwraca best_efforts[] - najszybsze segmenty dystansowe wewnątrz aktywności
-    // Każda aktywność 100km może mieć best effort na 10km, 20km, 30km itd.
+    // Próbuj best_efforts[] (Strava API - dla biegania pewne, dla Ride może być puste)
     const bestEfforts: Array<{
       distance: number;
       moving_time: number;
       elapsed_time: number;
     }> = activity.best_efforts || [];
 
-    if (bestEfforts.length === 0) return 0;
+    const byLabel: Record<string, { distance: number; moving_time: number; elapsed_time: number }> = {};
 
-    // Dla każdego interesującego nas dystansu znajdź najszybszy effort w tej aktywności
-    const byLabel: Record<string, typeof bestEfforts[0]> = {};
-    for (const effort of bestEfforts) {
-      const label = matchDistance(effort.distance);
-      if (!label) continue;
-      if (!byLabel[label] || effort.moving_time < byLabel[label].moving_time) {
-        byLabel[label] = effort;
+    if (bestEfforts.length > 0) {
+      // Użyj segmentów dystansowych z API
+      for (const effort of bestEfforts) {
+        const label = matchDistance(effort.distance);
+        if (!label) continue;
+        if (!byLabel[label] || effort.moving_time < byLabel[label].moving_time) {
+          byLabel[label] = effort;
+        }
+      }
+    }
+
+    // Fallback: jeśli best_efforts puste, sprawdź czy cała aktywność pasuje do dystansu (±15%)
+    if (Object.keys(byLabel).length === 0) {
+      const label = matchDistance(activity.distance, DISTANCE_TOLERANCE_TOTAL);
+      if (label) {
+        byLabel[label] = {
+          distance: activity.distance,
+          moving_time: activity.moving_time,
+          elapsed_time: activity.elapsed_time,
+        };
       }
     }
 
