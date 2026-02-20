@@ -35,10 +35,12 @@ interface SyncLogRow {
 }
 
 interface BestEffortRow {
+  user_id: string;
+  firstname: string | null;
+  lastname: string | null;
   effort_name: string;
-  moving_time: number;
-  activity_date: string;
-  users: any;
+  best_time: number;
+  count: number;
 }
 
 interface AdminClientProps {
@@ -382,30 +384,26 @@ export default function AdminClient({
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-800 text-white">
-                      <th className="text-left py-3 px-4 font-semibold">Użytkownik</th>
                       <th className="text-left py-3 px-4 font-semibold">Dystans</th>
-                      <th className="text-right py-3 px-4 font-semibold">Czas</th>
-                      <th className="text-left py-3 px-4 font-semibold">Data</th>
+                      <th className="text-left py-3 px-4 font-semibold">Użytkownik</th>
+                      <th className="text-right py-3 px-4 font-semibold">Najlepszy czas</th>
+                      <th className="text-right py-3 px-4 font-semibold">Rekordów</th>
                     </tr>
                   </thead>
                   <tbody>
                     {bestEfforts.map((row, index) => {
-                      const h = Math.floor(row.moving_time / 3600);
-                      const m = Math.floor((row.moving_time % 3600) / 60);
-                      const s = row.moving_time % 60;
+                      const h = Math.floor(row.best_time / 3600);
+                      const m = Math.floor((row.best_time % 3600) / 60);
+                      const s = row.best_time % 60;
                       const time = h > 0
                         ? `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
                         : `${m}:${s.toString().padStart(2, "0")}`;
                       return (
                         <tr key={index} className={`border-b border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
-                          <td className="py-2.5 px-4 text-gray-700">
-                            {row.users?.firstname} {row.users?.lastname}
-                          </td>
                           <td className="py-2.5 px-4 text-gray-700 font-medium">{row.effort_name}</td>
+                          <td className="py-2.5 px-4 text-gray-700">{row.firstname} {row.lastname}</td>
                           <td className="py-2.5 px-4 text-right font-mono text-gray-800">{time}</td>
-                          <td className="py-2.5 px-4 text-gray-500 text-xs">
-                            {formatDate(row.activity_date)}
-                          </td>
+                          <td className="py-2.5 px-4 text-right text-gray-500 text-xs">{row.count}</td>
                         </tr>
                       );
                     })}

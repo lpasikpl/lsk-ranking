@@ -43,15 +43,47 @@ async function getRecentSyncLogs() {
 
 async function getBestEffortsSummary() {
   const supabase = createServiceClient();
+  // Pobierz wszystkie rekordy (do 10000) i agreguj w JS
   const { data } = await supabase
     .from("lsk_best_efforts")
     .select(`
-      effort_name, moving_time, activity_date,
-      users!inner(id, firstname, lastname, profile_medium)
+      effort_name, moving_time,
+      users!inner(id, firstname, lastname)
     `)
-    .order("effort_name", { ascending: true })
-    .order("moving_time", { ascending: true });
-  return data || [];
+    .limit(10000);
+
+  if (!data) return [];
+
+  // Grupuj per user+dystans: najlepszy czas + liczba
+  const grouped: Record<string, {
+    user_id: string;
+    firstname: string | null;
+    lastname: string | null;
+    effort_name: string;
+    best_time: number;
+    count: number;
+  }> = {};
+
+  for (const row of data as any[]) {
+    const key = `${row.users.id}_${row.effort_name}`;
+    if (!grouped[key]) {
+      grouped[key] = {
+        user_id: row.users.id,
+        firstname: row.users.firstname,
+        lastname: row.users.lastname,
+        effort_name: row.effort_name,
+        best_time: row.moving_time,
+        count: 1,
+      };
+    } else {
+      grouped[key].count++;
+      if (row.moving_time < grouped[key].best_time) grouped[key].best_time = row.moving_time;
+    }
+  }
+
+  return Object.values(grouped).sort((a, b) =>
+    a.effort_name.localeCompare(b.effort_name) || a.best_time - b.best_time
+  );
 }
 
 export default async function AdminPage() {
