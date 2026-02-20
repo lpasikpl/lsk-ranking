@@ -3,12 +3,12 @@ import { getValidAccessToken } from "@/lib/strava";
 
 // Dystanse które nas interesują (w metrach)
 const TARGET_DISTANCES: Record<string, number> = {
-  "5 km":  5000,
   "10 km": 10000,
   "20 km": 20000,
   "30 km": 30000,
   "40 km": 40000,
   "50 km": 50000,
+  "100 km": 100000,
 };
 
 // Najszybszy odcinek danego dystansu ze strumienia GPS (sliding window O(n))

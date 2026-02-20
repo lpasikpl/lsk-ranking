@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { createServiceClient } from "@/lib/supabase/server";
 
-const DISTANCES = ["5 km", "10 km", "20 km", "30 km", "40 km", "50 km"] as const;
+const DISTANCES = ["10 km", "20 km", "30 km", "40 km", "50 km", "100 km"] as const;
 
 function formatPace(movingTime: number, distance: number): string {
   const speedKmh = (distance / movingTime) * 3.6;
