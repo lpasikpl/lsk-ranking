@@ -101,6 +101,30 @@ function getDayOfWeek(year: number, month: number, day: number): number {
   return new Date(year, month - 1, day).getDay();
 }
 
+function getNiceTicks(maxVal: number, count = 4): number[] {
+  if (maxVal <= 0) return [];
+  const rough = maxVal / count;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const norm = rough / mag;
+  const step = norm <= 1 ? mag : norm <= 2 ? 2 * mag : norm <= 5 ? 5 * mag : 10 * mag;
+  const ticks: number[] = [];
+  for (let v = step; v <= maxVal * 1.05 && ticks.length < count; v += step) {
+    ticks.push(v);
+  }
+  return ticks;
+}
+
+function formatAxisLabel(val: number, metric: Metric): string {
+  if (metric === "time") {
+    const h = Math.floor(val);
+    const m = Math.round((val - h) * 60);
+    if (h > 0 && m > 0) return `${h}h${m}`;
+    if (h > 0) return `${h}h`;
+    return `${m}m`;
+  }
+  return String(Math.round(val));
+}
+
 const BAR_HEIGHT = 200;
 const TOTAL_ANIM_MS = 1700;
 const BAR_TRANSITION_MS = 320;
@@ -136,6 +160,7 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
 
   const values = fullMonth.map(d => getValue(d, metric));
   const maxVal = Math.max(...values, 1);
+  const ticks = getNiceTicks(maxVal);
   const delayPerBar = daysInMonth > 1 ? (TOTAL_ANIM_MS - BAR_TRANSITION_MS) / (daysInMonth - 1) : 0;
 
   return (
@@ -155,86 +180,114 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
         </div>
       </div>
 
-      <div className="flex gap-0.5 items-end">
-        {fullMonth.map((d, i) => {
-          const val = values[i];
-          const barPx = maxVal > 0 ? Math.max((val / maxVal) * BAR_HEIGHT, val > 0 ? 4 : 0) : 0;
-          const isFuture = isCurrentMonth && d.day > today;
-          const isToday = isCurrentMonth && d.day === today;
-          const hasActivity = val > 0;
+      <div className="flex gap-2">
+        {/* Oś Y */}
+        <div className="relative flex-shrink-0 w-7" style={{ height: `${BAR_HEIGHT + 20}px` }}>
+          {ticks.map(tick => {
+            const yPct = (1 - tick / maxVal) * BAR_HEIGHT;
+            return (
+              <span
+                key={tick}
+                className="absolute right-0 text-[9px] text-gray-600 leading-none -translate-y-1/2"
+                style={{ top: `${yPct}px` }}
+              >
+                {formatAxisLabel(tick, metric)}
+              </span>
+            );
+          })}
+        </div>
 
-          const dow = getDayOfWeek(year, month, d.day);
-          const isSunday = dow === 0;
-          const isSaturday = dow === 6;
-          const isHoliday = holidays.has(d.day);
-          const isRed = isSunday || isHoliday;
-
-          // Kolor słupka
-          let barBg: string;
-          if (isToday) {
-            barBg = "linear-gradient(to top, #fc4c02, #ff8c00)";
-          } else if (isFuture) {
-            barBg = "rgba(255,255,255,0.04)";
-          } else if (!hasActivity) {
-            barBg = "rgba(255,255,255,0.03)";
-          } else {
-            barBg = "rgba(252, 76, 2, 0.65)";
-          }
-
-          // Kolor etykiety dnia
-          const dayLabelColor = isToday
-            ? "text-orange-400 font-bold"
-            : isRed
-            ? "text-red-400 font-semibold"
-            : isSaturday
-            ? "text-indigo-400 font-semibold"
-            : "text-gray-600";
-
-          const isHovered = hoveredIdx === i;
-
-          return (
-            <div
-              key={i}
-              className="flex-1 flex flex-col items-center relative"
-              style={{ height: `${BAR_HEIGHT + 36}px` }}
-              onMouseEnter={() => hasActivity && setHoveredIdx(i)}
-              onMouseLeave={() => setHoveredIdx(null)}
-            >
-              {/* tooltip */}
-              {isHovered && hasActivity && (
-                <div className="absolute bottom-full mb-1 z-10 pointer-events-none"
-                  style={{ left: "50%", transform: "translateX(-50%)" }}>
-                  <div className="bg-gray-900 border border-white/10 rounded-lg px-2 py-1 whitespace-nowrap shadow-lg">
-                    <span className={`text-[11px] font-bold ${isToday ? "text-orange-400" : "text-white/90"}`}>
-                      {formatLabel(val, metric)}
-                    </span>
-                  </div>
-                </div>
-              )}
-              {/* spacer */}
-              <div className="flex-1" />
-              {/* słupek */}
+        {/* Obszar wykresu */}
+        <div className="flex-1 relative">
+          {/* Linie siatki */}
+          {ticks.map(tick => {
+            const fromBottom = (tick / maxVal) * BAR_HEIGHT + 20;
+            return (
               <div
-                className="w-full rounded-t cursor-pointer"
+                key={tick}
+                className="absolute left-0 right-0 pointer-events-none"
                 style={{
-                  height: animated ? `${barPx}px` : "0px",
-                  transition: `height ${BAR_TRANSITION_MS}ms ease`,
-                  transitionDelay: animated ? `${i * delayPerBar}ms` : "0ms",
-                  background: isHovered && hasActivity
-                    ? isToday ? "linear-gradient(to top, #fc4c02, #ff8c00)" : "rgba(252, 76, 2, 0.9)"
-                    : barBg,
-                  flexShrink: 0,
+                  bottom: `${fromBottom}px`,
+                  borderTop: "1px solid rgba(255,255,255,0.06)",
                 }}
               />
-              {/* numer dnia */}
-              <div className="h-5 flex items-center justify-center">
-                <span className={`text-[9px] leading-none ${dayLabelColor}`}>
-                  {d.day}
-                </span>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+
+          {/* Słupki */}
+          <div className="flex gap-0.5 items-end">
+            {fullMonth.map((d, i) => {
+              const val = values[i];
+              const barPx = maxVal > 0 ? Math.max((val / maxVal) * BAR_HEIGHT, val > 0 ? 4 : 0) : 0;
+              const isFuture = isCurrentMonth && d.day > today;
+              const isToday = isCurrentMonth && d.day === today;
+              const hasActivity = val > 0;
+
+              const dow = getDayOfWeek(year, month, d.day);
+              const isSunday = dow === 0;
+              const isSaturday = dow === 6;
+              const isHoliday = holidays.has(d.day);
+              const isRed = isSunday || isHoliday;
+
+              let barBg: string;
+              if (isToday) {
+                barBg = "linear-gradient(to top, #fc4c02, #ff8c00)";
+              } else if (isFuture) {
+                barBg = "rgba(255,255,255,0.04)";
+              } else if (!hasActivity) {
+                barBg = "rgba(255,255,255,0.03)";
+              } else {
+                barBg = "rgba(252, 76, 2, 0.65)";
+              }
+
+              const dayLabelColor = isToday
+                ? "text-orange-400 font-bold"
+                : isRed ? "text-red-400 font-semibold"
+                : isSaturday ? "text-indigo-400 font-semibold"
+                : "text-gray-600";
+
+              const isHovered = hoveredIdx === i;
+
+              return (
+                <div
+                  key={i}
+                  className="flex-1 flex flex-col items-center relative"
+                  style={{ height: `${BAR_HEIGHT + 20}px` }}
+                  onMouseEnter={() => hasActivity && setHoveredIdx(i)}
+                  onMouseLeave={() => setHoveredIdx(null)}
+                >
+                  {/* tooltip */}
+                  {isHovered && hasActivity && (
+                    <div className="absolute bottom-full mb-1 z-10 pointer-events-none"
+                      style={{ left: "50%", transform: "translateX(-50%)" }}>
+                      <div className="bg-gray-900 border border-white/10 rounded-lg px-2 py-1 whitespace-nowrap shadow-lg">
+                        <span className={`text-[11px] font-bold ${isToday ? "text-orange-400" : "text-white/90"}`}>
+                          {formatLabel(val, metric)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex-1" />
+                  <div
+                    className="w-full rounded-t cursor-pointer"
+                    style={{
+                      height: animated ? `${barPx}px` : "0px",
+                      transition: `height ${BAR_TRANSITION_MS}ms ease`,
+                      transitionDelay: animated ? `${i * delayPerBar}ms` : "0ms",
+                      background: isHovered && hasActivity
+                        ? isToday ? "linear-gradient(to top, #fc4c02, #ff8c00)" : "rgba(252, 76, 2, 0.9)"
+                        : barBg,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <div className="h-5 flex items-center justify-center">
+                    <span className={`text-[9px] leading-none ${dayLabelColor}`}>{d.day}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Legenda */}
