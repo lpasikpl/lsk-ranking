@@ -1,19 +1,12 @@
 // Ikony rankingowe w stylu Strava
 
 function CrownIcon() {
-  // 3 wierzchołki: lewy (0,0), środkowy (30,0), prawy (60,0)
-  // 2 wklęsłe łuki między nimi (sweep=1 = łuk idzie w dół)
-  // trapez: góra szersza (0–60), dół węższy (12–48)
   return (
-    <svg width="26" height="18" viewBox="0 0 60 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M 12 44 L 0 0 A 15.5 15.5 0 0 0 30 0 A 15.5 15.5 0 0 0 60 0 L 48 44 Z"
-        fill="#F59E0B"
-      />
-      {/* diamenty */}
-      <polygon points="13,27 18,32 13,37 8,32"  fill="white" opacity="0.88" />
-      <polygon points="30,25 36,31 30,37 24,31" fill="white" opacity="0.88" />
-      <polygon points="47,27 52,32 47,37 42,32" fill="white" opacity="0.88" />
+    <svg width="26" height="21" viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2.5 29.5H37.5L35 17L27.5 24.5L20 2L12.5 24.5L5 17L2.5 29.5Z" fill="#FDB913"/>
+      <path d="M12.5 18.5L14.6651 22.25H10.3349L12.5 18.5Z" fill="white"/>
+      <path d="M27.5 18.5L29.6651 22.25H25.3349L27.5 18.5Z" fill="white"/>
+      <path d="M20 12L22.8868 17H17.1132L20 12Z" fill="white"/>
     </svg>
   );
 }
