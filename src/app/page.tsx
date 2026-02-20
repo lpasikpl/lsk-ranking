@@ -148,6 +148,9 @@ export default async function HomePage({ searchParams }: PageProps) {
           <TopEfforts year={selYear} month={selMonth} />
         </div>
 
+        {/* Separator */}
+        <div className="my-10 border-t border-white/10" />
+
         {/* ===== ROK ===== */}
         <div className="mb-14 section-enter" style={{ animationDelay: "0.15s", opacity: 0 }}>
           <SectionNav type="year" year={selRYear} month={1} color="blue" />
