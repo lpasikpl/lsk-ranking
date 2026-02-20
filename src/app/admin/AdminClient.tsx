@@ -122,16 +122,11 @@ export default function AdminClient({
   };
 
   const syncAll = async () => {
+    if (!confirm("Zsynchronizować aktywności wszystkich użytkowników ze Stravy? Może potrwać kilka minut.")) return;
     setSyncingAll(true);
-    const secret = prompt("Podaj SYNC_WEBHOOK_SECRET:");
-    if (!secret) {
-      setSyncingAll(false);
-      return;
-    }
 
     const res = await fetch("/api/sync/all", {
       method: "POST",
-      headers: { Authorization: `Bearer ${secret}` },
     });
     const data = await res.json();
     setSyncingAll(false);

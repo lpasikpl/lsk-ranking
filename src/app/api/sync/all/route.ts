@@ -1,12 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { syncUserActivities } from "@/lib/strava";
+import { cookies } from "next/headers";
+
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const webhookSecret = process.env.SYNC_WEBHOOK_SECRET;
 
-  if (!webhookSecret || authHeader !== `Bearer ${webhookSecret}`) {
+  // Autoryzacja: Bearer secret LUB zalogowany admin
+  const isBearerAuth = webhookSecret && authHeader === `Bearer ${webhookSecret}`;
+
+  let isAdminAuth = false;
+  if (!isBearerAuth) {
+    const cookieStore = await cookies();
+    const userId = cookieStore.get("lsk_user_id")?.value;
+    if (userId) {
+      const supabaseCheck = createServiceClient();
+      const { data: u } = await supabaseCheck.from("users").select("is_admin").eq("id", userId).single();
+      isAdminAuth = u?.is_admin === true;
+    }
+  }
+
+  if (!isBearerAuth && !isAdminAuth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
