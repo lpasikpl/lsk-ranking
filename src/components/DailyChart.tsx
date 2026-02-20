@@ -111,6 +111,7 @@ const MONTH_NAMES = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec",
 export default function DailyChart({ data, year, month, daysInMonth }: DailyChartProps) {
   const [metric, setMetric] = useState<Metric>("distance");
   const [animated, setAnimated] = useState(false);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -135,7 +136,6 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
 
   const values = fullMonth.map(d => getValue(d, metric));
   const maxVal = Math.max(...values, 1);
-  const maxIdx = values.indexOf(maxVal);
   const delayPerBar = daysInMonth > 1 ? (TOTAL_ANIM_MS - BAR_TRANSITION_MS) / (daysInMonth - 1) : 0;
 
   return (
@@ -177,10 +177,6 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
             barBg = "rgba(255,255,255,0.04)";
           } else if (!hasActivity) {
             barBg = "rgba(255,255,255,0.03)";
-          } else if (isRed) {
-            barBg = "rgba(239, 68, 68, 0.55)";
-          } else if (isSaturday) {
-            barBg = "rgba(99, 102, 241, 0.55)";
           } else {
             barBg = "rgba(252, 76, 2, 0.65)";
           }
@@ -194,24 +190,39 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
             ? "text-indigo-400 font-semibold"
             : "text-gray-600";
 
+          const isHovered = hoveredIdx === i;
+
           return (
-            <div key={i} className="flex-1 flex flex-col items-center" style={{ height: `${BAR_HEIGHT + 36}px` }}>
-              {/* etykieta wartości - tylko na max */}
-              <div className="flex-1 flex items-end justify-center pb-1">
-                {i === maxIdx && hasActivity && (
-                  <span className={`text-[10px] font-bold leading-none whitespace-nowrap ${isToday ? "text-orange-400" : "text-gray-400"}`}>
-                    {formatLabel(val, metric)}
-                  </span>
-                )}
-              </div>
+            <div
+              key={i}
+              className="flex-1 flex flex-col items-center relative"
+              style={{ height: `${BAR_HEIGHT + 36}px` }}
+              onMouseEnter={() => hasActivity && setHoveredIdx(i)}
+              onMouseLeave={() => setHoveredIdx(null)}
+            >
+              {/* tooltip */}
+              {isHovered && hasActivity && (
+                <div className="absolute bottom-full mb-1 z-10 pointer-events-none"
+                  style={{ left: "50%", transform: "translateX(-50%)" }}>
+                  <div className="bg-gray-900 border border-white/10 rounded-lg px-2 py-1 whitespace-nowrap shadow-lg">
+                    <span className={`text-[11px] font-bold ${isToday ? "text-orange-400" : "text-white/90"}`}>
+                      {formatLabel(val, metric)}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {/* spacer */}
+              <div className="flex-1" />
               {/* słupek */}
               <div
-                className="w-full rounded-t"
+                className="w-full rounded-t cursor-pointer"
                 style={{
                   height: animated ? `${barPx}px` : "0px",
                   transition: `height ${BAR_TRANSITION_MS}ms ease`,
                   transitionDelay: animated ? `${i * delayPerBar}ms` : "0ms",
-                  background: barBg,
+                  background: isHovered && hasActivity
+                    ? isToday ? "linear-gradient(to top, #fc4c02, #ff8c00)" : "rgba(252, 76, 2, 0.9)"
+                    : barBg,
                   flexShrink: 0,
                 }}
               />
@@ -229,11 +240,15 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
       {/* Legenda */}
       <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/5">
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-sm bg-indigo-500/60" />
+          <div className="w-2.5 h-2.5 rounded-sm text-indigo-400 border border-indigo-400/60 flex items-center justify-center">
+            <span className="text-[6px] font-bold leading-none">so</span>
+          </div>
           <span className="text-[10px] text-gray-600">Sobota</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-sm bg-red-500/60" />
+          <div className="w-2.5 h-2.5 rounded-sm text-red-400 border border-red-400/60 flex items-center justify-center">
+            <span className="text-[6px] font-bold leading-none">św</span>
+          </div>
           <span className="text-[10px] text-gray-600">Niedziela / święto</span>
         </div>
         <div className="flex items-center gap-1.5">
