@@ -48,9 +48,11 @@ export async function fetchAndSaveBestEfforts(userId: string, stravaActivityId: 
     if (!actRes.ok) return 0;
     const activity = await actRes.json();
 
-    // Tylko outdoor Ride (nie VirtualRide)
+    // Tylko outdoor Ride - wyklucz VirtualRide i indoor (trainer)
+    const isVirtual = activity.type === "VirtualRide" || activity.sport_type === "VirtualRide";
+    const isIndoor = activity.trainer === true;
     const isRide = activity.type === "Ride" || activity.sport_type === "Ride";
-    if (!isRide) return 0;
+    if (!isRide || isVirtual || isIndoor) return 0;
 
     // Pomiń aktywności krótsze niż 5km
     if (activity.distance < 5000) return 0;
