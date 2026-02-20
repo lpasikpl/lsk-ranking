@@ -140,10 +140,12 @@ export default async function HomePage({ searchParams }: PageProps) {
 
           <div className="mb-6">
             <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Ranking dystansu</h2>
-            <RankingTableDark entries={monthData} isAdmin={isAdmin} />
+            <RankingTableDark key={`month-${selYear}-${selMonth}`} entries={monthData} isAdmin={isAdmin} />
           </div>
 
           <DailyChart data={dailyData} year={selYear} month={selMonth} daysInMonth={daysInMonth} />
+
+          <TopEfforts year={selYear} month={selMonth} />
         </div>
 
         {/* Separator */}
@@ -166,13 +168,10 @@ export default async function HomePage({ searchParams }: PageProps) {
 
           <div>
             <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Ranking dystansu</h2>
-            <RankingTableDark entries={yearData} isAdmin={isAdmin} />
+            <RankingTableDark key={`year-${selRYear}`} entries={yearData} isAdmin={isAdmin} />
           </div>
-        </div>
 
-        {/* Top prędkości - all time */}
-        <div className="mb-14">
-          <TopEfforts />
+          <TopEfforts year={selRYear} />
         </div>
 
         {/* Separator */}

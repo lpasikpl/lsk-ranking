@@ -37,7 +37,7 @@ function fastestSegment(
 export async function fetchAndSaveBestEfforts(
   userId: string,
   stravaActivityId: number,
-  activityMeta?: { start_date: string; distance: number }
+  activityMeta?: { start_date: string; distance: number; name?: string }
 ): Promise<number> {
   const supabase = createServiceClient();
 
@@ -48,6 +48,8 @@ export async function fetchAndSaveBestEfforts(
     let activityDistance: number;
 
     if (activityMeta) {
+      // Wyklucz aktywności z "rolka" w nazwie (indoor na rolkach z błędnym typem Ride)
+      if (activityMeta.name?.toLowerCase().includes("rolka")) return 0;
       // Dane z bazy - bez API call
       activityDate = activityMeta.start_date;
       activityDistance = activityMeta.distance;

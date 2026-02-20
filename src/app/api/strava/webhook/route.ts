@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
       await fetchAndSaveBestEfforts(user.id, object_id, {
         start_date: activity.start_date,
         distance: activity.distance,
+        name: activity.name,
       });
 
     } catch (err) {

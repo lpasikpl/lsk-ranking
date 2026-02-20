@@ -16,8 +16,20 @@ function formatEffortTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-async function getTopEfforts() {
+interface TopEffortsProps {
+  year: number;
+  month?: number;
+}
+
+async function getTopEfforts(year: number, month?: number) {
   const supabase = createServiceClient();
+
+  const startDate = month
+    ? new Date(year, month - 1, 1).toISOString()
+    : new Date(year, 0, 1).toISOString();
+  const endDate = month
+    ? new Date(year, month, 0, 23, 59, 59).toISOString()
+    : new Date(year, 11, 31, 23, 59, 59).toISOString();
 
   const results: Record<string, Array<{
     user_id: string;
@@ -25,22 +37,21 @@ async function getTopEfforts() {
     lastname: string;
     profile_medium: string | null;
     moving_time: number;
-    avg_speed: number;
-    activity_date: string;
     distance: number;
     strava_activity_id: number;
   }>> = {};
 
   for (const dist of DISTANCES) {
-    // Pobieramy więcej wyników i deduplikujemy - każdy user tylko raz (jego najlepszy czas)
     const { data } = await supabase
       .from("lsk_best_efforts")
       .select(`
-        strava_activity_id, moving_time, avg_speed, activity_date, distance,
+        strava_activity_id, moving_time, distance,
         users!inner(id, firstname, lastname, profile_medium, is_active)
       `)
       .eq("effort_name", dist)
       .eq("users.is_active", true)
+      .gte("activity_date", startDate)
+      .lte("activity_date", endDate)
       .order("moving_time", { ascending: true })
       .limit(50);
 
@@ -58,8 +69,6 @@ async function getTopEfforts() {
         lastname: r.users.lastname,
         profile_medium: r.users.profile_medium,
         moving_time: r.moving_time,
-        avg_speed: r.avg_speed,
-        activity_date: r.activity_date,
         distance: r.distance,
         strava_activity_id: r.strava_activity_id,
       }));
@@ -69,25 +78,17 @@ async function getTopEfforts() {
   return results;
 }
 
-const medalColors = [
-  "text-yellow-400",
-  "text-gray-300",
-  "text-orange-600",
-];
-const medalBg = [
-  "border-yellow-500/20",
-  "border-gray-400/20",
-  "border-orange-700/20",
-];
+const medalColors = ["text-yellow-400", "text-gray-300", "text-orange-600"];
+const medalBg = ["border-yellow-500/20", "border-gray-400/20", "border-orange-700/20"];
 
-export default async function TopEfforts() {
-  const efforts = await getTopEfforts();
+export default async function TopEfforts({ year, month }: TopEffortsProps) {
+  const efforts = await getTopEfforts(year, month);
 
-  const hasAnyData = Object.keys(efforts).length > 0;
+  const hasAnyData = Object.values(efforts).some(v => v.length > 0);
   if (!hasAnyData) return null;
 
   return (
-    <div>
+    <div className="mt-6">
       <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">
         Top prędkości — najlepsze czasy
       </h2>
