@@ -119,7 +119,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
-      <RankingHeader title="Lubartowska Stadnina Koni" subtitle="Kolarstwo" user={user} />
+      <RankingHeader title="LSK Ranking" subtitle="Kolarstwo" user={user} />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
 
