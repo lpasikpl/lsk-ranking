@@ -84,9 +84,6 @@ const medalBg = ["border-yellow-500/20", "border-gray-400/20", "border-orange-70
 export default async function TopEfforts({ year, month }: TopEffortsProps) {
   const efforts = await getTopEfforts(year, month);
 
-  const hasAnyData = Object.values(efforts).some(v => v.length > 0);
-  if (!hasAnyData) return null;
-
   return (
     <div className="mt-6">
       <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">
