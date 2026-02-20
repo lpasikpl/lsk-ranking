@@ -172,9 +172,6 @@ export default async function HomePage({ searchParams }: PageProps) {
           </div>
         </div>
 
-        {/* Separator */}
-        <div className="section-separator" />
-
         {/* Wykres miesięczny */}
         <div className="mb-10">
           <MonthlyChart data={monthlyData} year={selRYear} metric={chartMetric} />
