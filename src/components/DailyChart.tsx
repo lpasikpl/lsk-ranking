@@ -32,7 +32,11 @@ function formatLabel(val: number, metric: Metric): string {
   switch (metric) {
     case "distance": return `${Math.round(val)}`;
     case "elevation": return `${Math.round(val)}`;
-    case "time": return `${val.toFixed(1)}`;
+    case "time": {
+      const h = Math.floor(val);
+      const m = Math.round((val - h) * 60);
+      return h > 0 ? `${h}h ${m}m` : `${m}m`;
+    }
     case "count": return `${Math.round(val)}`;
   }
 }
