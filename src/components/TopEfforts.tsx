@@ -81,13 +81,19 @@ async function getTopEfforts(year: number, month?: number) {
 const medalColors = ["text-yellow-400", "text-gray-300", "text-orange-600"];
 const medalBg = ["border-yellow-500/20", "border-gray-400/20", "border-orange-700/20"];
 
+const MONTH_NAMES = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec",
+  "Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
+
 export default async function TopEfforts({ year, month }: TopEffortsProps) {
   const efforts = await getTopEfforts(year, month);
 
   return (
     <div className="mt-6">
-      <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">
-        Top prędkości — najlepsze czasy
+      <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">
+        Top prędkości — najlepsze czasy na odcinkach
+        <span className="ml-2 text-gray-600 normal-case tracking-normal">
+          — {month ? `${MONTH_NAMES[month - 1]} ${year}` : `${year}`}
+        </span>
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {DISTANCES.map(dist => {
@@ -97,7 +103,7 @@ export default async function TopEfforts({ year, month }: TopEffortsProps) {
             <div key={dist} className="glass rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-bold text-white">{dist}</span>
-                <span className="text-xs text-gray-600">najszybszy czas</span>
+                <span className="text-xs text-gray-400 font-medium">średnia prędkość</span>
               </div>
               {(!top || top.length === 0) ? (
                 <div className="flex items-center justify-center h-16 text-xs text-gray-600">

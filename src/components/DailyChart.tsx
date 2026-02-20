@@ -35,7 +35,9 @@ function formatLabel(val: number, metric: Metric): string {
     case "time": {
       const h = Math.floor(val);
       const m = Math.round((val - h) * 60);
-      return h > 0 ? `${h}h ${m}m` : `${m}m`;
+      if (h > 0 && m > 0) return `${h}h ${m}m`;
+      if (h > 0) return `${h}h`;
+      return `${m}m`;
     }
     case "count": return `${Math.round(val)}`;
   }
@@ -133,6 +135,7 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
 
   const values = fullMonth.map(d => getValue(d, metric));
   const maxVal = Math.max(...values, 1);
+  const maxIdx = values.indexOf(maxVal);
   const delayPerBar = daysInMonth > 1 ? (TOTAL_ANIM_MS - BAR_TRANSITION_MS) / (daysInMonth - 1) : 0;
 
   return (
@@ -174,6 +177,10 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
             barBg = "rgba(255,255,255,0.04)";
           } else if (!hasActivity) {
             barBg = "rgba(255,255,255,0.03)";
+          } else if (isRed) {
+            barBg = "rgba(239, 68, 68, 0.55)";
+          } else if (isSaturday) {
+            barBg = "rgba(99, 102, 241, 0.55)";
           } else {
             barBg = "rgba(252, 76, 2, 0.65)";
           }
@@ -189,9 +196,9 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
 
           return (
             <div key={i} className="flex-1 flex flex-col items-center" style={{ height: `${BAR_HEIGHT + 36}px` }}>
-              {/* etykieta wartości */}
+              {/* etykieta wartości - tylko na max */}
               <div className="flex-1 flex items-end justify-center pb-1">
-                {hasActivity && (
+                {i === maxIdx && hasActivity && (
                   <span className={`text-[10px] font-bold leading-none whitespace-nowrap ${isToday ? "text-orange-400" : "text-gray-400"}`}>
                     {formatLabel(val, metric)}
                   </span>
