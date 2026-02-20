@@ -34,20 +34,29 @@ interface SyncLogRow {
   users: { firstname: string | null; lastname: string | null } | null;
 }
 
+interface BestEffortRow {
+  effort_name: string;
+  moving_time: number;
+  activity_date: string;
+  users: any;
+}
+
 interface AdminClientProps {
   adminUser: AdminUser;
   initialUsers: UserRow[];
   syncLogs: SyncLogRow[];
+  bestEfforts: BestEffortRow[];
 }
 
 export default function AdminClient({
   adminUser,
   initialUsers,
   syncLogs,
+  bestEfforts,
 }: AdminClientProps) {
   const router = useRouter();
   const [users, setUsers] = useState(initialUsers);
-  const [activeTab, setActiveTab] = useState<"users" | "logs">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "logs" | "efforts">("users");
   const [syncingAll, setSyncingAll] = useState(false);
   const [backfillingEfforts, setBackfillingEfforts] = useState(false);
   const [syncingUser, setSyncingUser] = useState<string | null>(null);
@@ -254,6 +263,16 @@ export default function AdminClient({
           >
             Logi sync ({syncLogs.length})
           </button>
+          <button
+            onClick={() => setActiveTab("efforts")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === "efforts"
+                ? "bg-gray-800 text-white"
+                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+            }`}
+          >
+            Best Efforts ({bestEfforts.length})
+          </button>
         </div>
 
         {/* Tabela użytkowników */}
@@ -348,6 +367,52 @@ export default function AdminClient({
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* Best Efforts */}
+        {activeTab === "efforts" && (
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            {bestEfforts.length === 0 ? (
+              <div className="p-8 text-center text-gray-500 text-sm">
+                Brak danych — uruchom Backfill best efforts
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-800 text-white">
+                      <th className="text-left py-3 px-4 font-semibold">Użytkownik</th>
+                      <th className="text-left py-3 px-4 font-semibold">Dystans</th>
+                      <th className="text-right py-3 px-4 font-semibold">Czas</th>
+                      <th className="text-left py-3 px-4 font-semibold">Data</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bestEfforts.map((row, index) => {
+                      const h = Math.floor(row.moving_time / 3600);
+                      const m = Math.floor((row.moving_time % 3600) / 60);
+                      const s = row.moving_time % 60;
+                      const time = h > 0
+                        ? `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
+                        : `${m}:${s.toString().padStart(2, "0")}`;
+                      return (
+                        <tr key={index} className={`border-b border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}>
+                          <td className="py-2.5 px-4 text-gray-700">
+                            {row.users?.firstname} {row.users?.lastname}
+                          </td>
+                          <td className="py-2.5 px-4 text-gray-700 font-medium">{row.effort_name}</td>
+                          <td className="py-2.5 px-4 text-right font-mono text-gray-800">{time}</td>
+                          <td className="py-2.5 px-4 text-gray-500 text-xs">
+                            {formatDate(row.activity_date)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 

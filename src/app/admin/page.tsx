@@ -41,6 +41,19 @@ async function getRecentSyncLogs() {
   return data || [];
 }
 
+async function getBestEffortsSummary() {
+  const supabase = createServiceClient();
+  const { data } = await supabase
+    .from("lsk_best_efforts")
+    .select(`
+      effort_name, moving_time, activity_date,
+      users!inner(id, firstname, lastname, profile_medium)
+    `)
+    .order("effort_name", { ascending: true })
+    .order("moving_time", { ascending: true });
+  return data || [];
+}
+
 export default async function AdminPage() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("lsk_user_id")?.value;
@@ -51,9 +64,10 @@ export default async function AdminPage() {
     redirect("/");
   }
 
-  const [users, syncLogs] = await Promise.all([
+  const [users, syncLogs, bestEfforts] = await Promise.all([
     getAllUsers(),
     getRecentSyncLogs(),
+    getBestEffortsSummary(),
   ]);
 
   return (
@@ -61,6 +75,7 @@ export default async function AdminPage() {
       adminUser={adminUser}
       initialUsers={users}
       syncLogs={syncLogs}
+      bestEfforts={bestEfforts}
     />
   );
 }
