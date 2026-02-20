@@ -3,7 +3,9 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { fetchAndSaveBestEfforts } from "@/lib/efforts";
 import { cookies } from "next/headers";
 
-export async function POST(request: NextRequest) {
+export const maxDuration = 300;
+
+export async function POST(_request: NextRequest) {
   const cookieStore = await cookies();
   const userId = cookieStore.get("lsk_user_id")?.value;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

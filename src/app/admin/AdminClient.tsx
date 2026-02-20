@@ -207,11 +207,20 @@ export default function AdminClient({
             onClick={async () => {
               if (!confirm("Pobierze best efforts dla wszystkich aktywności (~500 req). Może potrwać kilka minut. Kontynuować?")) return;
               setBackfillingEfforts(true);
-              const res = await fetch("/api/admin/backfill-efforts", { method: "POST" });
-              const data = await res.json();
-              setBackfillingEfforts(false);
-              if (res.ok) showMessage("success", `Zapisano ${data.total} wyników z ${data.processed} aktywności`);
-              else showMessage("error", "Błąd backfilla");
+              try {
+                const res = await fetch("/api/admin/backfill-efforts", { method: "POST" });
+                const data = await res.json();
+                if (res.ok) {
+                  showMessage("success", `Gotowe! Zapisano ${data.total} wyników z ${data.processed} aktywności`);
+                  router.refresh();
+                } else {
+                  showMessage("error", data.error || "Błąd backfilla");
+                }
+              } catch {
+                showMessage("error", "Błąd połączenia — spróbuj ponownie");
+              } finally {
+                setBackfillingEfforts(false);
+              }
             }}
             disabled={backfillingEfforts}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
