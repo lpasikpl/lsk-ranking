@@ -2,15 +2,16 @@
 
 function CrownIcon() {
   return (
-    <svg width="22" height="18" viewBox="0 0 22 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="24" height="17" viewBox="0 0 60 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* korpus korony: pełne boki, 3 wklęsłe łuki na górze */}
       <path
-        d="M1 15L4 5L9 11L11 2L13 11L18 5L21 15H1Z"
+        d="M 0 42 L 0 0 A 10 10 0 0 0 20 0 A 10 10 0 0 0 40 0 A 10 10 0 0 0 60 0 L 60 42 Z"
         fill="#F59E0B"
-        stroke="#D97706"
-        strokeWidth="0.5"
-        strokeLinejoin="round"
       />
-      <rect x="1" y="15" width="20" height="2.5" rx="1.25" fill="#F59E0B" />
+      {/* diamenty */}
+      <polygon points="10,22 15,28 10,34 5,28"  fill="white" opacity="0.85" />
+      <polygon points="30,20 37,27 30,34 23,27" fill="white" opacity="0.85" />
+      <polygon points="50,22 55,28 50,34 45,28" fill="white" opacity="0.85" />
     </svg>
   );
 }
