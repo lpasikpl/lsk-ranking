@@ -62,7 +62,7 @@ async function getTopEfforts(year: number, month?: number) {
         if (seen.has(r.users.id)) return false;
         seen.add(r.users.id);
         return true;
-      }).slice(0, 3);
+      }).slice(0, 10);
 
       results[dist] = deduped.map((r: any) => ({
         user_id: r.users.id,
@@ -79,7 +79,11 @@ async function getTopEfforts(year: number, month?: number) {
   return results;
 }
 
-const medalBg = ["border-yellow-500/20", "border-gray-400/20", "border-orange-700/20"];
+const medalBg = [
+  "border-yellow-500/20", "border-gray-400/20", "border-orange-700/20",
+  "border-white/5", "border-white/5", "border-white/5",
+  "border-white/5", "border-white/5", "border-white/5", "border-white/5",
+];
 
 const MONTH_NAMES = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec",
   "Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];

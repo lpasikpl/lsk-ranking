@@ -149,7 +149,11 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
 
         {/* Separator */}
-        <div className="my-10 border-t border-white/10" />
+        <div className="my-10 flex items-center gap-4">
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          <span className="text-xs text-white/20 uppercase tracking-widest font-semibold">↑ miesiąc · rok ↓</span>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        </div>
 
         {/* ===== ROK ===== */}
         <div className="mb-14 section-enter" style={{ animationDelay: "0.15s", opacity: 0 }}>

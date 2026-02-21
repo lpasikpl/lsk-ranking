@@ -23,7 +23,7 @@ export default function SectionNav({ type, year, month, color }: SectionNavProps
     } else {
       params.set("ryear", newDate.getFullYear().toString());
     }
-    router.push(`/?${params.toString()}`);
+    router.push(`/?${params.toString()}`, { scroll: false });
   };
 
   const goPrev = () => navigate(type === "month" ? subMonths(date, 1) : subYears(date, 1));
