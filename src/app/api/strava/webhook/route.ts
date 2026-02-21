@@ -77,12 +77,15 @@ async function processWebhookEvent(
         trainer: activity.trainer === true,
       }, { onConflict: "strava_id" });
 
-      await fetchAndSaveBestEfforts(user.id, object_id, {
-        start_date: activity.start_date,
-        distance: activity.distance,
-        name: activity.name,
-        trainer: activity.trainer === true,
-      });
+      // Best efforts tylko dla outdoor Ride (nie VirtualRide)
+      if (activity.type === "Ride" || activity.sport_type === "Ride") {
+        await fetchAndSaveBestEfforts(user.id, object_id, {
+          start_date: activity.start_date,
+          distance: activity.distance,
+          name: activity.name,
+          trainer: activity.trainer === true,
+        });
+      }
 
     } catch (err) {
       console.error("Webhook sync error:", err);
