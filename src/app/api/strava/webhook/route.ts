@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getValidAccessToken } from "@/lib/strava";
 import { fetchAndSaveBestEfforts } from "@/lib/efforts";
+import { waitUntil } from "@vercel/functions";
 
 const VERIFY_TOKEN = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN || "lsk_webhook_secret";
 
@@ -19,36 +20,27 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 }
 
-// POST - event od Stravy (create/update/delete aktywności)
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { object_type, aspect_type, object_id, owner_id } = body;
-
-  // Obsługujemy tylko aktywności
-  if (object_type !== "activity") {
-    return NextResponse.json({ ok: true });
-  }
+async function processWebhookEvent(
+  object_type: string,
+  aspect_type: string,
+  object_id: number,
+  owner_id: number
+) {
+  if (object_type !== "activity") return;
 
   const supabase = createServiceClient();
 
-  // Znajdź usera po strava_id
   const { data: user } = await supabase
     .from("users")
     .select("id")
     .eq("strava_id", owner_id)
     .single();
 
-  if (!user) {
-    return NextResponse.json({ ok: true }); // nieznany użytkownik, ignoruj
-  }
+  if (!user) return;
 
   if (aspect_type === "delete") {
-    await supabase
-      .from("lsk_activities")
-      .delete()
-      .eq("strava_id", object_id);
-
-    return NextResponse.json({ ok: true });
+    await supabase.from("lsk_activities").delete().eq("strava_id", object_id);
+    return;
   }
 
   if (aspect_type === "create" || aspect_type === "update") {
@@ -59,9 +51,7 @@ export async function POST(request: NextRequest) {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
-      if (!res.ok) {
-        return NextResponse.json({ ok: true });
-      }
+      if (!res.ok) return;
 
       const activity = await res.json();
 
@@ -69,9 +59,8 @@ export async function POST(request: NextRequest) {
         activity.sport_type === "Ride" || activity.sport_type === "VirtualRide";
 
       if (!isRide) {
-        // Jeśli nie jazda - usuń jeśli istnieje (np. zmieniono typ)
         await supabase.from("lsk_activities").delete().eq("strava_id", object_id);
-        return NextResponse.json({ ok: true });
+        return;
       }
 
       await supabase.from("lsk_activities").upsert({
@@ -85,9 +74,9 @@ export async function POST(request: NextRequest) {
         total_elevation_gain: activity.total_elevation_gain,
         start_date: activity.start_date,
         start_date_local: activity.start_date_local,
+        trainer: activity.trainer === true,
       }, { onConflict: "strava_id" });
 
-      // Zapisz best efforts (tylko outdoor Ride) - przekazujemy dane które już mamy
       await fetchAndSaveBestEfforts(user.id, object_id, {
         start_date: activity.start_date,
         distance: activity.distance,
@@ -99,6 +88,16 @@ export async function POST(request: NextRequest) {
       console.error("Webhook sync error:", err);
     }
   }
+}
+
+// POST - event od Stravy (create/update/delete aktywności)
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  const { object_type, aspect_type, object_id, owner_id } = body;
+
+  // Natychmiast zwróć 200 - Strava wymaga odpowiedzi w ciągu 2 sekund
+  // Całe przetwarzanie idzie do tła przez waitUntil
+  waitUntil(processWebhookEvent(object_type, aspect_type, object_id, owner_id));
 
   return NextResponse.json({ ok: true });
 }
