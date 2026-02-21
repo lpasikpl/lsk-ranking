@@ -123,7 +123,7 @@ export default async function TopEfforts({ year, month }: TopEffortsProps) {
                       rel="noopener noreferrer"
                       className={`flex items-center gap-3 rounded-xl px-3 py-2 border ${medalBg[i]} bg-white/[0.02] hover:bg-white/[0.05] transition-colors cursor-pointer`}
                     >
-                      <span className="w-5 flex items-center justify-center flex-shrink-0">
+                      <span className="w-8 flex items-center justify-center flex-shrink-0">
                         <RankBadge position={i + 1} showTrophyFrom={2} />
                       </span>
                       {e.profile_medium ? (
