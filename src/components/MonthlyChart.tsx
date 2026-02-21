@@ -88,10 +88,6 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
   return (
     <div className="glass rounded-2xl p-6">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-sm font-semibold text-white/80">Progresja miesięczna</h3>
-          <p className="text-xs text-gray-600 mt-0.5">{year}</p>
-        </div>
         <div className="flex gap-1">
           {(["distance", "elevation", "time", "count"] as const).map(m => (
             <button key={m} onClick={() => setMetric(m)}
@@ -135,7 +131,7 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
 
           {/* Słupki */}
           <div className="flex gap-1.5 items-end">
-            {fullYear.map((d, i) => {
+            {fullYear.map((_d, i) => {
               const val = values[i];
               const barPx = maxVal > 0 ? Math.max((val / maxVal) * BAR_HEIGHT, val > 0 ? 3 : 0) : 0;
               const isPast = year < currentYear || (year === currentYear && i < currentMonth);
