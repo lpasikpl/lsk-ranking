@@ -43,8 +43,24 @@ export async function POST(request: NextRequest) {
 
   const results = [];
 
+  const START_2025 = Math.floor(new Date("2025-01-01T00:00:00Z").getTime() / 1000);
+
   for (const user of users) {
-    const result = await syncUserActivities(user.id);
+    // Pobierz timestamp ostatniej udanej synchronizacji (fallback: 2025-01-01)
+    const { data: lastSync } = await supabase
+      .from("sync_logs")
+      .select("created_at")
+      .eq("user_id", user.id)
+      .eq("status", "success")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    const afterTimestamp = lastSync
+      ? Math.floor(new Date(lastSync.created_at).getTime() / 1000) - 3600
+      : START_2025;
+
+    const result = await syncUserActivities(user.id, { afterTimestamp });
     results.push({
       userId: user.id,
       name: `${user.firstname} ${user.lastname}`,

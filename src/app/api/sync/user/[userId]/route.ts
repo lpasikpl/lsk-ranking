@@ -50,10 +50,8 @@ export async function POST(
     // Sync od ostatniej synchronizacji (z buforem -1h)
     afterTimestamp = Math.floor(new Date(lastSync.created_at).getTime() / 1000) - 3600;
   } else {
-    // Pierwsze logowanie - pobierz aktywności z ostatnich 2 lat
-    const twoYearsAgo = new Date();
-    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
-    afterTimestamp = Math.floor(twoYearsAgo.getTime() / 1000);
+    // Pierwsze logowanie - pobierz aktywności od 2025-01-01
+    afterTimestamp = Math.floor(new Date("2025-01-01T00:00:00Z").getTime() / 1000);
   }
 
   const result = await syncUserActivities(userId, { afterTimestamp });
