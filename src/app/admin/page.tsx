@@ -49,8 +49,7 @@ async function getBestEffortsSummary() {
       effort_name, moving_time, strava_activity_id, activity_date,
       users!inner(id, firstname, lastname)
     `)
-    .order("moving_time", { ascending: true })
-    .limit(10000);
+    .limit(100000);
 
   if (!data) return [];
 
@@ -84,6 +83,11 @@ async function getBestEffortsSummary() {
       strava_activity_id: row.strava_activity_id,
       activity_date: row.activity_date,
     });
+  }
+
+  // Posortuj rekordy w każdej grupie po czasie (najlepszy pierwszy)
+  for (const g of Object.values(grouped)) {
+    g.records.sort((a, b) => a.moving_time - b.moving_time);
   }
 
   return Object.values(grouped).sort((a, b) =>
