@@ -106,11 +106,11 @@ export default async function TopEfforts({ year, month }: TopEffortsProps) {
           return (
             <div key={dist} className="glass rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <div>
+                <div className="flex items-baseline gap-2">
                   <span className="text-sm font-bold text-white">{dist}</span>
-                  <p className="text-xs text-gray-600 mt-0.5">
-                    {month ? `${MONTH_NAMES[month - 1]} ${year}` : `${year}`}
-                  </p>
+                  <span className="text-xs text-gray-600">
+                    — {month ? `${MONTH_NAMES[month - 1]} ${year}` : `${year}`}
+                  </span>
                 </div>
                 <span className="text-xs text-gray-400 font-medium">średnia prędkość</span>
               </div>
