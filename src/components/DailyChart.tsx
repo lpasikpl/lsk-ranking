@@ -129,9 +129,6 @@ const BAR_HEIGHT = 200;
 const TOTAL_ANIM_MS = 1700;
 const BAR_TRANSITION_MS = 320;
 
-const MONTH_NAMES = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec",
-  "Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
-
 export default function DailyChart({ data, year, month, daysInMonth }: DailyChartProps) {
   const [metric, setMetric] = useState<Metric>("distance");
   const [animated, setAnimated] = useState(false);
@@ -165,11 +162,7 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
 
   return (
     <div ref={ref} className="glass rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-sm font-semibold text-white/80">Aktywność dzienna</h3>
-          <p className="text-xs text-gray-600 mt-0.5">{MONTH_NAMES[month - 1]} {year}</p>
-        </div>
+      <div className="flex items-center justify-end mb-6">
         <div className="flex gap-1">
           {(["distance", "elevation", "time", "count"] as const).map(m => (
             <button key={m} onClick={() => setMetric(m)}

@@ -116,6 +116,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
   const daysInMonth = new Date(selYear, selMonth, 0).getDate();
   const isAdmin = user?.is_admin === true;
+  const selMonthLabel = format(new Date(selYear, selMonth - 1, 1), "LLLL yyyy", { locale: pl }).replace(/^\w/, (c) => c.toUpperCase());
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
@@ -130,7 +131,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           <StatsCards entries={monthData} />
 
           <div className="mb-6">
-            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Top 3</h2>
+            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Top 3 <span className="text-gray-700">— {selMonthLabel}</span></h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Top3Podium entries={monthData} metric="distance" title="Dystans" unit="km" />
               <Top3Podium entries={monthData} metric="elevation" title="Przewyższenie" unit="m" />
@@ -139,11 +140,14 @@ export default async function HomePage({ searchParams }: PageProps) {
           </div>
 
           <div className="mb-6">
-            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Ranking dystansu</h2>
+            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Ranking dystansu <span className="text-gray-700">— {selMonthLabel}</span></h2>
             <RankingTableDark key={`month-${selYear}-${selMonth}`} entries={monthData} isAdmin={isAdmin} />
           </div>
 
-          <DailyChart data={dailyData} year={selYear} month={selMonth} daysInMonth={daysInMonth} />
+          <div className="mb-6">
+            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Aktywność dzienna <span className="text-gray-700">— {selMonthLabel}</span></h2>
+            <DailyChart data={dailyData} year={selYear} month={selMonth} daysInMonth={daysInMonth} />
+          </div>
 
           <TopEfforts year={selYear} month={selMonth} />
         </div>
