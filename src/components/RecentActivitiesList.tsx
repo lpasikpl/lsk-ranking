@@ -19,9 +19,13 @@ function typeLabel(type: string, trainer: boolean): string {
   return TYPE_LABEL[type] ?? type;
 }
 
-function formatDate(dateStr: string): string {
+function formatDateTime(dateStr: string): string {
   const d = new Date(dateStr);
-  return d.toLocaleDateString("pl-PL", { day: "numeric", month: "short" });
+  const day = d.getDate();
+  const month = d.toLocaleDateString("pl-PL", { month: "short" });
+  const h = String(d.getHours()).padStart(2, "0");
+  const m = String(d.getMinutes()).padStart(2, "0");
+  return `${day} ${month} ${h}:${m}`;
 }
 
 function formatSpeed(distance: number, movingTime: number): string {
@@ -38,11 +42,7 @@ interface Activity {
   moving_time: number;
   total_elevation_gain: number;
   start_date_local: string;
-  users: {
-    firstname: string | null;
-    lastname: string | null;
-    profile_medium: string | null;
-  };
+  users: { firstname: string | null; lastname: string | null; profile_medium: string | null };
 }
 
 const INITIAL_LIMIT = 10;
@@ -54,9 +54,8 @@ export default function RecentActivitiesList({ activities }: { activities: Activ
 
   if (activities.length === 0) {
     return (
-      <div className="glass rounded-2xl py-12 text-center text-gray-400">
-        <div className="text-3xl mb-2">🚴</div>
-        <div>Brak aktywności w wybranym okresie</div>
+      <div className="glass rounded-2xl py-10 text-center text-gray-400 text-sm">
+        Brak aktywności w wybranym okresie
       </div>
     );
   }
@@ -64,7 +63,7 @@ export default function RecentActivitiesList({ activities }: { activities: Activ
   return (
     <div className="glass rounded-2xl overflow-hidden">
       {/* Header */}
-      <div className="grid grid-cols-[1fr_72px_72px_72px_60px_24px] gap-0 px-4 py-2.5 border-b border-white/5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+      <div className="grid grid-cols-[1fr_64px_64px_64px_52px_16px] px-4 py-2 border-b border-white/5 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
         <div>Zawodnik</div>
         <div className="text-right">Dystans</div>
         <div className="text-right">Czas</div>
@@ -79,56 +78,59 @@ export default function RecentActivitiesList({ activities }: { activities: Activ
           href={`https://www.strava.com/activities/${a.strava_id}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="grid grid-cols-[1fr_72px_72px_72px_60px_24px] gap-0 items-center px-4 py-2.5 border-b border-white/[0.03] hover:bg-white/[0.04] transition-colors"
+          className="grid grid-cols-[1fr_64px_64px_64px_52px_16px] items-center px-4 py-2 border-b border-white/[0.03] hover:bg-white/[0.04] transition-colors"
         >
-          <div className="flex items-center gap-2.5 min-w-0">
+          {/* Zawodnik */}
+          <div className="flex items-center gap-2 min-w-0">
             {a.users.profile_medium ? (
-              <Image src={a.users.profile_medium} alt="" width={24} height={24}
+              <Image src={a.users.profile_medium} alt="" width={20} height={20}
                 className="rounded-full flex-shrink-0 ring-1 ring-white/10" />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-white/5 flex-shrink-0" />
+              <div className="w-5 h-5 rounded-full bg-white/5 flex-shrink-0" />
             )}
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-sm font-medium text-white/90 truncate">
-                {a.users.firstname} {a.users.lastname?.charAt(0)}.
-              </span>
-              <span className="text-xs text-gray-500 flex-shrink-0">{formatDate(a.start_date_local)}</span>
-              <span className="text-xs px-1.5 py-0.5 rounded bg-white/[0.06] text-gray-400 flex-shrink-0">
-                {typeLabel(a.type, a.trainer)}
-              </span>
-              {a.name && (
-                <span className="text-xs text-gray-600 truncate hidden md:block">{a.name}</span>
-              )}
-            </div>
+            <span className="text-xs font-medium text-white/90 flex-shrink-0">
+              {a.users.firstname} {a.users.lastname?.charAt(0)}.
+            </span>
+            <span className="text-[10px] text-gray-500 flex-shrink-0">{formatDateTime(a.start_date_local)}</span>
+            <span className="text-[10px] px-1 py-0.5 rounded bg-white/[0.06] text-gray-400 flex-shrink-0">
+              {typeLabel(a.type, a.trainer)}
+            </span>
+            {a.name && (
+              <span className="text-[10px] text-gray-600 truncate hidden lg:block">{a.name}</span>
+            )}
           </div>
 
-          <div className="text-right">
-            <span className="text-sm font-semibold text-white/90">{(a.distance / 1000).toFixed(1)}</span>
-            <span className="text-xs text-gray-400 ml-1">km</span>
+          {/* Dystans */}
+          <div className="text-right tabular-nums">
+            <span className="text-xs font-semibold text-white/90">{(a.distance / 1000).toFixed(1)}</span>
+            <span className="text-[10px] text-gray-400 ml-0.5">km</span>
           </div>
 
-          <div className="text-right">
-            <span className="text-sm text-white/70">{formatTime(a.moving_time)}</span>
+          {/* Czas */}
+          <div className="text-right tabular-nums">
+            <span className="text-xs text-white/70">{formatTime(a.moving_time)}</span>
           </div>
 
-          <div className="text-right">
-            <span className="text-sm text-white/70">{formatSpeed(a.distance, a.moving_time)}</span>
-            <span className="text-xs text-gray-400 ml-1">km/h</span>
+          {/* Śr. prędkość */}
+          <div className="text-right tabular-nums">
+            <span className="text-xs text-white/70">{formatSpeed(a.distance, a.moving_time)}</span>
+            <span className="text-[10px] text-gray-400 ml-0.5">km/h</span>
           </div>
 
-          <div className="text-right">
-            <span className="text-sm text-white/70">{Math.round(a.total_elevation_gain)}</span>
-            <span className="text-xs text-gray-400 ml-1">m</span>
+          {/* Przewyższenie */}
+          <div className="text-right tabular-nums">
+            <span className="text-xs text-white/70">{Math.round(a.total_elevation_gain)}</span>
+            <span className="text-[10px] text-gray-400 ml-0.5">m</span>
           </div>
 
-          <div className="text-gray-600 text-xs text-right">↗</div>
+          <div className="text-[10px] text-gray-600 text-right">↗</div>
         </a>
       ))}
 
       {hasMore && (
         <button
           onClick={() => setExpanded(v => !v)}
-          className="w-full py-3 text-xs text-gray-400 hover:text-white hover:bg-white/[0.03] transition-colors border-t border-white/[0.04]"
+          className="w-full py-2.5 text-xs text-gray-500 hover:text-white hover:bg-white/[0.03] transition-colors"
         >
           {expanded ? "↑ Zwiń" : `↓ Pokaż więcej (${activities.length - INITIAL_LIMIT})`}
         </button>
