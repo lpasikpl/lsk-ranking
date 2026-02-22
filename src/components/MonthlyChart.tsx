@@ -91,7 +91,7 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
         <div className="flex gap-1">
           {(["distance", "elevation", "time", "count"] as const).map(m => (
             <button key={m} onClick={() => setMetric(m)}
-              className={`px-2 py-1 rounded-lg text-xs transition-all ${metric === m ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "text-gray-600 hover:text-gray-400"}`}>
+              className={`px-2 py-1 rounded-lg text-xs transition-all ${metric === m ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "text-gray-400 hover:text-gray-200"}`}>
               {m === "distance" ? "km" : m === "elevation" ? "m↑" : m === "time" ? "h" : "#"}
             </button>
           ))}
@@ -106,7 +106,7 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
             return (
               <span
                 key={tick}
-                className="absolute right-0 text-[9px] text-gray-600 leading-none -translate-y-1/2"
+                className="absolute right-0 text-[9px] text-gray-400 leading-none -translate-y-1/2"
                 style={{ top: `${yPct}px` }}
               >
                 {formatAxisLabel(tick, metric)}
@@ -178,7 +178,7 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
                   />
                   {/* miesiąc */}
                   <div className="h-6 flex items-center justify-center">
-                    <span className={`text-xs font-medium ${isCurrent ? "text-orange-400 font-bold" : "text-gray-500"}`}>
+                    <span className={`text-xs font-medium ${isCurrent ? "text-orange-400 font-bold" : "text-gray-400"}`}>
                       {MONTHS[i]}
                     </span>
                   </div>

@@ -93,9 +93,9 @@ export default async function TopEfforts({ year, month }: TopEffortsProps) {
 
   return (
     <div className="mt-6">
-      <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-4">
+      <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
         Top prędkości — najlepsze czasy na odcinkach
-        <span className="ml-2 text-gray-600 normal-case tracking-normal">
+        <span className="ml-2 text-gray-500 normal-case tracking-normal">
           — {month ? `${MONTH_NAMES[month - 1]} ${year}` : `${year}`}
         </span>
       </h2>
@@ -112,7 +112,7 @@ export default async function TopEfforts({ year, month }: TopEffortsProps) {
                     — {month ? `${MONTH_NAMES[month - 1]} ${year}` : `${year}`}
                   </span>
                 </div>
-                <span className="text-xs text-gray-400 font-medium">średnia prędkość</span>
+                <span className="text-xs text-gray-300 font-medium">średnia prędkość</span>
               </div>
               {(!top || top.length === 0) ? (
                 <div className="flex items-center justify-center h-16 text-xs text-gray-600">
@@ -140,7 +140,7 @@ export default async function TopEfforts({ year, month }: TopEffortsProps) {
                         <div className="text-xs font-medium text-white/80 truncate">
                           {e.firstname} {e.lastname?.charAt(0)}.
                         </div>
-                        <div className="text-xs text-gray-500 tabular-nums">{formatEffortTime(e.moving_time)}</div>
+                        <div className="text-xs text-gray-400 tabular-nums">{formatEffortTime(e.moving_time)}</div>
                       </div>
                       <div className="text-right flex-shrink-0">
                         <div className={`text-xs font-bold ${i === 0 ? "text-yellow-400" : "text-white/70"}`}>

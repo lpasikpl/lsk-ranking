@@ -166,7 +166,7 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
         <div className="flex gap-1">
           {(["distance", "elevation", "time", "count"] as const).map(m => (
             <button key={m} onClick={() => setMetric(m)}
-              className={`px-2 py-1 rounded-lg text-xs transition-all ${metric === m ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "text-gray-600 hover:text-gray-400"}`}>
+              className={`px-2 py-1 rounded-lg text-xs transition-all ${metric === m ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "text-gray-400 hover:text-gray-200"}`}>
               {m === "distance" ? "km" : m === "elevation" ? "m↑" : m === "time" ? "h" : "#"}
             </button>
           ))}
@@ -181,7 +181,7 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
             return (
               <span
                 key={tick}
-                className="absolute right-0 text-[9px] text-gray-600 leading-none -translate-y-1/2"
+                className="absolute right-0 text-[9px] text-gray-400 leading-none -translate-y-1/2"
                 style={{ top: `${yPct}px` }}
               >
                 {formatAxisLabel(tick, metric)}
@@ -237,7 +237,7 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
                 ? "text-orange-400 font-bold"
                 : isRed ? "text-red-400 font-semibold"
                 : isSaturday ? "text-indigo-400 font-semibold"
-                : "text-gray-600";
+                : "text-gray-400";
 
               const isHovered = hoveredIdx === i;
 
@@ -289,17 +289,17 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
           <div className="w-2.5 h-2.5 rounded-sm text-indigo-400 border border-indigo-400/60 flex items-center justify-center">
             <span className="text-[6px] font-bold leading-none">so</span>
           </div>
-          <span className="text-[10px] text-gray-600">Sobota</span>
+          <span className="text-[10px] text-gray-400">Sobota</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-sm text-red-400 border border-red-400/60 flex items-center justify-center">
             <span className="text-[6px] font-bold leading-none">św</span>
           </div>
-          <span className="text-[10px] text-gray-600">Niedziela / święto</span>
+          <span className="text-[10px] text-gray-400">Niedziela / święto</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "linear-gradient(to top, #fc4c02, #ff8c00)" }} />
-          <span className="text-[10px] text-gray-600">Dziś</span>
+          <span className="text-[10px] text-gray-400">Dziś</span>
         </div>
       </div>
     </div>

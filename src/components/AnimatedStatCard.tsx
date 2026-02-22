@@ -71,8 +71,8 @@ export default function AnimatedStatCard({ icon, rawValue, formattedValue, unit,
       <div className="stat-card-glow" />
       <div className="text-2xl mb-3">{icon}</div>
       <div className="text-2xl font-black text-white tabular-nums">{display}</div>
-      <div className="text-xs text-gray-500 mt-0.5">{unit}</div>
-      <div className="text-xs text-gray-600 mt-1.5 uppercase tracking-wider font-medium">{label}</div>
+      <div className="text-xs text-gray-400 mt-0.5">{unit}</div>
+      <div className="text-xs text-gray-400 mt-1.5 uppercase tracking-wider font-medium">{label}</div>
     </div>
   );
 }

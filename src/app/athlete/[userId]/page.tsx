@@ -158,7 +158,7 @@ export default async function AthletePage({ params }: PageProps) {
               )}
             </div>
             {user.city && (
-              <p className="text-gray-500 text-sm mt-0.5">{user.city}</p>
+              <p className="text-gray-400 text-sm mt-0.5">{user.city}</p>
             )}
             {(badges.rankingPositions.length > 0 || badges.effortPositions.length > 0) && (
               <div className="mt-3 pt-3 border-t border-white/[0.06] flex flex-wrap gap-x-5 gap-y-2">
@@ -203,8 +203,8 @@ export default async function AthletePage({ params }: PageProps) {
               {section.items.map((item) => (
                 <div key={item.name} className="glass rounded-xl p-4">
                   <div className="text-xl font-bold text-white">{item.value}</div>
-                  <div className="text-xs text-gray-600 mt-0.5">{item.unit}</div>
-                  <div className="text-xs text-gray-500 mt-1 uppercase tracking-wider">{item.name}</div>
+                  <div className="text-xs text-gray-400 mt-0.5">{item.unit}</div>
+                  <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider">{item.name}</div>
                 </div>
               ))}
             </div>

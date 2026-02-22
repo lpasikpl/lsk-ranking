@@ -131,7 +131,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           <StatsCards entries={monthData} />
 
           <div className="mb-6">
-            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Top 3 <span className="text-gray-700">— {selMonthLabel}</span></h2>
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Top 3 <span className="text-gray-500">— {selMonthLabel}</span></h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Top3Podium entries={monthData} metric="distance" title="Dystans" unit="km" label={selMonthLabel} />
               <Top3Podium entries={monthData} metric="elevation" title="Przewyższenie" unit="m" label={selMonthLabel} />
@@ -140,12 +140,12 @@ export default async function HomePage({ searchParams }: PageProps) {
           </div>
 
           <div className="mb-6">
-            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Ranking dystansu <span className="text-gray-700">— {selMonthLabel}</span></h2>
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Ranking dystansu <span className="text-gray-500">— {selMonthLabel}</span></h2>
             <RankingTableDark key={`month-${selYear}-${selMonth}`} entries={monthData} isAdmin={isAdmin} />
           </div>
 
           <div className="mb-6">
-            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Aktywność dzienna <span className="text-gray-700">— {selMonthLabel}</span></h2>
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Aktywność dzienna <span className="text-gray-500">— {selMonthLabel}</span></h2>
             <DailyChart data={dailyData} year={selYear} month={selMonth} daysInMonth={daysInMonth} />
           </div>
 
@@ -166,7 +166,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           <StatsCards entries={yearData} />
 
           <div className="mb-6">
-            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Top 3 <span className="text-gray-700">— {selRYear}</span></h2>
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Top 3 <span className="text-gray-500">— {selRYear}</span></h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Top3Podium entries={yearData} metric="distance" title="Dystans" unit="km" label={String(selRYear)} />
               <Top3Podium entries={yearData} metric="elevation" title="Przewyższenie" unit="m" label={String(selRYear)} />
@@ -175,14 +175,14 @@ export default async function HomePage({ searchParams }: PageProps) {
           </div>
 
           <div>
-            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Ranking dystansu <span className="text-gray-700">— {selRYear}</span></h2>
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Ranking dystansu <span className="text-gray-500">— {selRYear}</span></h2>
             <RankingTableDark key={`year-${selRYear}`} entries={yearData} isAdmin={isAdmin} />
           </div>
         </div>
 
         {/* Wykres miesięczny */}
         <div className="mb-10">
-          <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Progresja miesięczna <span className="text-gray-700">— {selRYear}</span></h2>
+          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Progresja miesięczna <span className="text-gray-500">— {selRYear}</span></h2>
           <MonthlyChart data={monthlyData} year={selRYear} metric={chartMetric} />
           <TopEfforts year={selRYear} />
         </div>

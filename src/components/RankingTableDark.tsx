@@ -26,7 +26,7 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
     if (index === 0) return "text-yellow-400 font-bold";
     if (index === 1) return "text-gray-300 font-bold";
     if (index === 2) return "text-orange-600 font-bold";
-    return "text-gray-600";
+    return "text-gray-400";
   };
 
   const handleRemove = async (userId: string, name: string) => {
@@ -53,17 +53,17 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
     <div className="glass rounded-2xl overflow-hidden">
       {/* Header */}
       <div className={`grid ${gridCols} gap-0 px-3 sm:px-4 py-3 border-b border-white/5`}>
-        <div className="text-xs font-semibold text-gray-600 uppercase tracking-wider">#</div>
-        <div className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Zawodnik</div>
-        <div className="text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">Dystans</div>
-        <div className="hidden sm:block text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">Przewyż.</div>
-        <div className="text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">Czas</div>
+        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">#</div>
+        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Zawodnik</div>
+        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Dystans</div>
+        <div className="hidden sm:block text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Przewyż.</div>
+        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Czas</div>
         {isAdmin && <div />}
       </div>
 
       {/* Rows */}
       {localEntries.length === 0 ? (
-        <div className="py-16 text-center text-gray-600">
+        <div className="py-16 text-center text-gray-400">
           <div className="text-4xl mb-3">🚴</div>
           <div>Brak aktywności w wybranym okresie</div>
         </div>
@@ -86,7 +86,7 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
                     {index + 1 <= 10 ? (
                       <RankBadge position={index + 1} showTrophyFrom={2} />
                     ) : (
-                      <span className="text-sm text-gray-600">{index + 1}</span>
+                      <span className="text-sm text-gray-400">{index + 1}</span>
                     )}
                   </div>
 
@@ -105,7 +105,7 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
                           <span className="ml-1 text-xs">{getCountryFlag(entry.country)}</span>
                         )}
                       </a>
-                      <div className="hidden sm:block text-xs text-gray-600 mt-0.5">
+                      <div className="hidden sm:block text-xs text-gray-400 mt-0.5">
                         {entry.active_days ?? entry.activity_count} {(entry.active_days ?? entry.activity_count) === 1 ? "aktywny dzień" : "aktywnych dni"}
                       </div>
                     </div>
@@ -113,17 +113,17 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
 
                   <div className="text-right">
                     <div className="text-sm font-semibold text-white/90">{formatDistance(entry.total_distance)}</div>
-                    <div className="text-xs text-gray-600">km</div>
+                    <div className="text-xs text-gray-400">km</div>
                   </div>
 
                   <div className="hidden sm:block text-right">
                     <div className="text-sm text-white/70">{formatNumber(entry.total_elevation)}</div>
-                    <div className="text-xs text-gray-600">m</div>
+                    <div className="text-xs text-gray-400">m</div>
                   </div>
 
                   <div className="text-right">
                     <div className="text-sm text-white/70">{formatTime(entry.total_time)}</div>
-                    <div className="text-xs text-gray-600">h</div>
+                    <div className="text-xs text-gray-400">h</div>
                   </div>
 
                   {isAdmin && (
@@ -147,7 +147,7 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
       {localEntries.length > 0 && (
         <div className={`grid ${gridCols} gap-0 px-3 sm:px-4 py-3 border-t border-white/10 bg-white/[0.02]`}>
           <div />
-          <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">Suma</div>
+          <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Suma</div>
           <div className="text-right text-sm font-bold text-gradient-orange">{formatDistance(totalDistance)}</div>
           <div className="hidden sm:block text-right text-sm font-semibold text-white/60">{formatNumber(totalElevation)}</div>
           <div className="text-right text-sm font-semibold text-white/60">{formatTime(totalTime)}</div>

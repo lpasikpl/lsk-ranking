@@ -30,7 +30,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Ścigaj się.<br />
             <span className="text-gradient-orange">Rywalizuj.</span>
           </h1>
-          <p className="text-gray-600 text-sm mt-3">Ranking kolarski oparty na Stravie</p>
+          <p className="text-gray-400 text-sm mt-3">Ranking kolarski oparty na Stravie</p>
         </div>
 
         {/* Card */}
@@ -51,13 +51,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Zaloguj przez Stravę
           </a>
 
-          <p className="mt-4 text-xs text-center text-gray-700">
+          <p className="mt-4 text-xs text-center text-gray-400">
             Po zalogowaniu Twoje aktywności zostaną automatycznie zsynchronizowane.
           </p>
         </div>
 
         <div className="text-center mt-6">
-          <a href="/" className="text-xs text-gray-700 hover:text-gray-500 transition-colors">
+          <a href="/" className="text-xs text-gray-400 hover:text-gray-500 transition-colors">
             ← Wróć do rankingu
           </a>
         </div>
