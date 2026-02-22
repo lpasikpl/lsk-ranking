@@ -201,7 +201,7 @@ export async function syncUserActivities(
         strava_id: a.id,
         user_id: userId,
         name: a.name,
-        type: a.type || a.sport_type,
+        type: a.sport_type || a.type,
         distance: a.distance,
         moving_time: a.moving_time,
         elapsed_time: a.elapsed_time,
