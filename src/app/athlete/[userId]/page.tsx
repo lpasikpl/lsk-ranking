@@ -162,11 +162,11 @@ export default async function AthletePage({ params }: PageProps) {
             )}
             {(badges.rankingPositions.length > 0 || badges.effortPositions.length > 0) && (
               <div className="mt-3 pt-3 border-t border-white/[0.06] flex flex-wrap gap-x-5 gap-y-2">
-                {badges.rankingPositions.length > 0 && (
+                {badges.rankingPositions.filter(b => b.label === "Dystans").length > 0 && (
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-gray-600 uppercase tracking-wider whitespace-nowrap">Ranking {currentYear}</span>
                     <div className="flex gap-2">
-                      {badges.rankingPositions.map(b => (
+                      {badges.rankingPositions.filter(b => b.label === "Dystans").map(b => (
                         <div key={b.label} className="flex flex-col items-center gap-0.5">
                           <RankBadge position={b.position} showTrophyFrom={2} />
                           <span className="text-[10px] text-gray-600">{b.label}</span>
@@ -177,7 +177,7 @@ export default async function AthletePage({ params }: PageProps) {
                 )}
                 {badges.effortPositions.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-600 uppercase tracking-wider whitespace-nowrap">Top prędkości</span>
+                    <span className="text-[10px] text-gray-600 uppercase tracking-wider whitespace-nowrap">Top prędkości {currentYear}</span>
                     <div className="flex gap-2">
                       {badges.effortPositions.map(b => (
                         <div key={b.label} className="flex flex-col items-center gap-0.5">
