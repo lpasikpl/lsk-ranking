@@ -120,7 +120,7 @@ export default async function AthletePage({ params }: PageProps) {
       {/* Header */}
       <div className="border-b border-white/[0.06]">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xs text-gray-600 hover:text-gray-400 transition-colors">
+          <Link href="/" className="text-xs text-gray-400 hover:text-white transition-colors">
             ← Ranking
           </Link>
           <a
@@ -164,12 +164,12 @@ export default async function AthletePage({ params }: PageProps) {
               <div className="mt-3 pt-3 border-t border-white/[0.06] flex flex-wrap gap-x-5 gap-y-2">
                 {badges.rankingPositions.filter(b => b.label === "Dystans").length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-600 uppercase tracking-wider whitespace-nowrap">Ranking {currentYear}</span>
+                    <span className="text-[10px] text-gray-400 uppercase tracking-wider whitespace-nowrap">Ranking {currentYear}</span>
                     <div className="flex gap-2">
                       {badges.rankingPositions.filter(b => b.label === "Dystans").map(b => (
                         <div key={b.label} className="flex flex-col items-center gap-0.5">
                           <RankBadge position={b.position} showTrophyFrom={2} />
-                          <span className="text-[10px] text-gray-600">{b.label}</span>
+                          <span className="text-[10px] text-gray-400">{b.label}</span>
                         </div>
                       ))}
                     </div>
@@ -177,12 +177,12 @@ export default async function AthletePage({ params }: PageProps) {
                 )}
                 {badges.effortPositions.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-gray-600 uppercase tracking-wider whitespace-nowrap">Top prędkości {currentYear}</span>
+                    <span className="text-[10px] text-gray-400 uppercase tracking-wider whitespace-nowrap">Top prędkości {currentYear}</span>
                     <div className="flex gap-2">
                       {badges.effortPositions.map(b => (
                         <div key={b.label} className="flex flex-col items-center gap-0.5">
                           <RankBadge position={b.position} showTrophyFrom={2} />
-                          <span className="text-[10px] text-gray-600">{b.label}</span>
+                          <span className="text-[10px] text-gray-400">{b.label}</span>
                         </div>
                       ))}
                     </div>
@@ -196,7 +196,7 @@ export default async function AthletePage({ params }: PageProps) {
         {/* Stats grids */}
         {stats.map((section) => (
           <div key={section.label} className="mb-6">
-            <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-3">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
               {section.label}
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
