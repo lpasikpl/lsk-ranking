@@ -8,15 +8,17 @@ interface RecentActivitiesProps {
 }
 
 const TYPE_LABEL: Record<string, string> = {
-  Ride: "Szosa",
+  Ride: "Ride",
   GravelRide: "Gravel",
   MountainBikeRide: "MTB",
-  VirtualRide: "Wirtualna",
+  VirtualRide: "Virtual",
   EBikeRide: "E-Bike",
+  EBikeMountainBikeRide: "E-MTB",
   Handcycle: "Handbike",
 };
 
-function typeLabel(type: string): string {
+function typeLabel(type: string, trainer: boolean): string {
+  if (trainer) return "Indoor";
   return TYPE_LABEL[type] ?? type;
 }
 
@@ -32,18 +34,18 @@ function formatSpeed(distance: number, movingTime: number): string {
 
 async function getRecentActivities(year: number, month: number) {
   const supabase = createServiceClient();
-  const startDate = new Date(year, month - 1, 1).toISOString();
-  const endDate = new Date(year, month, 0, 23, 59, 59).toISOString();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const startDate = `${year}-${pad(month)}-01T00:00:00`;
+  const endDate = `${year}-${pad(month)}-${pad(daysInMonth)}T23:59:59`;
 
   const { data } = await supabase
     .from("lsk_activities")
     .select(`
-      strava_id, name, type, distance, moving_time, total_elevation_gain, start_date_local,
+      strava_id, name, type, trainer, distance, moving_time, total_elevation_gain, start_date_local,
       users!inner(id, firstname, lastname, profile_medium, is_active)
     `)
     .eq("users.is_active", true)
-    .eq("trainer", false)
-    .neq("type", "VirtualRide")
     .gte("start_date_local", startDate)
     .lte("start_date_local", endDate)
     .order("start_date_local", { ascending: false })
@@ -62,8 +64,8 @@ export default async function RecentActivities({ year, month }: RecentActivities
       </h2>
       <div className="glass rounded-2xl overflow-hidden">
         {/* Header */}
-        <div className="hidden sm:grid grid-cols-[1fr_100px_70px_70px_70px_60px] gap-0 px-4 py-3 border-b border-white/5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-          <div>Zawodnik / Aktywność</div>
+        <div className="grid grid-cols-[1fr_72px_72px_72px_60px_24px] gap-0 px-4 py-2.5 border-b border-white/5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          <div>Zawodnik</div>
           <div className="text-right">Dystans</div>
           <div className="text-right">Czas</div>
           <div className="text-right">Śr. pr.</div>
@@ -72,8 +74,8 @@ export default async function RecentActivities({ year, month }: RecentActivities
         </div>
 
         {activities.length === 0 ? (
-          <div className="py-16 text-center text-gray-400">
-            <div className="text-4xl mb-3">🚴</div>
+          <div className="py-12 text-center text-gray-400">
+            <div className="text-3xl mb-2">🚴</div>
             <div>Brak aktywności w wybranym okresie</div>
           </div>
         ) : (
@@ -84,73 +86,60 @@ export default async function RecentActivities({ year, month }: RecentActivities
                 href={`https://www.strava.com/activities/${a.strava_id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex sm:grid sm:grid-cols-[1fr_100px_70px_70px_70px_60px] gap-0 items-center px-4 py-3 border-b border-white/[0.03] hover:bg-white/[0.03] transition-colors"
+                className="grid grid-cols-[1fr_72px_72px_72px_60px_24px] gap-0 items-center px-4 py-2.5 border-b border-white/[0.03] hover:bg-white/[0.04] transition-colors"
               >
-                {/* Zawodnik + info */}
-                <div className="flex items-center gap-3 min-w-0 flex-1">
+                {/* Zawodnik */}
+                <div className="flex items-center gap-2.5 min-w-0">
                   {a.users.profile_medium ? (
                     <Image
                       src={a.users.profile_medium}
                       alt=""
-                      width={28}
-                      height={28}
+                      width={24}
+                      height={24}
                       className="rounded-full flex-shrink-0 ring-1 ring-white/10"
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-white/5 flex-shrink-0" />
+                    <div className="w-6 h-6 rounded-full bg-white/5 flex-shrink-0" />
                   )}
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-white/90 truncate">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-sm font-medium text-white/90 truncate">
                       {a.users.firstname} {a.users.lastname?.charAt(0)}.
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-xs text-gray-500">{formatDate(a.start_date_local)}</span>
-                      <span className="text-gray-700">·</span>
-                      <span className="text-xs text-gray-500">{typeLabel(a.type)}</span>
-                      {a.name && (
-                        <>
-                          <span className="text-gray-700">·</span>
-                          <span className="text-xs text-gray-600 truncate max-w-[140px]">{a.name}</span>
-                        </>
-                      )}
-                    </div>
+                    </span>
+                    <span className="text-xs text-gray-500 flex-shrink-0">{formatDate(a.start_date_local)}</span>
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-white/[0.06] text-gray-400 flex-shrink-0">
+                      {typeLabel(a.type, a.trainer)}
+                    </span>
+                    {a.name && (
+                      <span className="text-xs text-gray-600 truncate hidden md:block">{a.name}</span>
+                    )}
                   </div>
                 </div>
 
                 {/* Dystans */}
-                <div className="hidden sm:block text-right">
-                  <div className="text-sm font-semibold text-white/90">
-                    {(a.distance / 1000).toFixed(1)}
-                  </div>
-                  <div className="text-xs text-gray-400">km</div>
+                <div className="text-right">
+                  <span className="text-sm font-semibold text-white/90">{(a.distance / 1000).toFixed(1)}</span>
+                  <span className="text-xs text-gray-400 ml-1">km</span>
                 </div>
 
                 {/* Czas */}
-                <div className="hidden sm:block text-right">
-                  <div className="text-sm text-white/70">{formatTime(a.moving_time)}</div>
-                  <div className="text-xs text-gray-400">h</div>
+                <div className="text-right">
+                  <span className="text-sm text-white/70">{formatTime(a.moving_time)}</span>
                 </div>
 
-                {/* Średnia prędkość */}
-                <div className="hidden sm:block text-right">
-                  <div className="text-sm text-white/70">{formatSpeed(a.distance, a.moving_time)}</div>
-                  <div className="text-xs text-gray-400">km/h</div>
+                {/* Śr. prędkość */}
+                <div className="text-right">
+                  <span className="text-sm text-white/70">{formatSpeed(a.distance, a.moving_time)}</span>
+                  <span className="text-xs text-gray-400 ml-1">km/h</span>
                 </div>
 
                 {/* Przewyższenie */}
-                <div className="hidden sm:block text-right">
-                  <div className="text-sm text-white/70">{Math.round(a.total_elevation_gain)}</div>
-                  <div className="text-xs text-gray-400">m</div>
+                <div className="text-right">
+                  <span className="text-sm text-white/70">{Math.round(a.total_elevation_gain)}</span>
+                  <span className="text-xs text-gray-400 ml-1">m</span>
                 </div>
 
-                {/* Strava arrow */}
-                <div className="hidden sm:flex justify-end text-gray-600 text-xs">↗</div>
-
-                {/* Mobile: kluczowe dane */}
-                <div className="sm:hidden flex-shrink-0 text-right ml-3">
-                  <div className="text-sm font-semibold text-white/90">{(a.distance / 1000).toFixed(1)} km</div>
-                  <div className="text-xs text-gray-400">{formatSpeed(a.distance, a.moving_time)} km/h</div>
-                </div>
+                {/* Arrow */}
+                <div className="text-gray-600 text-xs text-right">↗</div>
               </a>
             ))}
           </div>
