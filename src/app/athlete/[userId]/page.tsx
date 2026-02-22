@@ -107,13 +107,6 @@ export default async function AthletePage({ params }: PageProps) {
             {user.city && (
               <p className="text-gray-500 text-sm mt-0.5">{user.city}</p>
             )}
-            <div className="flex items-center gap-2 mt-2">
-              {year?.longest_ride > 0 && (
-                <span className="glass rounded-lg px-2.5 py-1 text-xs text-gray-400 border border-white/10">
-                  🏆 Max {formatDistance(year.longest_ride)} km
-                </span>
-              )}
-            </div>
           </div>
         </div>
 
