@@ -8,6 +8,7 @@ interface Top3PodiumProps {
   metric: "distance" | "elevation" | "time" | "count";
   title: string;
   unit: string;
+  label?: string;
 }
 
 function getValue(entry: RankingEntry, metric: Top3PodiumProps["metric"]): string {
@@ -36,13 +37,16 @@ const medalStyles = [
   { bg: "from-orange-700/20 to-orange-800/5", border: "border-orange-700/30", text: "text-orange-600", badge: "gradient-bronze", label: "🥉" },
 ];
 
-export default function Top3Podium({ entries, metric, title, unit }: Top3PodiumProps) {
+export default function Top3Podium({ entries, metric, title, unit, label }: Top3PodiumProps) {
   const sorted = sortEntries(entries, metric).slice(0, 3);
 
   return (
     <div className="flex-1 min-w-0">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest">{title}</h3>
+        <div className="flex items-baseline gap-1.5">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest">{title}</h3>
+          {label && <span className="text-xs text-gray-700">— {label}</span>}
+        </div>
         <span className="text-xs text-gray-600">{unit}</span>
       </div>
       <div className="space-y-2">

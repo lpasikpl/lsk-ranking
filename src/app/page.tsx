@@ -133,9 +133,9 @@ export default async function HomePage({ searchParams }: PageProps) {
           <div className="mb-6">
             <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Top 3 <span className="text-gray-700">— {selMonthLabel}</span></h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Top3Podium entries={monthData} metric="distance" title="Dystans" unit="km" />
-              <Top3Podium entries={monthData} metric="elevation" title="Przewyższenie" unit="m" />
-              <Top3Podium entries={monthData} metric="time" title="Czas" unit="h" />
+              <Top3Podium entries={monthData} metric="distance" title="Dystans" unit="km" label={selMonthLabel} />
+              <Top3Podium entries={monthData} metric="elevation" title="Przewyższenie" unit="m" label={selMonthLabel} />
+              <Top3Podium entries={monthData} metric="time" title="Czas" unit="h" label={selMonthLabel} />
             </div>
           </div>
 
@@ -154,9 +154,9 @@ export default async function HomePage({ searchParams }: PageProps) {
 
         {/* Separator */}
         <div className="my-10 flex items-center gap-4">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          <span className="text-xs text-white/20 uppercase tracking-widest font-semibold">↑ miesiąc · rok ↓</span>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+          <span className="text-sm text-white/50 uppercase tracking-widest font-semibold">↑ miesiąc · rok ↓</span>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
         </div>
 
         {/* ===== ROK ===== */}
@@ -168,9 +168,9 @@ export default async function HomePage({ searchParams }: PageProps) {
           <div className="mb-6">
             <h2 className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-4">Top 3 <span className="text-gray-700">— {selRYear}</span></h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Top3Podium entries={yearData} metric="distance" title="Dystans" unit="km" />
-              <Top3Podium entries={yearData} metric="elevation" title="Przewyższenie" unit="m" />
-              <Top3Podium entries={yearData} metric="time" title="Czas" unit="h" />
+              <Top3Podium entries={yearData} metric="distance" title="Dystans" unit="km" label={String(selRYear)} />
+              <Top3Podium entries={yearData} metric="elevation" title="Przewyższenie" unit="m" label={String(selRYear)} />
+              <Top3Podium entries={yearData} metric="time" title="Czas" unit="h" label={String(selRYear)} />
             </div>
           </div>
 
