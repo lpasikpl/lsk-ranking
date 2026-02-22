@@ -162,7 +162,7 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
 
   return (
     <div ref={ref} className="glass rounded-2xl p-6">
-      <div className="flex items-center justify-end mb-6">
+      <div className="flex items-center justify-start mb-6">
         <div className="flex gap-1">
           {(["distance", "elevation", "time", "count"] as const).map(m => (
             <button key={m} onClick={() => setMetric(m)}

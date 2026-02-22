@@ -48,12 +48,12 @@ export default function SectionNav({ type, year, month, color }: SectionNavProps
       <div className="flex-1">
         <div className="text-xs text-gray-600 uppercase tracking-widest">{sectionLabel}</div>
         <div className="flex items-center gap-2 mt-0.5">
-          <button onClick={goPrev} className="text-gray-600 hover:text-white transition-colors text-lg leading-none">‹</button>
+          <button onClick={goPrev} className="text-gray-500 hover:text-white transition-colors text-2xl leading-none w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/5">‹</button>
           <span className={`text-lg font-bold text-white min-w-[120px]`}>{label}</span>
           <button
             onClick={goNext}
             disabled={isAtMax}
-            className="text-gray-600 hover:text-white transition-colors text-lg leading-none disabled:opacity-20 disabled:cursor-not-allowed"
+            className="text-gray-500 hover:text-white transition-colors text-2xl leading-none w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/5 disabled:opacity-20 disabled:cursor-not-allowed"
           >›</button>
         </div>
       </div>

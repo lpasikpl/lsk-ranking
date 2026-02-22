@@ -45,7 +45,7 @@ export default function Top3Podium({ entries, metric, title, unit, label }: Top3
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-baseline gap-1.5">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest">{title}</h3>
-          {label && <span className="text-xs text-gray-700">— {label}</span>}
+          {label && <span className="text-xs text-gray-500">— {label}</span>}
         </div>
         <span className="text-xs text-gray-600">{unit}</span>
       </div>
