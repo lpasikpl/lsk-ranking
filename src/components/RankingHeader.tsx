@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { User } from "@/types/database";
-import SyncButton from "./SyncButton";
 
 interface RankingHeaderProps {
   title: string;
@@ -11,10 +11,51 @@ interface RankingHeaderProps {
   user: Pick<User, "id" | "strava_id" | "firstname" | "lastname" | "profile_medium" | "is_admin"> | null;
 }
 
+function useSyncUser(userId: string) {
+  const [status, setStatus] = useState<"idle" | "syncing" | "done" | "error">("idle");
+  const [message, setMessage] = useState("");
+
+  const handleSync = async () => {
+    setStatus("syncing");
+    setMessage("Synchronizuję...");
+    try {
+      const res = await fetch(`/api/sync/user/${userId}`, { method: "POST", credentials: "include" });
+      const data = await res.json();
+      if (data.success) {
+        setStatus("done");
+        setMessage(`Zsynchronizowano ${data.synced} aktywności`);
+        setTimeout(() => { setStatus("idle"); setMessage(""); window.location.reload(); }, 2000);
+      } else {
+        setStatus("error");
+        setMessage(data.error || "Błąd synchronizacji");
+        setTimeout(() => { setStatus("idle"); setMessage(""); }, 4000);
+      }
+    } catch {
+      setStatus("error");
+      setMessage("Błąd połączenia");
+      setTimeout(() => { setStatus("idle"); setMessage(""); }, 4000);
+    }
+  };
+
+  return { status, message, handleSync };
+}
+
 export default function RankingHeader({ title, subtitle, user }: RankingHeaderProps) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const { status, message, handleSync } = useSyncUser(user?.id ?? "");
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const handleLogout = async () => {
+    setOpen(false);
     await fetch("/api/auth/logout");
     router.push("/login");
     router.refresh();
@@ -24,50 +65,18 @@ export default function RankingHeader({ title, subtitle, user }: RankingHeaderPr
     <header className="w-full border-b border-white/[0.06]">
       <div className="max-w-5xl mx-auto px-4 py-5">
         <div className="flex items-center justify-between">
-          {/* Logo / Tytuł */}
+          {/* Logo */}
           <div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-              <span className="text-xs font-semibold text-orange-500 uppercase tracking-widest">
-                {subtitle}
-              </span>
+              <span className="text-xs font-semibold text-orange-500 uppercase tracking-widest">{subtitle}</span>
             </div>
-            <h1 className="text-2xl font-black tracking-tight text-white mt-0.5">
-              {title}
-            </h1>
+            <h1 className="text-2xl font-black tracking-tight text-white mt-0.5">{title}</h1>
           </div>
 
-          {/* Auth */}
-          <div className="flex items-center gap-3 text-sm">
-            {user ? (
-              <>
-                {user.is_admin && (
-                  <Link
-                    href="/admin"
-                    className="flex items-center gap-1.5 glass rounded-lg px-3 py-1.5 text-xs font-medium text-purple-400 border border-purple-500/20 hover:border-purple-500/40 transition-colors"
-                  >
-                    ⚙️ Panel Admin
-                  </Link>
-                )}
-                <SyncButton userId={user.id} />
-                <div className="flex items-center gap-2 glass rounded-lg px-3 py-1.5">
-                  <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center">
-                    <span className="text-xs text-orange-400">
-                      {user.firstname?.charAt(0)}
-                    </span>
-                  </div>
-                  <span className="text-gray-400 text-xs">
-                    {user.firstname} {user.lastname?.charAt(0)}.
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="text-gray-600 hover:text-gray-400 transition-colors ml-1 text-xs"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </>
-            ) : (
+          {/* Prawa strona */}
+          <div className="flex items-center gap-3">
+            {!user && (
               <a
                 href="/api/auth/strava"
                 className="flex items-center gap-2 glass rounded-lg px-3 py-1.5 text-xs font-medium text-orange-400 border border-orange-500/20 hover:border-orange-500/40 transition-colors"
@@ -77,6 +86,77 @@ export default function RankingHeader({ title, subtitle, user }: RankingHeaderPr
                 </svg>
                 Zaloguj przez Stravę
               </a>
+            )}
+
+            {user && (
+              <div className="relative" ref={menuRef}>
+                {/* Hamburger */}
+                <button
+                  onClick={() => setOpen(v => !v)}
+                  className="glass rounded-lg px-3 py-2 flex items-center gap-2 hover:bg-white/[0.06] transition-colors"
+                  aria-label="Menu"
+                >
+                  <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs text-orange-400">{user.firstname?.charAt(0)}</span>
+                  </div>
+                  <div className="flex flex-col gap-[4px]">
+                    <span className="block w-4 h-[2px] bg-gray-400 rounded" />
+                    <span className="block w-4 h-[2px] bg-gray-400 rounded" />
+                    <span className="block w-4 h-[2px] bg-gray-400 rounded" />
+                  </div>
+                </button>
+
+                {/* Dropdown */}
+                {open && (
+                  <div className="absolute right-0 top-full mt-2 w-52 glass rounded-xl border border-white/[0.08] shadow-2xl overflow-hidden z-50">
+                    {/* Użytkownik */}
+                    <div className="px-4 py-3 border-b border-white/[0.06]">
+                      <div className="text-sm font-semibold text-white">{user.firstname} {user.lastname}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">Zalogowany</div>
+                    </div>
+
+                    {/* Sync */}
+                    <button
+                      onClick={() => { handleSync(); }}
+                      disabled={status === "syncing"}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-white/[0.05] transition-colors border-b border-white/[0.04] disabled:opacity-50"
+                    >
+                      {status === "syncing" ? (
+                        <svg className="animate-spin w-4 h-4 text-orange-400 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                        </svg>
+                      ) : (
+                        <span className="text-orange-400 text-base leading-none flex-shrink-0">↻</span>
+                      )}
+                      <span>
+                        {status === "syncing" ? "Synchronizuję..." : status === "done" ? message : status === "error" ? message : "Synchronizuj Stravę"}
+                      </span>
+                    </button>
+
+                    {/* Admin */}
+                    {user.is_admin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-purple-400 hover:bg-white/[0.05] transition-colors border-b border-white/[0.04]"
+                      >
+                        <span className="text-base leading-none flex-shrink-0">⚙️</span>
+                        <span>Panel Admin</span>
+                      </Link>
+                    )}
+
+                    {/* Wyloguj */}
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-400 hover:bg-white/[0.05] hover:text-red-400 transition-colors"
+                    >
+                      <span className="text-base leading-none flex-shrink-0">→</span>
+                      <span>Wyloguj</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
