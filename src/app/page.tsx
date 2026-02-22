@@ -12,6 +12,7 @@ import DailyChart from "@/components/DailyChart";
 import SectionNav from "@/components/SectionNav";
 import AnimatedStatCard from "@/components/AnimatedStatCard";
 import Footer from "@/components/Footer";
+import RecentActivities from "@/components/RecentActivities";
 import { formatDistance, formatTime, formatNumber } from "@/lib/format";
 
 interface PageProps {
@@ -150,6 +151,8 @@ export default async function HomePage({ searchParams }: PageProps) {
           </div>
 
           <TopEfforts year={selYear} month={selMonth} />
+
+          <RecentActivities year={selYear} month={selMonth} />
         </div>
 
         {/* Separator */}
