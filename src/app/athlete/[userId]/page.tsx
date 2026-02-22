@@ -6,9 +6,59 @@ import { formatDistance, formatTime, getCountryFlag, formatNumber } from "@/lib/
 import { startOfYear, endOfYear } from "date-fns";
 import MonthlyChart from "@/components/MonthlyChart";
 import Footer from "@/components/Footer";
+import RankBadge from "@/components/RankBadge";
 
 interface PageProps {
   params: Promise<{ userId: string }>;
+}
+
+const EFFORT_DISTANCES = ["10 km", "20 km", "30 km", "40 km", "50 km", "100 km"] as const;
+
+async function getAthleteBadges(userId: string) {
+  const supabase = createServiceClient();
+  const startDate = startOfYear(new Date()).toISOString();
+  const endDate = endOfYear(new Date()).toISOString();
+
+  const [rankingRes, ...effortResults] = await Promise.all([
+    supabase.rpc("get_ranking", { p_start_date: startDate, p_end_date: endDate }),
+    ...EFFORT_DISTANCES.map(dist =>
+      supabase
+        .from("lsk_best_efforts")
+        .select("moving_time, users!inner(id, is_active)")
+        .eq("effort_name", dist)
+        .eq("users.is_active", true)
+        .gte("activity_date", startDate)
+        .lte("activity_date", endDate)
+        .order("moving_time", { ascending: true })
+        .limit(1000)
+    ),
+  ]);
+
+  const ranking: any[] = rankingRes.data || [];
+  const distIdx = ranking.findIndex(e => e.user_id === userId);
+  const elevIdx = [...ranking].sort((a, b) => b.total_elevation - a.total_elevation).findIndex(e => e.user_id === userId);
+  const timeIdx = [...ranking].sort((a, b) => b.total_time - a.total_time).findIndex(e => e.user_id === userId);
+
+  const rankingPositions = [
+    { label: "Dystans", position: distIdx >= 0 ? distIdx + 1 : 0 },
+    { label: "m↑", position: elevIdx >= 0 ? elevIdx + 1 : 0 },
+    { label: "Czas", position: timeIdx >= 0 ? timeIdx + 1 : 0 },
+  ].filter(b => b.position > 0);
+
+  const effortPositions: { label: string; position: number }[] = [];
+  EFFORT_DISTANCES.forEach((dist, i) => {
+    const data: any[] = (effortResults[i].data as any[]) || [];
+    const seen = new Set<string>();
+    const deduped = data.filter(r => {
+      if (seen.has(r.users.id)) return false;
+      seen.add(r.users.id);
+      return true;
+    });
+    const pos = deduped.findIndex(r => r.users.id === userId);
+    if (pos >= 0) effortPositions.push({ label: dist, position: pos + 1 });
+  });
+
+  return { rankingPositions, effortPositions };
 }
 
 async function getAthleteData(userId: string) {
@@ -35,7 +85,10 @@ async function getAthleteData(userId: string) {
 
 export default async function AthletePage({ params }: PageProps) {
   const { userId } = await params;
-  const { user, year2025, year, monthly } = await getAthleteData(userId);
+  const [{ user, year2025, year, monthly }, badges] = await Promise.all([
+    getAthleteData(userId),
+    getAthleteBadges(userId),
+  ]);
 
   if (!user) notFound();
 
@@ -95,7 +148,7 @@ export default async function AthletePage({ params }: PageProps) {
           ) : (
             <div className="w-18 h-18 rounded-full bg-white/5 flex-shrink-0" />
           )}
-          <div>
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-white">
                 {user.firstname} {user.lastname}
@@ -106,6 +159,36 @@ export default async function AthletePage({ params }: PageProps) {
             </div>
             {user.city && (
               <p className="text-gray-500 text-sm mt-0.5">{user.city}</p>
+            )}
+            {(badges.rankingPositions.length > 0 || badges.effortPositions.length > 0) && (
+              <div className="mt-3 pt-3 border-t border-white/[0.06] flex flex-wrap gap-x-5 gap-y-2">
+                {badges.rankingPositions.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-600 uppercase tracking-wider whitespace-nowrap">Ranking {currentYear}</span>
+                    <div className="flex gap-2">
+                      {badges.rankingPositions.map(b => (
+                        <div key={b.label} className="flex flex-col items-center gap-0.5">
+                          <RankBadge position={b.position} showTrophyFrom={2} />
+                          <span className="text-[10px] text-gray-600">{b.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {badges.effortPositions.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-600 uppercase tracking-wider whitespace-nowrap">Top prędkości</span>
+                    <div className="flex gap-2">
+                      {badges.effortPositions.map(b => (
+                        <div key={b.label} className="flex flex-col items-center gap-0.5">
+                          <RankBadge position={b.position} showTrophyFrom={2} />
+                          <span className="text-[10px] text-gray-600">{b.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
