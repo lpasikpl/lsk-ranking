@@ -14,9 +14,9 @@ interface PageProps {
 async function getAthleteData(userId: string) {
   const supabase = createServiceClient();
 
-  const [userRes, allTimeRes, yearRes, monthlyRes] = await Promise.all([
+  const [userRes, year2025Res, yearRes, monthlyRes] = await Promise.all([
     supabase.from("users").select("*").eq("id", userId).single(),
-    supabase.rpc("get_athlete_stats", { p_user_id: userId, p_start_date: "2000-01-01T00:00:00Z", p_end_date: new Date().toISOString() }),
+    supabase.rpc("get_athlete_stats", { p_user_id: userId, p_start_date: "2025-01-01T00:00:00Z", p_end_date: "2025-12-31T23:59:59Z" }),
     supabase.rpc("get_athlete_stats", {
       p_user_id: userId,
       p_start_date: startOfYear(new Date()).toISOString(),
@@ -27,7 +27,7 @@ async function getAthleteData(userId: string) {
 
   return {
     user: userRes.data,
-    allTime: allTimeRes.data?.[0] || null,
+    year2025: year2025Res.data?.[0] || null,
     year: yearRes.data?.[0] || null,
     monthly: monthlyRes.data || [],
   };
@@ -35,7 +35,7 @@ async function getAthleteData(userId: string) {
 
 export default async function AthletePage({ params }: PageProps) {
   const { userId } = await params;
-  const { user, allTime, year, monthly } = await getAthleteData(userId);
+  const { user, year2025, year, monthly } = await getAthleteData(userId);
 
   if (!user) notFound();
 
@@ -48,16 +48,16 @@ export default async function AthletePage({ params }: PageProps) {
         { name: "Dystans", value: formatDistance(year?.total_distance || 0), unit: "km" },
         { name: "Przewyższenie", value: formatNumber(year?.total_elevation || 0), unit: "m" },
         { name: "Czas", value: formatTime(year?.total_time || 0), unit: "h" },
-        { name: "Aktywności", value: formatNumber(year?.activity_count || 0), unit: "szt." },
+        { name: "Aktywne dni", value: formatNumber(year?.active_days || 0), unit: "dni" },
       ],
     },
     {
-      label: "Wszystkie czasy",
+      label: "2025",
       items: [
-        { name: "Dystans", value: formatDistance(allTime?.total_distance || 0), unit: "km" },
-        { name: "Przewyższenie", value: formatNumber(allTime?.total_elevation || 0), unit: "m" },
-        { name: "Czas", value: formatTime(allTime?.total_time || 0), unit: "h" },
-        { name: "Aktywności", value: formatNumber(allTime?.activity_count || 0), unit: "szt." },
+        { name: "Dystans", value: formatDistance(year2025?.total_distance || 0), unit: "km" },
+        { name: "Przewyższenie", value: formatNumber(year2025?.total_elevation || 0), unit: "m" },
+        { name: "Czas", value: formatTime(year2025?.total_time || 0), unit: "h" },
+        { name: "Aktywne dni", value: formatNumber(year2025?.active_days || 0), unit: "dni" },
       ],
     },
   ];
@@ -108,11 +108,6 @@ export default async function AthletePage({ params }: PageProps) {
               <p className="text-gray-500 text-sm mt-0.5">{user.city}</p>
             )}
             <div className="flex items-center gap-2 mt-2">
-              {year?.avg_speed > 0 && (
-                <span className="glass rounded-lg px-2.5 py-1 text-xs text-orange-400 border border-orange-500/20">
-                  ⚡ {(year.avg_speed).toFixed(1)} km/h śr.
-                </span>
-              )}
               {year?.longest_ride > 0 && (
                 <span className="glass rounded-lg px-2.5 py-1 text-xs text-gray-400 border border-white/10">
                   🏆 Max {formatDistance(year.longest_ride)} km
