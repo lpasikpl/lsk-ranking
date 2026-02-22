@@ -15,7 +15,20 @@ export async function POST(
 
   const cookieUserId = request.cookies.get("lsk_user_id")?.value;
   const isOwnSync = cookieUserId === userId;
-  const isAuthorized = isOwnSync || authHeader === `Bearer ${webhookSecret}`;
+  const isBearerAuth = authHeader === `Bearer ${webhookSecret}`;
+
+  let isAdmin = false;
+  if (cookieUserId && !isOwnSync && !isBearerAuth) {
+    const supabaseCheck = createServiceClient();
+    const { data: adminCheck } = await supabaseCheck
+      .from("users")
+      .select("is_admin")
+      .eq("id", cookieUserId)
+      .single();
+    isAdmin = adminCheck?.is_admin === true;
+  }
+
+  const isAuthorized = isOwnSync || isBearerAuth || isAdmin;
 
   if (!isAuthorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
