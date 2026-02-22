@@ -73,6 +73,9 @@ export async function fetchAndSaveBestEfforts(
       activityDistance = activity.distance;
     }
 
+    // Pomiń aktywności przed 2025
+    if (activityDate < "2025-01-01") return 0;
+
     // Pomiń aktywności krótsze niż 5km
     if (activityDistance < 5000) return 0;
 
