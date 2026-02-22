@@ -22,9 +22,10 @@ export async function POST(_request: NextRequest) {
   const results = await Promise.all(users.map(async (u) => {
     const { data: activities } = await supabase
       .from("lsk_activities")
-      .select("strava_id, start_date, distance, name, trainer")
+      .select("strava_id, start_date, distance, name, trainer, type")
       .eq("user_id", u.id)
-      .in("type", ["Ride"]);
+      .neq("type", "VirtualRide")
+      .eq("trainer", false);
 
     if (!activities || activities.length === 0) {
       return { userId: u.id, activities: 0, saved: 0 };
@@ -38,6 +39,7 @@ export async function POST(_request: NextRequest) {
         distance: act.distance,
         name: act.name,
         trainer: act.trainer === true,
+        type: act.type,
       });
       saved += n;
       // 300ms = maks ~3 aktywności/s, bezpieczny limit per user (200 req/15min per token)

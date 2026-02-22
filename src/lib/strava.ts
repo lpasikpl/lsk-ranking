@@ -178,13 +178,12 @@ export async function syncUserActivities(
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
-    // Filtruj tylko jazdy rowerem
+    // Filtruj jazdy rowerem (wszystkie typy rowerowe z Strava)
+    const BIKE_TYPES = new Set([
+      "Ride", "VirtualRide", "GravelRide", "MountainBikeRide", "EBikeRide", "Handcycle", "Velomobile",
+    ]);
     const rideActivities = allActivities.filter(
-      (a) =>
-        a.type === "Ride" ||
-        a.type === "VirtualRide" ||
-        a.sport_type === "Ride" ||
-        a.sport_type === "VirtualRide"
+      (a) => BIKE_TYPES.has(a.type) || BIKE_TYPES.has(a.sport_type)
     );
 
     if (rideActivities.length === 0) {
