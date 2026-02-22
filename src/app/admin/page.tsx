@@ -43,18 +43,17 @@ async function getRecentSyncLogs() {
 
 async function getBestEffortsSummary() {
   const supabase = createServiceClient();
-  // Pobierz wszystkie rekordy (do 10000) i agreguj w JS
   const { data } = await supabase
     .from("lsk_best_efforts")
     .select(`
-      effort_name, moving_time,
+      effort_name, moving_time, strava_activity_id, activity_date,
       users!inner(id, firstname, lastname)
     `)
+    .order("moving_time", { ascending: true })
     .limit(10000);
 
   if (!data) return [];
 
-  // Grupuj per user+dystans: najlepszy czas + liczba
   const grouped: Record<string, {
     user_id: string;
     firstname: string | null;
@@ -62,6 +61,7 @@ async function getBestEffortsSummary() {
     effort_name: string;
     best_time: number;
     count: number;
+    records: Array<{ moving_time: number; strava_activity_id: number; activity_date: string }>;
   }> = {};
 
   for (const row of data as any[]) {
@@ -73,12 +73,17 @@ async function getBestEffortsSummary() {
         lastname: row.users.lastname,
         effort_name: row.effort_name,
         best_time: row.moving_time,
-        count: 1,
+        count: 0,
+        records: [],
       };
-    } else {
-      grouped[key].count++;
-      if (row.moving_time < grouped[key].best_time) grouped[key].best_time = row.moving_time;
     }
+    grouped[key].count++;
+    if (row.moving_time < grouped[key].best_time) grouped[key].best_time = row.moving_time;
+    grouped[key].records.push({
+      moving_time: row.moving_time,
+      strava_activity_id: row.strava_activity_id,
+      activity_date: row.activity_date,
+    });
   }
 
   return Object.values(grouped).sort((a, b) =>
