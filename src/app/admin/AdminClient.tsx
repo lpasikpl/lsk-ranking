@@ -64,6 +64,7 @@ export default function AdminClient({
   const [expandedDistances, setExpandedDistances] = useState<Set<string>>(new Set());
   const [syncingAll, setSyncingAll] = useState(false);
   const [backfillingEfforts, setBackfillingEfforts] = useState(false);
+  const [fixingTypes, setFixingTypes] = useState(false);
   const [syncingUser, setSyncingUser] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -278,6 +279,33 @@ export default function AdminClient({
             className="px-4 py-2 bg-red-700 text-white rounded-lg text-sm font-medium hover:bg-red-800 transition-colors"
           >
             Usuń indoor/virtual
+          </button>
+          <button
+            onClick={async () => {
+              if (!confirm("Pobierze ponownie wszystkie aktywności od 2025-01-01 i zaktualizuje typy (sport_type). Może potrwać kilka minut. Kontynuować?")) return;
+              setFixingTypes(true);
+              try {
+                const res = await fetch("/api/admin/fix-activity-types", { method: "POST" });
+                const data = await res.json();
+                if (res.ok) {
+                  const details = data.results
+                    ?.map((r: { name: string; synced: number; error?: string }) => `${r.name}: ${r.synced}`)
+                    .join(", ");
+                  showMessage("success", `Naprawiono typy! Zaktualizowano ${data.total} aktywności. [${details}]`);
+                  router.refresh();
+                } else {
+                  showMessage("error", data.error || "Błąd naprawiania typów");
+                }
+              } catch {
+                showMessage("error", "Błąd połączenia");
+              } finally {
+                setFixingTypes(false);
+              }
+            }}
+            disabled={fixingTypes}
+            className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {fixingTypes ? "Naprawiam typy..." : "Napraw typy"}
           </button>
         </div>
 
