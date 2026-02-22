@@ -67,12 +67,14 @@ export default function AnimatedStatCard({ icon, rawValue, formattedValue, unit,
   }, [visible, rawValue, formattedValue, delay, isTime]);
 
   return (
-    <div ref={ref} className="stat-card glass glass-hover rounded-2xl p-5 relative overflow-hidden">
+    <div ref={ref} className="stat-card glass glass-hover rounded-2xl p-4 relative overflow-hidden">
       <div className="stat-card-glow" />
-      <div className="text-2xl mb-3">{icon}</div>
-      <div className="text-2xl font-black text-white tabular-nums">{display}</div>
-      <div className="text-xs text-gray-400 mt-0.5">{unit}</div>
-      <div className="text-xs text-gray-400 mt-1.5 uppercase tracking-wider font-medium">{label}</div>
+      <div className="flex items-baseline gap-1.5 mb-1">
+        <span className="text-xl">{icon}</span>
+        <span className="text-2xl font-black text-white tabular-nums">{display}</span>
+        {!isTime && <span className="text-sm text-gray-400">{unit}</span>}
+      </div>
+      <div className="text-xs text-gray-400 uppercase tracking-wider font-medium">{label}</div>
     </div>
   );
 }
