@@ -54,7 +54,7 @@ async function getTopEfforts(year: number, month?: number) {
       .gte("activity_date", startDate)
       .lte("activity_date", endDate)
       .order("moving_time", { ascending: true })
-      .limit(50);
+      .limit(1000);
 
     if (data && data.length > 0) {
       const seen = new Set<string>();
