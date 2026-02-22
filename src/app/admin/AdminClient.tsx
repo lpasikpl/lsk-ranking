@@ -60,7 +60,8 @@ export default function AdminClient({
   const router = useRouter();
   const [users, setUsers] = useState(initialUsers);
   const [activeTab, setActiveTab] = useState<"users" | "logs" | "efforts">("users");
-  const [expandedEffort, setExpandedEffort] = useState<string | null>(null);
+  const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
+  const [expandedDistances, setExpandedDistances] = useState<Set<string>>(new Set());
   const [syncingAll, setSyncingAll] = useState(false);
   const [backfillingEfforts, setBackfillingEfforts] = useState(false);
   const [syncingUser, setSyncingUser] = useState<string | null>(null);
@@ -370,95 +371,160 @@ export default function AdminClient({
         )}
 
         {/* Best Efforts */}
-        {activeTab === "efforts" && (
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            {bestEfforts.length === 0 ? (
-              <div className="p-8 text-center text-gray-500 text-sm">
-                Brak danych — uruchom Backfill best efforts
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-800 text-white">
-                      <th className="text-left py-3 px-4 font-semibold">Dystans</th>
-                      <th className="text-left py-3 px-4 font-semibold">Użytkownik</th>
-                      <th className="text-right py-3 px-4 font-semibold">Najlepszy czas</th>
-                      <th className="text-right py-3 px-4 font-semibold">Rekordów</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bestEfforts.map((row, index) => {
-                      const fmtTime = (sec: number) => {
-                        const h = Math.floor(sec / 3600);
-                        const m = Math.floor((sec % 3600) / 60);
-                        const s = sec % 60;
-                        return h > 0
-                          ? `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
-                          : `${m}:${s.toString().padStart(2, "0")}`;
-                      };
-                      const rowKey = `${row.user_id}_${row.effort_name}`;
-                      const isExpanded = expandedEffort === rowKey;
-                      const distMeters: Record<string, number> = {
-                        "10 km": 10000, "20 km": 20000, "30 km": 30000,
-                        "40 km": 40000, "50 km": 50000, "100 km": 100000,
-                      };
-                      const fmtSpeed = (sec: number) => {
-                        const km = distMeters[row.effort_name] ?? 0;
-                        return km > 0 ? `${((km / sec) * 3.6).toFixed(1)} km/h` : "";
-                      };
-                      const sortedRecords = [...row.records].sort((a, b) => a.moving_time - b.moving_time);
-                      return (
-                        <>
-                          <tr
-                            key={rowKey}
-                            onClick={() => setExpandedEffort(isExpanded ? null : rowKey)}
-                            className={`border-b border-gray-100 cursor-pointer hover:bg-blue-50/50 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
-                          >
-                            <td className="py-2.5 px-4 text-gray-700 font-medium">{row.effort_name}</td>
-                            <td className="py-2.5 px-4 text-gray-700">{row.firstname} {row.lastname}</td>
-                            <td className="py-2.5 px-4 text-right font-mono text-gray-800">{fmtTime(row.best_time)}</td>
-                            <td className="py-2.5 px-4 text-right text-gray-500 text-xs">
-                              <span className="inline-flex items-center gap-1">
-                                {row.count}
-                                <span className="text-gray-400">{isExpanded ? "▲" : "▼"}</span>
-                              </span>
-                            </td>
-                          </tr>
-                          {isExpanded && sortedRecords.map((rec, ri) => (
-                            <tr key={`${rowKey}_${ri}`} className="bg-blue-50/30 border-b border-blue-100/50">
-                              <td className="py-1.5 px-4 pl-8 text-gray-400 text-xs">#{ri + 1}</td>
-                              <td className="py-1.5 px-4 text-xs text-gray-500">
-                                {new Date(rec.activity_date).toLocaleDateString("pl-PL", {
-                                  day: "2-digit", month: "2-digit", year: "numeric"
-                                })}
-                              </td>
-                              <td className="py-1.5 px-4 text-right font-mono text-xs text-gray-700">
-                                {fmtTime(rec.moving_time)}
-                                <span className="ml-2 text-gray-400 font-sans">{fmtSpeed(rec.moving_time)}</span>
-                              </td>
-                              <td className="py-1.5 px-4 text-right">
-                                <a
-                                  href={`https://www.strava.com/activities/${rec.strava_activity_id}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  onClick={e => e.stopPropagation()}
-                                  className="text-xs text-orange-600 hover:underline"
+        {activeTab === "efforts" && (() => {
+          const DIST_METERS: Record<string, number> = {
+            "10 km": 10000, "20 km": 20000, "30 km": 30000,
+            "40 km": 40000, "50 km": 50000, "100 km": 100000,
+          };
+          const fmtTime = (sec: number) => {
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = sec % 60;
+            return h > 0
+              ? `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
+              : `${m}:${s.toString().padStart(2, "0")}`;
+          };
+          const fmtSpeed = (sec: number, effortName: string) => {
+            const meters = DIST_METERS[effortName] ?? 0;
+            return meters > 0 ? `${((meters / sec) * 3.6).toFixed(1)} km/h` : "";
+          };
+
+          // Grupuj po użytkowniku
+          const byUser: Record<string, { user_id: string; firstname: string | null; lastname: string | null; distances: BestEffortRow[] }> = {};
+          for (const row of bestEfforts) {
+            if (!byUser[row.user_id]) {
+              byUser[row.user_id] = { user_id: row.user_id, firstname: row.firstname, lastname: row.lastname, distances: [] };
+            }
+            byUser[row.user_id].distances.push(row);
+          }
+          const userList = Object.values(byUser).sort((a, b) =>
+            `${a.firstname} ${a.lastname}`.localeCompare(`${b.firstname} ${b.lastname}`)
+          );
+
+          const toggleUser = (uid: string) => {
+            setExpandedUsers(prev => {
+              const next = new Set(prev);
+              next.has(uid) ? next.delete(uid) : next.add(uid);
+              return next;
+            });
+          };
+          const toggleDist = (key: string) => {
+            setExpandedDistances(prev => {
+              const next = new Set(prev);
+              next.has(key) ? next.delete(key) : next.add(key);
+              return next;
+            });
+          };
+
+          return (
+            <div className="divide-y divide-gray-100">
+              {userList.length === 0 && (
+                <div className="p-8 text-center text-gray-500 text-sm">
+                  Brak danych — uruchom Backfill best efforts
+                </div>
+              )}
+              {userList.map(user => {
+                const userExpanded = expandedUsers.has(user.user_id);
+                const totalRecords = user.distances.reduce((s, d) => s + d.count, 0);
+                return (
+                  <div key={user.user_id}>
+                    {/* Wiersz zawodnika */}
+                    <div
+                      onClick={() => toggleUser(user.user_id)}
+                      className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 select-none"
+                    >
+                      <span className="font-semibold text-gray-800 text-sm">
+                        {user.firstname} {user.lastname}
+                      </span>
+                      <span className="flex items-center gap-3 text-xs text-gray-400">
+                        <span>{user.distances.length} dystansów · {totalRecords} rekordów</span>
+                        <span>{userExpanded ? "▲" : "▼"}</span>
+                      </span>
+                    </div>
+
+                    {/* Lista dystansów */}
+                    {userExpanded && (
+                      <div className="bg-gray-50 border-t border-gray-100 divide-y divide-gray-100">
+                        {user.distances
+                          .sort((a, b) => {
+                            const order = ["10 km","20 km","30 km","40 km","50 km","100 km"];
+                            return order.indexOf(a.effort_name) - order.indexOf(b.effort_name);
+                          })
+                          .map(dist => {
+                            const distKey = `${user.user_id}_${dist.effort_name}`;
+                            const distExpanded = expandedDistances.has(distKey);
+                            const sortedRecs = [...dist.records].sort((a, b) => a.moving_time - b.moving_time);
+                            return (
+                              <div key={distKey}>
+                                {/* Wiersz dystansu */}
+                                <div
+                                  onClick={() => toggleDist(distKey)}
+                                  className="flex items-center justify-between px-4 pl-10 py-2 cursor-pointer hover:bg-blue-50/40 select-none"
                                 >
-                                  Strava ↗
-                                </a>
-                              </td>
-                            </tr>
-                          ))}
-                        </>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
+                                  <span className="text-sm font-medium text-gray-700 w-16">{dist.effort_name}</span>
+                                  <span className="font-mono text-sm text-gray-800">{fmtTime(dist.best_time)}</span>
+                                  <span className="text-xs text-gray-400">{fmtSpeed(dist.best_time, dist.effort_name)}</span>
+                                  <span className="flex items-center gap-2 text-xs text-gray-400">
+                                    <span>{dist.count} rekordów</span>
+                                    <span>{distExpanded ? "▲" : "▼"}</span>
+                                  </span>
+                                </div>
+
+                                {/* Lista indywidualnych czasów */}
+                                {distExpanded && (
+                                  <div className="bg-white border-t border-blue-100/60">
+                                    <table className="w-full text-xs">
+                                      <thead>
+                                        <tr className="text-gray-400 border-b border-gray-100">
+                                          <th className="text-left py-1.5 px-4 pl-16 font-medium">#</th>
+                                          <th className="text-left py-1.5 px-4 font-medium">Data</th>
+                                          <th className="text-right py-1.5 px-4 font-medium">Czas</th>
+                                          <th className="text-right py-1.5 px-4 font-medium">Prędkość</th>
+                                          <th className="text-right py-1.5 px-4 font-medium">Link</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {sortedRecs.map((rec, ri) => (
+                                          <tr key={ri} className="border-b border-gray-50 hover:bg-gray-50">
+                                            <td className="py-1.5 px-4 pl-16 text-gray-400">{ri + 1}</td>
+                                            <td className="py-1.5 px-4 text-gray-500">
+                                              {new Date(rec.activity_date).toLocaleDateString("pl-PL", {
+                                                day: "2-digit", month: "2-digit", year: "numeric",
+                                              })}
+                                            </td>
+                                            <td className="py-1.5 px-4 text-right font-mono text-gray-800">
+                                              {fmtTime(rec.moving_time)}
+                                            </td>
+                                            <td className="py-1.5 px-4 text-right text-gray-500">
+                                              {fmtSpeed(rec.moving_time, dist.effort_name)}
+                                            </td>
+                                            <td className="py-1.5 px-4 text-right">
+                                              <a
+                                                href={`https://www.strava.com/activities/${rec.strava_activity_id}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-orange-600 hover:underline"
+                                              >
+                                                Strava ↗
+                                              </a>
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* Logi synchronizacji */}
         {activeTab === "logs" && (
