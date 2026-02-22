@@ -11,17 +11,20 @@ export async function POST(_request: NextRequest) {
   const { data: user } = await supabase.from("users").select("is_admin").eq("id", userId).single();
   if (!user?.is_admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  // Znajdź strava_id aktywności trainer=true lub VirtualRide
-  const { data: indoorActivities } = await supabase
-    .from("lsk_activities")
-    .select("strava_id")
-    .or("trainer.eq.true,type.eq.VirtualRide");
+  // Znajdź strava_id aktywności trainer=true lub VirtualRide (dwa osobne zapytania — unikamy problemów z .or() dla boolean)
+  const [trainerRes, virtualRes] = await Promise.all([
+    supabase.from("lsk_activities").select("strava_id").eq("trainer", true),
+    supabase.from("lsk_activities").select("strava_id").eq("type", "VirtualRide"),
+  ]);
 
-  if (!indoorActivities || indoorActivities.length === 0) {
-    return NextResponse.json({ deleted: 0 });
+  const ids = Array.from(new Set([
+    ...(trainerRes.data ?? []).map((a) => a.strava_id),
+    ...(virtualRes.data ?? []).map((a) => a.strava_id),
+  ]));
+
+  if (ids.length === 0) {
+    return NextResponse.json({ deleted: 0, debug: "no indoor/virtual activities found" });
   }
-
-  const ids = indoorActivities.map((a) => a.strava_id);
 
   const { count, error } = await supabase
     .from("lsk_best_efforts")
