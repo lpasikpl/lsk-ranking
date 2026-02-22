@@ -43,15 +43,21 @@ async function getRecentSyncLogs() {
 
 async function getBestEffortsSummary() {
   const supabase = createServiceClient();
-  const { data } = await supabase
-    .from("lsk_best_efforts")
-    .select(`
-      effort_name, moving_time, strava_activity_id, activity_date,
-      users!inner(id, firstname, lastname)
-    `)
-    .limit(100000);
 
-  if (!data) return [];
+  // Querujemy per dystans (6 zapytań) żeby ominąć limit ~1000 wierszy Supabase PostgREST
+  const DISTANCES = ["10 km", "20 km", "30 km", "40 km", "50 km", "100 km"];
+
+  const results = await Promise.all(
+    DISTANCES.map((dist) =>
+      supabase
+        .from("lsk_best_efforts")
+        .select(`effort_name, moving_time, strava_activity_id, activity_date, users!inner(id, firstname, lastname)`)
+        .eq("effort_name", dist)
+        .limit(10000)
+    )
+  );
+
+  const allRows: any[] = results.flatMap((r) => r.data ?? []);
 
   const grouped: Record<string, {
     user_id: string;
@@ -63,7 +69,7 @@ async function getBestEffortsSummary() {
     records: Array<{ moving_time: number; strava_activity_id: number; activity_date: string }>;
   }> = {};
 
-  for (const row of data as any[]) {
+  for (const row of allRows) {
     const key = `${row.users.id}_${row.effort_name}`;
     if (!grouped[key]) {
       grouped[key] = {

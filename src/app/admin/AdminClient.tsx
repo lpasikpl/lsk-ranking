@@ -259,6 +259,26 @@ export default function AdminClient({
           >
             Usuń pre-2025
           </button>
+          <button
+            onClick={async () => {
+              if (!confirm("Usunie best efforts dla aktywności trainer=true i VirtualRide. Kontynuować?")) return;
+              try {
+                const res = await fetch("/api/admin/cleanup-indoor-efforts", { method: "POST" });
+                const data = await res.json();
+                if (res.ok) {
+                  showMessage("success", `Usunięto ${data.deleted} rekordów indoor/virtual`);
+                  router.refresh();
+                } else {
+                  showMessage("error", data.error || "Błąd czyszczenia");
+                }
+              } catch {
+                showMessage("error", "Błąd połączenia");
+              }
+            }}
+            className="px-4 py-2 bg-red-700 text-white rounded-lg text-sm font-medium hover:bg-red-800 transition-colors"
+          >
+            Usuń indoor/virtual
+          </button>
         </div>
 
         {/* Zakładki */}
