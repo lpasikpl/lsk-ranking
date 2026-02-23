@@ -80,7 +80,7 @@ async function getTopEfforts(year: number, month?: number) {
 }
 
 const medalBg = [
-  "border-yellow-500/20", "border-gray-400/20", "border-orange-700/20",
+  "border-yellow-500/60 border-2", "border-gray-400/50 border-2", "border-orange-700/60 border-2",
   "border-white/5", "border-white/5", "border-white/5",
   "border-white/5", "border-white/5", "border-white/5", "border-white/5",
 ];
