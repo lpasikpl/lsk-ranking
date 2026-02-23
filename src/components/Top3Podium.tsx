@@ -86,7 +86,7 @@ export default function Top3Podium({ entries, metric, title, unit, label }: Top3
                     </a>
                   </div>
                   <span className={`text-sm font-bold ${medal.text} flex-shrink-0 whitespace-nowrap`}>
-                    {getValue(entry, metric)}{unit && metric !== "time" && <span className="text-xs font-normal text-gray-400 ml-0.5">{unit}</span>}
+                    {getValue(entry, metric)}{unit && metric !== "time" && <span className="text-xs font-normal ml-0.5">{unit}</span>}
                   </span>
                 </div>
               </div>

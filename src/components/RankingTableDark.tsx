@@ -46,8 +46,8 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
   };
 
   const gridCols = isAdmin
-    ? "grid-cols-[36px_1fr_64px_90px_32px] sm:grid-cols-[40px_1fr_90px_80px_110px_32px]"
-    : "grid-cols-[36px_1fr_64px_90px] sm:grid-cols-[40px_1fr_90px_80px_110px]";
+    ? "grid-cols-[36px_1fr_64px_90px_32px] sm:grid-cols-[40px_1fr_100px_100px_100px_32px]"
+    : "grid-cols-[36px_1fr_64px_90px] sm:grid-cols-[40px_1fr_100px_100px_100px]";
 
   return (
     <div className="glass rounded-2xl overflow-hidden">
@@ -145,8 +145,8 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
         <div className={`grid ${gridCols} gap-0 px-3 sm:px-4 py-3 border-t border-white/10 bg-white/[0.02]`}>
           <div />
           <div className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Suma</div>
-          <div className="text-right text-sm font-bold text-gradient-orange">{formatDistance(totalDistance)}</div>
-          <div className="hidden sm:block text-right text-sm font-semibold text-white/60">{formatNumber(totalElevation)}</div>
+          <div className="text-right text-sm font-bold text-gradient-orange whitespace-nowrap">{formatDistance(totalDistance)} <span className="text-xs font-normal">km</span></div>
+          <div className="hidden sm:block text-right text-sm font-semibold text-white/60 whitespace-nowrap">{formatNumber(totalElevation)} <span className="text-xs font-normal">m</span></div>
           <div className="text-right text-sm font-semibold text-white/60">{formatTime(totalTime)}</div>
           {isAdmin && <div />}
         </div>
