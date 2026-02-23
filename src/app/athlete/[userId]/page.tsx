@@ -98,19 +98,19 @@ export default async function AthletePage({ params }: PageProps) {
     {
       label: "Ten rok",
       items: [
-        { name: "Dystans", value: formatDistance(year?.total_distance || 0), unit: "km" },
-        { name: "Przewyższenie", value: formatNumber(year?.total_elevation || 0), unit: "m" },
-        { name: "Czas", value: formatTime(year?.total_time || 0), unit: "h" },
-        { name: "Aktywne dni", value: formatNumber(year?.active_days || 0), unit: "dni" },
+        { name: "Dystans", value: formatDistance(year?.total_distance || 0), unit: "km", isTime: false },
+        { name: "Przewyższenie", value: formatNumber(year?.total_elevation || 0), unit: "m", isTime: false },
+        { name: "Czas", value: formatTime(year?.total_time || 0), unit: "", isTime: true },
+        { name: "Aktywne dni", value: formatNumber(year?.active_days || 0), unit: "dni", isTime: false },
       ],
     },
     {
       label: "2025",
       items: [
-        { name: "Dystans", value: formatDistance(year2025?.total_distance || 0), unit: "km" },
-        { name: "Przewyższenie", value: formatNumber(year2025?.total_elevation || 0), unit: "m" },
-        { name: "Czas", value: formatTime(year2025?.total_time || 0), unit: "h" },
-        { name: "Aktywne dni", value: formatNumber(year2025?.active_days || 0), unit: "dni" },
+        { name: "Dystans", value: formatDistance(year2025?.total_distance || 0), unit: "km", isTime: false },
+        { name: "Przewyższenie", value: formatNumber(year2025?.total_elevation || 0), unit: "m", isTime: false },
+        { name: "Czas", value: formatTime(year2025?.total_time || 0), unit: "", isTime: true },
+        { name: "Aktywne dni", value: formatNumber(year2025?.active_days || 0), unit: "dni", isTime: false },
       ],
     },
   ];
@@ -202,9 +202,11 @@ export default async function AthletePage({ params }: PageProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {section.items.map((item) => (
                 <div key={item.name} className="glass rounded-xl p-4">
-                  <div className="text-xl font-bold text-white">{item.value}</div>
-                  <div className="text-xs text-gray-400 mt-0.5">{item.unit}</div>
-                  <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider">{item.name}</div>
+                  <div className="flex items-baseline gap-1.5 mb-1">
+                    <span className="text-2xl font-black text-white tabular-nums">{item.value}</span>
+                    {!item.isTime && item.unit && <span className="text-sm text-gray-400">{item.unit}</span>}
+                  </div>
+                  <div className="text-xs text-gray-400 uppercase tracking-wider font-medium">{item.name}</div>
                 </div>
               ))}
             </div>
