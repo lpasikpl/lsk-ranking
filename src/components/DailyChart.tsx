@@ -167,7 +167,7 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
           {(["distance", "elevation", "time", "count"] as const).map(m => (
             <button key={m} onClick={() => setMetric(m)}
               className={`px-2 py-1 rounded-lg text-xs transition-all ${metric === m ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "text-gray-400 hover:text-gray-200"}`}>
-              {m === "distance" ? "km" : m === "elevation" ? "m↑" : m === "time" ? "h" : "#"}
+              {m === "distance" ? "Dystans" : m === "elevation" ? "Przewyższenia" : m === "time" ? "Czas" : "#"}
             </button>
           ))}
         </div>
