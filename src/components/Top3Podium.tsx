@@ -47,7 +47,6 @@ export default function Top3Podium({ entries, metric, title, unit, label }: Top3
           <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">{title}</h3>
           {label && <span className="text-xs text-gray-500">— {label}</span>}
         </div>
-        <span className="text-xs text-gray-400">{unit}</span>
       </div>
       <div className="space-y-2">
         {sorted.length === 0 ? (
@@ -86,8 +85,8 @@ export default function Top3Podium({ entries, metric, title, unit, label }: Top3
                       )}
                     </a>
                   </div>
-                  <span className={`text-sm font-bold ${medal.text} flex-shrink-0`}>
-                    {getValue(entry, metric)}
+                  <span className={`text-sm font-bold ${medal.text} flex-shrink-0 whitespace-nowrap`}>
+                    {getValue(entry, metric)}{unit && metric !== "time" && <span className="text-xs font-normal text-gray-400 ml-0.5">{unit}</span>}
                   </span>
                 </div>
               </div>

@@ -112,18 +112,15 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
                   </div>
 
                   <div className="text-right">
-                    <div className="text-sm font-semibold text-white/90">{formatDistance(entry.total_distance)}</div>
-                    <div className="text-xs text-gray-400">km</div>
+                    <div className="text-sm font-semibold text-white/90 whitespace-nowrap">{formatDistance(entry.total_distance)} <span className="text-xs text-gray-400 font-normal">km</span></div>
                   </div>
 
                   <div className="hidden sm:block text-right">
-                    <div className="text-sm text-white/70">{formatNumber(entry.total_elevation)}</div>
-                    <div className="text-xs text-gray-400">m</div>
+                    <div className="text-sm text-white/70 whitespace-nowrap">{formatNumber(entry.total_elevation)} <span className="text-xs text-gray-400">m</span></div>
                   </div>
 
                   <div className="text-right">
                     <div className="text-sm text-white/70">{formatTime(entry.total_time)}</div>
-                    <div className="text-xs text-gray-400">h</div>
                   </div>
 
                   {isAdmin && (
