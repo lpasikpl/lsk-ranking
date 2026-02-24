@@ -371,7 +371,7 @@ function MonthDetailExpanded({
   return (
     <div className="glass rounded-2xl p-4 border border-white/[0.08]">
       <div className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">
-        {athlete.firstname} {athlete.lastname} — {MONTH_NAMES[month]}
+        {athlete.firstname} {athlete.lastname?.charAt(0)}. — {MONTH_NAMES[month]}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         <DetailCard

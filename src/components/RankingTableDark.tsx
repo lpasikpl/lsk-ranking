@@ -100,7 +100,8 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
                     <div className="min-w-0">
                       <a href={`/athlete/${entry.user_id}`}
                         className="text-sm font-medium text-white/80 hover:text-white truncate block transition-colors">
-                        {entry.firstname} {entry.lastname?.charAt(0)}.
+                        <span className="sm:hidden">{entry.firstname} {entry.lastname?.charAt(0)}.</span>
+                        <span className="hidden sm:inline">{entry.firstname} {entry.lastname}</span>
                         {getCountryFlag(entry.country) && (
                           <span className="ml-1 text-xs">{getCountryFlag(entry.country)}</span>
                         )}
