@@ -95,11 +95,10 @@ export default function RankingHeader({ title, subtitle, user }: RankingHeaderPr
               </Link>
               <Link
                 href="/rywalizacja"
-                className={`text-xs font-semibold px-2.5 py-1 rounded-md uppercase tracking-widest transition-colors flex items-center gap-1.5 ${
+                className={`text-xs font-semibold px-2.5 py-1 rounded-md uppercase tracking-widest transition-colors ${
                   pathname === "/rywalizacja" ? "bg-orange-500/20 text-orange-400" : "text-gray-500 hover:text-gray-300"
                 }`}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
                 Pre-Rywalizacja
               </Link>
               <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-gray-700 uppercase tracking-widest cursor-default">

@@ -568,6 +568,14 @@ export default function RywalizacjaClient({ data, currentYear, selectedYear }: P
 
   return (
     <div>
+      <div className="mb-5 p-4 glass rounded-2xl border border-white/[0.06]">
+        <p className="text-sm text-gray-400 leading-relaxed">
+          <span className="text-white font-semibold">Pre-Rywalizacja</span> to rozgrzewka przed właściwym sezonem.
+          Sprawdź jak działa system punktacji, przetestuj kategorie i przyzwyczaj się do rywalizacji z kolegami z grupy.
+          Punkty zdobyte w tym okresie nie liczą się do wyników sezonu głównego.{" "}
+          <span className="text-orange-400">Rywalizacja 2026 startuje 1 kwietnia i potrwa do 30 września.</span>
+        </p>
+      </div>
       <ScoringLegend />
 
       {/* Tab bar */}
