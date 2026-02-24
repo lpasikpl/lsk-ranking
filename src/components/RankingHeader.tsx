@@ -1,8 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+
+const COMPETITION_TARGET = new Date("2026-04-01T00:00:00");
+
+function useCountdown() {
+  const [diff, setDiff] = useState(() => Math.max(0, COMPETITION_TARGET.getTime() - Date.now()));
+  useEffect(() => {
+    const id = setInterval(() => setDiff(Math.max(0, COMPETITION_TARGET.getTime() - Date.now())), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const d = Math.floor(diff / 86_400_000);
+  const h = Math.floor((diff % 86_400_000) / 3_600_000);
+  const m = Math.floor((diff % 3_600_000) / 60_000);
+  const s = Math.floor((diff % 60_000) / 1_000);
+  return `${String(d).padStart(2,"0")}d ${String(h).padStart(2,"0")}h ${String(m).padStart(2,"0")}m ${String(s).padStart(2,"0")}s`;
+}
 import { User } from "@/types/database";
 
 interface RankingHeaderProps {
@@ -42,6 +57,8 @@ function useSyncUser(userId: string) {
 
 export default function RankingHeader({ title, subtitle, user }: RankingHeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const countdown = useCountdown();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { status, message, handleSync } = useSyncUser(user?.id ?? "");
@@ -65,13 +82,36 @@ export default function RankingHeader({ title, subtitle, user }: RankingHeaderPr
     <header className="w-full border-b border-white/[0.06]">
       <div className="max-w-5xl mx-auto px-4 py-5">
         <div className="flex items-center justify-between">
-          {/* Logo */}
+          {/* Logo + Nav */}
           <div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-              <span className="text-xs font-semibold text-orange-500 uppercase tracking-widest">{subtitle}</span>
+            <div className="flex items-center gap-1 mb-1 flex-wrap">
+              <Link
+                href="/"
+                className={`text-xs font-semibold px-2.5 py-1 rounded-md uppercase tracking-widest transition-colors ${
+                  pathname === "/" ? "bg-orange-500/20 text-orange-400" : "text-gray-500 hover:text-gray-300"
+                }`}
+              >
+                Ranking
+              </Link>
+              <Link
+                href="/rywalizacja"
+                className={`text-xs font-semibold px-2.5 py-1 rounded-md uppercase tracking-widest transition-colors flex items-center gap-1.5 ${
+                  pathname === "/rywalizacja" ? "bg-orange-500/20 text-orange-400" : "text-gray-500 hover:text-gray-300"
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                Pre-Rywalizacja
+              </Link>
+              <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-gray-700 uppercase tracking-widest cursor-default">
+                Rywalizacja 2026
+                <span className="text-gray-700 tabular-nums normal-case tracking-normal font-normal">{countdown}</span>
+              </span>
             </div>
             <h1 className="text-2xl font-black tracking-tight text-white mt-0.5">{title}</h1>
+            <div className="flex items-center gap-2 mt-0.5">
+              <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+              <span className="text-xs font-semibold text-orange-500 uppercase tracking-widest">Live</span>
+            </div>
           </div>
 
           {/* Prawa strona */}
