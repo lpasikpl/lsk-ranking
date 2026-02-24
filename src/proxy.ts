@@ -1,18 +1,22 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-// Prosta ochrona panelu admin - sprawdza cookie lsk_user_id
-// Główna logika auth (is_admin check) jest w src/app/admin/page.tsx
+const PUBLIC_PATHS = ["/login", "/api/auth"];
+
 export async function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/admin")) {
-    const userId = request.cookies.get("lsk_user_id")?.value;
-    if (!userId) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
+  const { pathname } = request.nextUrl;
+
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
+  }
+
+  const userId = request.cookies.get("lsk_user_id")?.value;
+  if (!userId) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.png$).*)"],
 };
