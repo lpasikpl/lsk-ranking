@@ -77,13 +77,16 @@ async function processWebhookEvent(
         trainer: activity.trainer === true,
       }, { onConflict: "strava_id" });
 
-      // Best efforts tylko dla outdoor Ride (nie VirtualRide)
-      if (activity.type === "Ride" || activity.sport_type === "Ride") {
+      // Best efforts dla outdoor Ride i GravelRide (nie VirtualRide, nie trainer)
+      const EFFORT_TYPES = new Set(["Ride", "GravelRide", "MountainBikeRide"]);
+      const isOutdoorRide = (EFFORT_TYPES.has(activity.type) || EFFORT_TYPES.has(activity.sport_type)) && !activity.trainer;
+      if (isOutdoorRide) {
         await fetchAndSaveBestEfforts(user.id, object_id, {
           start_date: activity.start_date,
           distance: activity.distance,
           name: activity.name,
           trainer: activity.trainer === true,
+          type: activity.sport_type || activity.type,
         });
       }
 
