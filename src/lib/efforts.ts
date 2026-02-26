@@ -6,6 +6,7 @@ const TARGET_DISTANCES: Record<string, number> = {
   "10 km": 10000,
   "20 km": 20000,
   "30 km": 30000,
+  "40 km": 40000,
   "50 km": 50000,
   "80 km": 80000,
   "100 km": 100000,
