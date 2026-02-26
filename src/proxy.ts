@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/api/auth"];
+const PUBLIC_PATHS = ["/login", "/api/auth", "/api/strava/webhook"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

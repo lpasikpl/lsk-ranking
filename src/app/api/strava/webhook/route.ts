@@ -55,8 +55,8 @@ async function processWebhookEvent(
 
       const activity = await res.json();
 
-      const isRide = activity.type === "Ride" || activity.type === "VirtualRide" ||
-        activity.sport_type === "Ride" || activity.sport_type === "VirtualRide";
+      const BIKE_TYPES = new Set(["Ride", "VirtualRide", "GravelRide", "MountainBikeRide", "EBikeRide"]);
+      const isRide = BIKE_TYPES.has(activity.type) || BIKE_TYPES.has(activity.sport_type);
 
       if (!isRide) {
         await supabase.from("lsk_activities").delete().eq("strava_id", object_id);

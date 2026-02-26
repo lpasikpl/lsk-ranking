@@ -112,7 +112,7 @@ AS $$
     a.user_id = u.id
     AND a.start_date_local >= start_date
     AND a.start_date_local <= end_date
-    AND a.type IN ('Ride', 'VirtualRide')
+    AND a.type IN ('Ride', 'VirtualRide', 'GravelRide', 'MountainBikeRide', 'EBikeRide')
   )
   WHERE u.is_active = true
   GROUP BY u.id, u.firstname, u.lastname, u.profile_medium, u.strava_id, u.country
