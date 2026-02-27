@@ -1,11 +1,17 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(git commit:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(curl:*)",
+      "Bash(npx supabase:*)",
+      "Bash(sort:*)"
+    ]
+  },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "n8n-mcp"
-  ],
-  "permissions": {
-    "allow": [
-      "Bash(npm install:*)"
-    ]
-  }
+  ]
 }
