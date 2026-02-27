@@ -185,6 +185,18 @@ export default function RankingHeader({ title, subtitle, user }: RankingHeaderPr
                       </Link>
                     )}
 
+                    {/* Priv */}
+                    {user.is_admin && (
+                      <Link
+                        href="/strava"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-orange-400 hover:bg-white/[0.05] transition-colors border-b border-white/[0.04]"
+                      >
+                        <span className="text-base leading-none flex-shrink-0">🚴</span>
+                        <span>Priv</span>
+                      </Link>
+                    )}
+
                     {/* Wyloguj */}
                     <button
                       onClick={handleLogout}
