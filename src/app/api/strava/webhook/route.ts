@@ -96,6 +96,8 @@ async function processWebhookEvent(
   }
 }
 
+const N8N_WEBHOOK_URL = "https://n8n.tc.pl/webhook/strava-pasik";
+
 // POST - event od Stravy (create/update/delete aktywności)
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -104,6 +106,15 @@ export async function POST(request: NextRequest) {
   // Natychmiast zwróć 200 - Strava wymaga odpowiedzi w ciągu 2 sekund
   // Całe przetwarzanie idzie do tła przez waitUntil
   waitUntil(processWebhookEvent(object_type, aspect_type, object_id, owner_id));
+
+  // Forward do n8n (personal dashboard)
+  waitUntil(
+    fetch(N8N_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).catch(() => {})
+  );
 
   return NextResponse.json({ ok: true });
 }
