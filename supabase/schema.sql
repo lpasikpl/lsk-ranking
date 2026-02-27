@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS public.strava_tokens (
 );
 
 -- Aktywności
-CREATE TABLE IF NOT EXISTS public.activities (
+CREATE TABLE IF NOT EXISTS public.lsk_activities (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   strava_id BIGINT UNIQUE NOT NULL,
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
@@ -68,10 +68,10 @@ CREATE TABLE IF NOT EXISTS public.sync_logs (
 -- INDEKSY
 -- ============================================================
 
-CREATE INDEX IF NOT EXISTS idx_activities_user_id ON public.activities(user_id);
-CREATE INDEX IF NOT EXISTS idx_activities_start_date_local ON public.activities(start_date_local);
-CREATE INDEX IF NOT EXISTS idx_activities_type ON public.activities(type);
-CREATE INDEX IF NOT EXISTS idx_activities_user_date ON public.activities(user_id, start_date_local);
+CREATE INDEX IF NOT EXISTS idx_activities_user_id ON public.lsk_activities(user_id);
+CREATE INDEX IF NOT EXISTS idx_activities_start_date_local ON public.lsk_activities(start_date_local);
+CREATE INDEX IF NOT EXISTS idx_activities_type ON public.lsk_activities(type);
+CREATE INDEX IF NOT EXISTS idx_activities_user_date ON public.lsk_activities(user_id, start_date_local);
 CREATE INDEX IF NOT EXISTS idx_sync_logs_user_id ON public.sync_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_sync_logs_created_at ON public.sync_logs(created_at DESC);
 
@@ -79,9 +79,11 @@ CREATE INDEX IF NOT EXISTS idx_sync_logs_created_at ON public.sync_logs(created_
 -- FUNKCJA RANKINGU (RPC)
 -- ============================================================
 
+DROP FUNCTION IF EXISTS public.get_ranking(timestamp with time zone, timestamp with time zone);
+
 CREATE OR REPLACE FUNCTION public.get_ranking(
-  start_date TIMESTAMPTZ,
-  end_date TIMESTAMPTZ
+  p_start_date TIMESTAMPTZ,
+  p_end_date TIMESTAMPTZ
 )
 RETURNS TABLE (
   user_id UUID,
@@ -92,7 +94,11 @@ RETURNS TABLE (
   country TEXT,
   total_distance FLOAT,
   total_elevation FLOAT,
-  total_time BIGINT
+  total_time BIGINT,
+  activity_count BIGINT,
+  active_days BIGINT,
+  avg_speed FLOAT,
+  longest_ride FLOAT
 )
 LANGUAGE SQL
 STABLE
@@ -106,12 +112,18 @@ AS $$
     u.country,
     COALESCE(SUM(a.distance), 0) AS total_distance,
     COALESCE(SUM(a.total_elevation_gain), 0) AS total_elevation,
-    COALESCE(SUM(a.moving_time), 0)::BIGINT AS total_time
+    COALESCE(SUM(a.moving_time), 0)::BIGINT AS total_time,
+    COUNT(a.id)::BIGINT AS activity_count,
+    COUNT(DISTINCT DATE(a.start_date_local))::BIGINT AS active_days,
+    CASE WHEN SUM(a.moving_time) > 0
+         THEN SUM(a.distance) / SUM(a.moving_time) * 3.6
+         ELSE 0 END AS avg_speed,
+    COALESCE(MAX(a.distance), 0) AS longest_ride
   FROM public.users u
-  LEFT JOIN public.activities a ON (
+  LEFT JOIN public.lsk_activities a ON (
     a.user_id = u.id
-    AND a.start_date_local >= start_date
-    AND a.start_date_local <= end_date
+    AND a.start_date_local >= p_start_date
+    AND a.start_date_local <= p_end_date
     AND a.type IN ('Ride', 'VirtualRide', 'GravelRide', 'MountainBikeRide', 'EBikeRide')
   )
   WHERE u.is_active = true
@@ -125,7 +137,7 @@ $$;
 
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.strava_tokens ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.activities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.lsk_activities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sync_logs ENABLE ROW LEVEL SECURITY;
 
 -- USERS policies
@@ -155,13 +167,13 @@ CREATE POLICY "tokens_service_all" ON public.strava_tokens
     current_setting('role') = 'service_role'
   );
 
--- ACTIVITIES policies
+-- LSK_ACTIVITIES policies
 -- Wszyscy mogą czytać aktywności (do rankingu)
-CREATE POLICY "activities_public_read" ON public.activities
+CREATE POLICY "activities_public_read" ON public.lsk_activities
   FOR SELECT USING (true);
 
 -- Service role może robić wszystko
-CREATE POLICY "activities_service_all" ON public.activities
+CREATE POLICY "activities_service_all" ON public.lsk_activities
   FOR ALL USING (
     current_setting('role') = 'service_role'
   );
