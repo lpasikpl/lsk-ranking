@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes ring-fill {
+  to { stroke-dashoffset: var(--ring-target); }
+}
+
 :root {
   --bg: #1a1d28;
   --bg-card: rgba(255, 255, 255, 0.055);

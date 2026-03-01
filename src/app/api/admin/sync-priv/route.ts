@@ -82,7 +82,9 @@ export async function POST(request: NextRequest) {
       );
       const streams: StravaStream[] = streamsRes.ok ? await streamsRes.json() : [];
 
+      const streamTypes = Array.isArray(streams) ? streams.map((s: StravaStream) => s.type) : [];
       const metrics = calculateMetrics(activity, Array.isArray(streams) ? streams : []);
+      details.push(`${act.strava_id} (${activity.name}): streams=[${streamTypes.join(",")}] has_power=${metrics.has_power_data} NP=${metrics.normalized_power}`);
 
       const { error: upsertError } = await supabaseStravaService.from("activities").upsert({
         strava_activity_id: activity.id,
@@ -108,7 +110,7 @@ export async function POST(request: NextRequest) {
       }, { onConflict: "strava_activity_id" });
 
       if (upsertError) {
-        details.push(`${act.strava_id}: upsert failed — ${upsertError.message}`);
+        details.push(`${act.strava_id}: UPSERT ERROR — ${upsertError.message}`);
         errors++;
       } else {
         synced++;
@@ -126,6 +128,6 @@ export async function POST(request: NextRequest) {
     total_missing: missing.length,
     synced,
     errors,
-    details: details.length > 0 ? details : undefined,
+    details,
   });
 }
