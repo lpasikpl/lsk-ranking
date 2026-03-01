@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { createServiceClient } from "@/lib/supabase/server";
 import RankBadge from "@/components/RankBadge";
 
@@ -36,7 +35,6 @@ async function getTopEfforts(year: number, month?: number) {
     user_id: string;
     firstname: string;
     lastname: string;
-    profile_medium: string | null;
     moving_time: number;
     distance: number;
     strava_activity_id: number;
@@ -47,7 +45,7 @@ async function getTopEfforts(year: number, month?: number) {
       .from("lsk_best_efforts")
       .select(`
         strava_activity_id, moving_time, distance,
-        users!inner(id, firstname, lastname, profile_medium, is_active)
+        users!inner(id, firstname, lastname, is_active)
       `)
       .eq("effort_name", dist)
       .eq("users.is_active", true)
@@ -68,7 +66,6 @@ async function getTopEfforts(year: number, month?: number) {
         user_id: r.users.id,
         firstname: r.users.firstname,
         lastname: r.users.lastname,
-        profile_medium: r.users.profile_medium,
         moving_time: r.moving_time,
         distance: r.distance,
         strava_activity_id: r.strava_activity_id,
@@ -128,11 +125,6 @@ export default async function TopEfforts({ year, month }: TopEffortsProps) {
                       <span className="w-6 flex items-center justify-center flex-shrink-0">
                         <RankBadge position={i + 1} showTrophyFrom={2} />
                       </span>
-                      {e.profile_medium ? (
-                        <Image src={e.profile_medium} alt="" width={20} height={20} className="rounded-full flex-shrink-0" />
-                      ) : (
-                        <div className="w-5 h-5 rounded-full bg-white/5 flex-shrink-0" />
-                      )}
                       <div className="flex-1 min-w-0">
                         <div className="text-[11px] font-medium text-white/80 truncate leading-tight">
                           {e.firstname} {e.lastname?.charAt(0)}.
