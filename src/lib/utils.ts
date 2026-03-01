@@ -40,7 +40,7 @@ export function cn(...classes: (string | undefined | false)[]): string {
 }
 
 export function formatKm(km: number): string {
-  return Math.round(km).toLocaleString("pl-PL");
+  return Math.round(km).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
 }
 
 export function formatHours(hours: number): string {

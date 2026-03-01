@@ -48,7 +48,7 @@ export function AnimatedNumber({
     <span className={className}>
       {formatter
         ? formatter(display)
-        : `${prefix}${display.toLocaleString("pl-PL", { maximumFractionDigits: decimals, minimumFractionDigits: decimals })}${suffix}`}
+        : `${prefix}${display.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0")}${suffix}`}
     </span>
   );
 }

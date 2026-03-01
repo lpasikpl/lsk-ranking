@@ -74,8 +74,8 @@ export function GoalProgressCard({ data }: GoalProgressCardProps) {
 
       <div className="mt-4 grid grid-cols-3 gap-4 pt-4 border-t border-[var(--border)]">
         <div>
-          <div className="text-xs text-[var(--text-muted)]">Jazdy</div>
-          <div className="text-sm font-medium">{data.actual_rides}</div>
+          <div className="text-xs text-[var(--text-muted)]">Aktywne dni</div>
+          <div className="text-sm font-medium">{data.active_days}</div>
         </div>
         <div>
           <div className="text-xs text-[var(--text-muted)]">Godziny</div>

@@ -28,16 +28,20 @@ export function ProgressRing({
   const mainCirc = mainRadius * 2 * Math.PI;
   const clamped = Math.min(Math.max(progress, 0), 100);
 
-  // Animacja: start od pustego, po mount → docelowy offset
-  const [animated, setAnimated] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setAnimated(true), 80);
-    return () => clearTimeout(t);
-  }, []);
+  const targetOffset = mainCirc - (clamped / 100) * mainCirc;
 
-  const mainOffset = animated
-    ? mainCirc - (clamped / 100) * mainCirc
-    : mainCirc;
+  // double-RAF: przeglądarka najpierw maluje stan pusty (offset=mainCirc),
+  // dopiero potem zmienia, żeby CSS transition mógł złapać różnicę
+  const [displayOffset, setDisplayOffset] = useState(mainCirc);
+  useEffect(() => {
+    let raf1: number;
+    let raf2: number;
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setDisplayOffset(targetOffset));
+    });
+    return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetOffset]);
 
   // Zewnętrzny cienki ring roku
   const outerRadius = (size - outerStroke) / 2;
@@ -66,7 +70,7 @@ export function ProgressRing({
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={mainCirc}
-          strokeDashoffset={mainOffset}
+          strokeDashoffset={displayOffset}
           style={{ transition: "stroke-dashoffset 1.4s cubic-bezier(0.4, 0, 0.2, 1)" }}
         />
         {/* Zewnętrzny cienki ring — upływ roku */}
