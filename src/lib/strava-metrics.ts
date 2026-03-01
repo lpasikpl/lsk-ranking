@@ -196,6 +196,16 @@ export function calculateMetrics(activity: any, streams: StravaStream[]): Activi
     }
   }
 
+  // --- Fallback: Strava weighted_average_watts gdy brak streamu mocy ---
+  // Strava nie zawsze zwraca per-sekundowy stream watts, ale ma WAP w podsumowaniu aktywności
+  const stravaWap: number | null = (activity.weighted_average_watts ?? null) as number | null;
+  if (!hasPowerData && stravaWap && stravaWap > 0) {
+    normalizedPower = Math.round(stravaWap);
+    intensityFactor = Math.round((stravaWap / FTP) * 1000) / 1000;
+    tss = Math.round((movingTime * stravaWap * intensityFactor) / (FTP * 3600) * 100);
+    errors.push("Power from Strava WAP fallback (no stream)");
+  }
+
   // --- Effective TSS ---
   let effectiveTss: number;
   if (tss !== null && tss > 0) {
@@ -209,7 +219,7 @@ export function calculateMetrics(activity: any, streams: StravaStream[]): Activi
 
   return {
     is_ride: isRide,
-    has_power_data: hasPowerData,
+    has_power_data: hasPowerData || (stravaWap !== null && stravaWap > 0),
     has_stream_data: hasStreamData,
     normalized_power: normalizedPower,
     intensity_factor: intensityFactor,
