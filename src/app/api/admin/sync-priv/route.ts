@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getValidAccessToken } from "@/lib/strava";
 import { supabaseStravaService } from "@/lib/supabase-strava";
-import { calculateMetrics, type StravaStream } from "@/lib/strava-metrics";
+import { calculateMetrics, pickMetrics, type StravaStream } from "@/lib/strava-metrics";
 import { cookies } from "next/headers";
 
 export const maxDuration = 300;
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
         calories: activity.calories,
         device_name: activity.device_name,
         gear_id: activity.gear_id,
-        ...metrics,
+        ...pickMetrics(metrics),
       }, { onConflict: "strava_activity_id" });
 
       if (upsertError) {

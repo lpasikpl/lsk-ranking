@@ -4,7 +4,7 @@ import { getValidAccessToken } from "@/lib/strava";
 import { fetchAndSaveBestEfforts } from "@/lib/efforts";
 import { waitUntil } from "@vercel/functions";
 import { supabaseStravaService } from "@/lib/supabase-strava";
-import { calculateMetrics, type StravaStream } from "@/lib/strava-metrics";
+import { calculateMetrics, pickMetrics, type StravaStream } from "@/lib/strava-metrics";
 
 const VERIFY_TOKEN = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN || "lsk_webhook_secret";
 
@@ -57,7 +57,7 @@ async function syncToStravaSupabase(
       calories: activity.calories,
       device_name: activity.device_name,
       gear_id: activity.gear_id,
-      ...metrics,
+      ...pickMetrics(metrics),
     }, { onConflict: "strava_activity_id" });
   } catch (err) {
     console.error("Strava Supabase sync error:", err);

@@ -71,6 +71,32 @@ function expandToPerSecond(data: number[], timeSeries: number[]): number[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+// Tylko kolumny które na pewno istnieją w tabeli activities
+export function pickMetrics(m: ActivityMetrics) {
+  return {
+    is_ride: m.is_ride,
+    has_power_data: m.has_power_data,
+    normalized_power: m.normalized_power,
+    intensity_factor: m.intensity_factor,
+    tss: m.tss,
+    hr_tss: m.hr_tss,
+    effective_tss: m.effective_tss,
+    ftp_at_time: m.ftp_at_time,
+    power_z1_seconds: m.power_z1_seconds,
+    power_z2_seconds: m.power_z2_seconds,
+    power_z3_seconds: m.power_z3_seconds,
+    power_z4_seconds: m.power_z4_seconds,
+    power_z5_seconds: m.power_z5_seconds,
+    power_z6_seconds: m.power_z6_seconds,
+    power_z7_seconds: m.power_z7_seconds,
+    hr_z1_seconds: m.hr_z1_seconds,
+    hr_z2_seconds: m.hr_z2_seconds,
+    hr_z3_seconds: m.hr_z3_seconds,
+    hr_z4_seconds: m.hr_z4_seconds,
+    hr_z5_seconds: m.hr_z5_seconds,
+  };
+}
+
 export function calculateMetrics(activity: any, streams: StravaStream[]): ActivityMetrics {
   const errors: string[] = [];
 
