@@ -9,9 +9,17 @@ interface GoalProgressCardProps {
   data: YtdProgress;
 }
 
+function getYearProgress(): number {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const end = new Date(now.getFullYear() + 1, 0, 1);
+  return ((now.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * 100;
+}
+
 export function GoalProgressCard({ data }: GoalProgressCardProps) {
   const aheadBehind = data.ahead_behind_km;
   const isAhead = aheadBehind >= 0;
+  const yearProgress = getYearProgress();
 
   return (
     <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-6 h-full">
@@ -20,7 +28,7 @@ export function GoalProgressCard({ data }: GoalProgressCardProps) {
       </h2>
 
       <div className="flex items-center gap-6">
-        <ProgressRing progress={data.pct_complete} size={140} strokeWidth={10}>
+        <ProgressRing progress={data.pct_complete} yearProgress={yearProgress} size={150} strokeWidth={16}>
           <div className="text-center">
             <AnimatedNumber
               value={data.pct_complete}
