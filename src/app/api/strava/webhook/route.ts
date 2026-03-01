@@ -3,6 +3,8 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { getValidAccessToken } from "@/lib/strava";
 import { fetchAndSaveBestEfforts } from "@/lib/efforts";
 import { waitUntil } from "@vercel/functions";
+import { supabaseStravaService } from "@/lib/supabase-strava";
+import { calculateMetrics, type StravaStream } from "@/lib/strava-metrics";
 
 const VERIFY_TOKEN = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN || "lsk_webhook_secret";
 
@@ -20,6 +22,48 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 }
 
+async function syncToStravaSupabase(
+  accessToken: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  activity: any,
+  object_id: number
+) {
+  try {
+    const streamsRes = await fetch(
+      `https://www.strava.com/api/v3/activities/${object_id}/streams?keys=watts,heartrate,time,cadence&key_by_type=false`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    const streams: StravaStream[] = streamsRes.ok ? await streamsRes.json() : [];
+
+    const metrics = calculateMetrics(activity, Array.isArray(streams) ? streams : []);
+
+    await supabaseStravaService.from("activities").upsert({
+      strava_activity_id: activity.id,
+      name: activity.name,
+      sport_type: activity.sport_type || activity.type,
+      start_date: activity.start_date,
+      elapsed_time_seconds: activity.elapsed_time,
+      moving_time_seconds: activity.moving_time,
+      distance_meters: activity.distance,
+      total_elevation_gain: activity.total_elevation_gain,
+      average_speed: activity.average_speed,
+      max_speed: activity.max_speed,
+      average_watts: activity.average_watts,
+      max_watts: activity.max_watts,
+      weighted_average_watts: activity.weighted_average_watts,
+      average_heartrate: activity.average_heartrate,
+      max_heartrate: activity.max_heartrate,
+      average_cadence: activity.average_cadence,
+      calories: activity.calories,
+      device_name: activity.device_name,
+      gear_id: activity.gear_id,
+      ...metrics,
+    }, { onConflict: "strava_activity_id" });
+  } catch (err) {
+    console.error("Strava Supabase sync error:", err);
+  }
+}
+
 async function processWebhookEvent(
   object_type: string,
   aspect_type: string,
@@ -32,7 +76,7 @@ async function processWebhookEvent(
 
   const { data: user } = await supabase
     .from("users")
-    .select("id")
+    .select("id, is_admin")
     .eq("strava_id", owner_id)
     .single();
 
@@ -40,6 +84,9 @@ async function processWebhookEvent(
 
   if (aspect_type === "delete") {
     await supabase.from("lsk_activities").delete().eq("strava_id", object_id);
+    if (user.is_admin) {
+      await supabaseStravaService.from("activities").delete().eq("strava_activity_id", object_id);
+    }
     return;
   }
 
@@ -60,6 +107,9 @@ async function processWebhookEvent(
 
       if (!isRide) {
         await supabase.from("lsk_activities").delete().eq("strava_id", object_id);
+        if (user.is_admin) {
+          await supabaseStravaService.from("activities").delete().eq("strava_activity_id", object_id);
+        }
         return;
       }
 
@@ -76,6 +126,11 @@ async function processWebhookEvent(
         start_date_local: activity.start_date_local,
         trainer: activity.trainer === true,
       }, { onConflict: "strava_id" });
+
+      // Sync do strava Supabase (prywatny dashboard) — tylko admin
+      if (user.is_admin) {
+        await syncToStravaSupabase(accessToken, activity, object_id);
+      }
 
       // Best efforts dla outdoor Ride i GravelRide (nie VirtualRide, nie trainer)
       const EFFORT_TYPES = new Set(["Ride", "GravelRide", "MountainBikeRide"]);
@@ -96,25 +151,13 @@ async function processWebhookEvent(
   }
 }
 
-const N8N_WEBHOOK_URL = "https://n8n.tc.pl/webhook/strava-pasik";
-
 // POST - event od Stravy (create/update/delete aktywności)
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { object_type, aspect_type, object_id, owner_id } = body;
 
   // Natychmiast zwróć 200 - Strava wymaga odpowiedzi w ciągu 2 sekund
-  // Całe przetwarzanie idzie do tła przez waitUntil
   waitUntil(processWebhookEvent(object_type, aspect_type, object_id, owner_id));
-
-  // Forward do n8n (personal dashboard)
-  waitUntil(
-    fetch(N8N_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }).catch(() => {})
-  );
 
   return NextResponse.json({ ok: true });
 }
