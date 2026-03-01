@@ -66,6 +66,7 @@ export default function AdminClient({
   const [backfillingEfforts, setBackfillingEfforts] = useState(false);
   const [fixingTypes, setFixingTypes] = useState(false);
   const [syncingUser, setSyncingUser] = useState<string | null>(null);
+  const [backfillingUser, setBackfillingUser] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const showMessage = (type: "success" | "error", text: string) => {
@@ -108,6 +109,29 @@ export default function AdminClient({
       showMessage("success", "Uprawnienia zmienione");
     } else {
       showMessage("error", "Błąd podczas zmiany uprawnień");
+    }
+  };
+
+  const backfillUser = async (userId: string) => {
+    setBackfillingUser(userId);
+    try {
+      const res = await fetch("/api/admin/backfill-efforts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, force: true }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const u = data.users?.[0];
+        showMessage("success", `Backfill: przetworzono ${u?.processed ?? 0}, pominięto ${u?.skipped ?? 0}, zapisano ${u?.saved ?? 0} wyników`);
+        router.refresh();
+      } else {
+        showMessage("error", data.error || "Błąd backfilla");
+      }
+    } catch {
+      showMessage("error", "Błąd połączenia");
+    } finally {
+      setBackfillingUser(null);
     }
   };
 
@@ -221,10 +245,7 @@ export default function AdminClient({
                 const res = await fetch("/api/admin/backfill-efforts", { method: "POST" });
                 const data = await res.json();
                 if (res.ok) {
-                  const details = Object.entries(data.perUser || {})
-                    .map(([, v]: [string, any]) => `${v.activities} aktywności → ${v.saved} wyników`)
-                    .join(", ");
-                  showMessage("success", `Gotowe! Zapisano ${data.total} wyników z ${data.processed} aktywności. [${details}]`);
+                  showMessage("success", `Gotowe! Przetworzono ${data.total_processed}, pominięto ${data.total_skipped}, zapisano ${data.total_saved} wyników`);
                   router.refresh();
                 } else {
                   showMessage("error", data.error || "Błąd backfilla");
@@ -422,13 +443,22 @@ export default function AdminClient({
                         {formatDate(user.created_at)}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => syncUser(user.id)}
-                          disabled={syncingUser === user.id}
-                          className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors disabled:opacity-50"
-                        >
-                          {syncingUser === user.id ? "Sync..." : "Sync"}
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => syncUser(user.id)}
+                            disabled={syncingUser === user.id}
+                            className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors disabled:opacity-50"
+                          >
+                            {syncingUser === user.id ? "Sync..." : "Sync"}
+                          </button>
+                          <button
+                            onClick={() => backfillUser(user.id)}
+                            disabled={backfillingUser === user.id}
+                            className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-medium hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                          >
+                            {backfillingUser === user.id ? "Backfill..." : "Backfill"}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
