@@ -20,6 +20,15 @@ function getValue(entry: RankingEntry, metric: Top3PodiumProps["metric"]): strin
   }
 }
 
+function getNumericValue(entry: RankingEntry, metric: Top3PodiumProps["metric"]): number {
+  switch (metric) {
+    case "distance": return entry.total_distance;
+    case "elevation": return entry.total_elevation;
+    case "time": return entry.total_time;
+    case "count": return entry.activity_count;
+  }
+}
+
 function sortEntries(entries: RankingEntry[], metric: Top3PodiumProps["metric"]): RankingEntry[] {
   return [...entries].sort((a, b) => {
     switch (metric) {
@@ -38,7 +47,9 @@ const medalStyles = [
 ];
 
 export default function Top3Podium({ entries, metric, title, unit, label }: Top3PodiumProps) {
-  const sorted = sortEntries(entries, metric).slice(0, 3);
+  const sorted = sortEntries(entries, metric)
+    .filter(e => getNumericValue(e, metric) > 0)
+    .slice(0, 3);
 
   return (
     <div className="flex-1 min-w-0">
@@ -49,11 +60,10 @@ export default function Top3Podium({ entries, metric, title, unit, label }: Top3
         </div>
       </div>
       <div className="space-y-2">
-        {sorted.length === 0 ? (
-          <div className="text-center py-6 text-gray-600 text-sm">Brak danych</div>
-        ) : (
-          sorted.map((entry, index) => {
-            const medal = medalStyles[index];
+        {[0, 1, 2].map((index) => {
+          const entry = sorted[index];
+          const medal = medalStyles[index];
+          if (entry) {
             return (
               <div
                 key={entry.user_id}
@@ -91,8 +101,25 @@ export default function Top3Podium({ entries, metric, title, unit, label }: Top3
                 </div>
               </div>
             );
-          })
-        )}
+          }
+          return (
+            <div
+              key={`empty-${index}`}
+              className={`glass rounded-xl p-3 bg-gradient-to-r ${medal.bg} border ${medal.border} opacity-50`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex items-center justify-center w-7 flex-shrink-0">
+                  <RankBadge position={index + 1} showTrophyFrom={2} />
+                </span>
+                <div className="w-7 h-7 rounded-full bg-white/5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-gray-500 italic">Brak danych</span>
+                </div>
+                <span className="text-sm font-bold text-gray-600 flex-shrink-0">—</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

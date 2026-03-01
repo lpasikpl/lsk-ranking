@@ -15,7 +15,9 @@ interface RankingTableDarkProps {
 export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkProps) {
   const router = useRouter();
   const [removing, setRemoving] = useState<string | null>(null);
-  const [localEntries, setLocalEntries] = useState(entries);
+  const [localEntries, setLocalEntries] = useState(
+    entries.filter(e => e.total_distance > 0 || e.total_elevation > 0 || e.total_time > 0)
+  );
 
   const maxDistance = localEntries[0]?.total_distance || 1;
   const totalDistance = localEntries.reduce((sum, e) => sum + e.total_distance, 0);
