@@ -2,7 +2,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { getValidAccessToken } from "@/lib/strava";
 
 // Dystanse które nas interesują (w metrach)
-const TARGET_DISTANCES: Record<string, number> = {
+export const TARGET_DISTANCES: Record<string, number> = {
   "10 km": 10000,
   "20 km": 20000,
   "30 km": 30000,
