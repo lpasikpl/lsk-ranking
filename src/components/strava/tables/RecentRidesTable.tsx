@@ -34,8 +34,9 @@ function groupByMonth(activities: Activity[]): { key: string; label: string; rid
 function MonthSection({ group, defaultOpen }: { group: ReturnType<typeof groupByMonth>[0]; defaultOpen: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
 
-  const totalKm = group.rides.reduce((s, r) => s + r.distance_meters / 1000, 0);
-  const totalTss = group.rides.reduce((s, r) => s + (r.effective_tss ?? 0), 0);
+  const rides = group.rides.filter((r) => r.distance_meters >= 5000);
+  const totalKm = rides.reduce((s, r) => s + r.distance_meters / 1000, 0);
+  const totalTss = rides.reduce((s, r) => s + (r.effective_tss ?? 0), 0);
 
   return (
     <div className="border-t border-[var(--border)] first:border-t-0">
@@ -51,7 +52,7 @@ function MonthSection({ group, defaultOpen }: { group: ReturnType<typeof groupBy
             ▶
           </span>
           <span className="text-sm font-medium">{group.label}</span>
-          <span className="text-xs text-[var(--text-muted)]">{group.rides.length} jazd</span>
+          <span className="text-xs text-[var(--text-muted)]">{rides.length} jazd</span>
         </div>
         <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
           <span>{totalKm.toFixed(0)} km</span>
@@ -62,7 +63,7 @@ function MonthSection({ group, defaultOpen }: { group: ReturnType<typeof groupBy
       {open && (
         <table className="w-full text-sm">
           <tbody>
-            {group.rides.filter((r) => r.distance_meters >= 5000).map((ride) => {
+            {rides.map((ride) => {
               const type = getRideType(ride.sport_type);
               const color = getRideColor(ride.sport_type);
               return (
