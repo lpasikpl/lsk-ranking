@@ -2,7 +2,7 @@ import Image from "next/image";
 import { createServiceClient } from "@/lib/supabase/server";
 import RankBadge from "@/components/RankBadge";
 
-const DISTANCES = ["10 km", "20 km", "30 km", "40 km", "50 km", "100 km"] as const;
+const DISTANCES = ["10 km", "20 km", "30 km", "40 km", "50 km", "80 km", "90 km", "100 km"] as const;
 
 function formatPace(movingTime: number, distance: number): string {
   const speedKmh = (distance / movingTime) * 3.6;
@@ -99,51 +99,48 @@ export default async function TopEfforts({ year, month }: TopEffortsProps) {
           — {month ? `${MONTH_NAMES[month - 1]} ${year}` : `${year}`}
         </span>
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {DISTANCES.map(dist => {
           const top = efforts[dist];
 
           return (
-            <div key={dist} className="glass rounded-2xl p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-bold text-white">{dist}</span>
-                  <span className="text-xs text-gray-600">
-                    — {month ? `${MONTH_NAMES[month - 1]} ${year}` : `${year}`}
-                  </span>
-                </div>
-                <span className="text-xs text-gray-300 font-medium">średnia prędkość</span>
+            <div key={dist} className="glass rounded-xl p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-white">{dist}</span>
+                <span className="text-[10px] text-gray-500">
+                  {month ? `${MONTH_NAMES[month - 1]} ${year}` : `${year}`}
+                </span>
               </div>
               {(!top || top.length === 0) ? (
-                <div className="flex items-center justify-center h-16 text-xs text-gray-600">
+                <div className="flex items-center justify-center h-12 text-xs text-gray-600">
                   brak danych
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {top.map((e, i) => (
                     <a
                       key={i}
                       href={`https://www.strava.com/activities/${e.strava_activity_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`flex items-center gap-3 rounded-xl px-3 py-2 border ${medalBg[i]} bg-white/[0.02] hover:bg-white/[0.05] transition-colors cursor-pointer`}
+                      className={`flex items-center gap-2 rounded-lg px-2 py-1 border ${medalBg[i]} bg-white/[0.02] hover:bg-white/[0.05] transition-colors cursor-pointer`}
                     >
-                      <span className="w-8 flex items-center justify-center flex-shrink-0">
+                      <span className="w-6 flex items-center justify-center flex-shrink-0">
                         <RankBadge position={i + 1} showTrophyFrom={2} />
                       </span>
                       {e.profile_medium ? (
-                        <Image src={e.profile_medium} alt="" width={24} height={24} className="rounded-full flex-shrink-0" />
+                        <Image src={e.profile_medium} alt="" width={20} height={20} className="rounded-full flex-shrink-0" />
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-white/5 flex-shrink-0" />
+                        <div className="w-5 h-5 rounded-full bg-white/5 flex-shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs font-medium text-white/80 truncate">
+                        <div className="text-[11px] font-medium text-white/80 truncate leading-tight">
                           {e.firstname} {e.lastname?.charAt(0)}.
                         </div>
-                        <div className="text-xs text-gray-400 tabular-nums">{formatEffortTime(e.moving_time)}</div>
+                        <div className="text-[10px] text-gray-400 tabular-nums leading-tight">{formatEffortTime(e.moving_time)}</div>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <div className={`text-xs font-bold ${i === 0 ? "text-yellow-400" : "text-white/70"}`}>
+                        <div className={`text-[11px] font-bold ${i === 0 ? "text-yellow-400" : "text-white/70"}`}>
                           {formatPace(e.moving_time, e.distance)}
                         </div>
                       </div>
