@@ -16,7 +16,7 @@ function SyncButton() {
       const res = await fetch("/api/admin/sync-priv", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ after: "2025-01-01" }),
+        body: JSON.stringify({ after: "2025-01-01", force: true }),
         credentials: "include",
       });
       const data = await res.json();

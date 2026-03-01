@@ -32,15 +32,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to fetch LSK activities" }, { status: 500 });
   }
 
-  // Sprawdź które już są w strava Supabase
+  // Opcjonalny parametr: force=true — re-sync też tych co są, ale bez danych mocy
+  const force: boolean = body.force === true;
+
   const stravaIds = lskActivities.map((a) => a.strava_id);
   const { data: existing } = await supabaseStravaService
     .from("activities")
-    .select("strava_activity_id")
+    .select("strava_activity_id, has_power_data")
     .in("strava_activity_id", stravaIds);
 
-  const existingIds = new Set((existing ?? []).map((a) => a.strava_activity_id));
-  const missing = lskActivities.filter((a) => !existingIds.has(a.strava_id));
+  const existingWithPower = new Set(
+    (existing ?? []).filter((a) => a.has_power_data).map((a) => a.strava_activity_id)
+  );
+  const existingAll = new Set((existing ?? []).map((a) => a.strava_activity_id));
+
+  // force=true: pomiń tylko te które mają już dane mocy
+  // force=false (domyślnie): pomiń wszystkie które już istnieją
+  const missing = lskActivities.filter((a) =>
+    force ? !existingWithPower.has(a.strava_id) : !existingAll.has(a.strava_id)
+  );
 
   if (missing.length === 0) {
     return NextResponse.json({ synced: 0, message: "Wszystko już zsynchronizowane" });
