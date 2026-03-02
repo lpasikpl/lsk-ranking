@@ -17,6 +17,7 @@ interface MonthlyChartProps {
 }
 
 const MONTHS = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"];
+const MONTHS_FULL = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
 
 function getValue(d: MonthlyData, metric: MonthlyChartProps["metric"]): number {
   switch (metric) {
@@ -80,6 +81,10 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
   const values = fullYear.map(d => getValue(d, metric));
   const maxVal = Math.max(...values, 1);
   const ticks = getNiceTicks(maxVal);
+
+  const bestIdx = values.reduce((best, v, i) => v > values[best] ? i : best, 0);
+  const bestVal = values[bestIdx];
+  const hasBest = bestVal > 0;
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -186,6 +191,25 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
               );
             })}
           </div>
+        </div>
+      </div>
+
+      {/* Najlepszy miesiąc */}
+      <div className="mt-4 pt-3 border-t border-white/5">
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Najlepszy miesiąc</span>
+          {hasBest ? (
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] text-gray-400">
+                {MONTHS_FULL[bestIdx]} {year}
+              </span>
+              <span className="text-sm font-bold text-orange-400">
+                {formatTooltip(bestVal, metric)}
+              </span>
+            </div>
+          ) : (
+            <span className="text-[11px] text-gray-600">Brak danych</span>
+          )}
         </div>
       </div>
     </div>

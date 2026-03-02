@@ -129,6 +129,26 @@ const BAR_HEIGHT = 200;
 const TOTAL_ANIM_MS = 1700;
 const BAR_TRANSITION_MS = 320;
 
+const MONTH_GENITIVE = [
+  "stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca",
+  "lipca", "sierpnia", "września", "października", "listopada", "grudnia",
+];
+
+function formatValueWithUnit(val: number, metric: Metric): string {
+  switch (metric) {
+    case "distance": return `${Math.round(val)} km`;
+    case "elevation": return `${Math.round(val)} m`;
+    case "time": {
+      const h = Math.floor(val);
+      const m = Math.round((val - h) * 60);
+      if (h > 0 && m > 0) return `${h}h ${m}m`;
+      if (h > 0) return `${h}h`;
+      return `${m}m`;
+    }
+    case "count": return `${Math.round(val)}`;
+  }
+}
+
 export default function DailyChart({ data, year, month, daysInMonth }: DailyChartProps) {
   const [metric, setMetric] = useState<Metric>("distance");
   const [animated, setAnimated] = useState(false);
@@ -159,6 +179,11 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
   const maxVal = Math.max(...values, 1);
   const ticks = getNiceTicks(maxVal);
   const delayPerBar = daysInMonth > 1 ? (TOTAL_ANIM_MS - BAR_TRANSITION_MS) / (daysInMonth - 1) : 0;
+
+  const bestIdx = values.reduce((best, v, i) => v > values[best] ? i : best, 0);
+  const bestDay = fullMonth[bestIdx];
+  const bestVal = values[bestIdx];
+  const hasBest = bestVal > 0;
 
   return (
     <div ref={ref} className="glass rounded-2xl p-6">
@@ -300,6 +325,25 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "linear-gradient(to top, #fc4c02, #ff8c00)" }} />
           <span className="text-[10px] text-gray-400">Dziś</span>
+        </div>
+      </div>
+
+      {/* Najlepszy dzień */}
+      <div className="mt-3 pt-3 border-t border-white/5">
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Najlepszy dzień</span>
+          {hasBest ? (
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] text-gray-400">
+                {bestDay.day} {MONTH_GENITIVE[month - 1]} {year}
+              </span>
+              <span className="text-sm font-bold text-orange-400">
+                {formatValueWithUnit(bestVal, metric)}
+              </span>
+            </div>
+          ) : (
+            <span className="text-[11px] text-gray-600">Brak danych</span>
+          )}
         </div>
       </div>
     </div>
