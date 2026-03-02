@@ -3,7 +3,7 @@ import type {
   YtdProgress, CumulativeDay, CumulativeByYear,
   MonthlyYoy, YearlyByType, WeeklyNpHr, NpHrByYear,
   TrainingLoadDay, WeeklySummary, Activity, DashboardData,
-  PeriodStats, PeriodCompare,
+  PeriodStats, PeriodCompare, MonthlyNpHr,
 } from "./strava-types";
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -124,12 +124,12 @@ function aggregateActivities(activities: Activity[]): PeriodStats {
   const rides = activities.length;
   const elevation_m = activities.reduce((s, a) => s + a.total_elevation_gain, 0);
 
-  const withPower = activities.filter((a) => a.has_power_data && a.normalized_power != null);
+  const withPower = activities.filter((a) => a.has_power_data && a.normalized_power != null && a.moving_time_seconds > 3600);
   const avg_np = withPower.length > 0
     ? withPower.reduce((s, a) => s + a.normalized_power!, 0) / withPower.length
     : null;
 
-  const withHr = activities.filter((a) => a.average_heartrate != null && a.average_heartrate > 0);
+  const withHr = activities.filter((a) => a.average_heartrate != null && a.average_heartrate > 0 && a.moving_time_seconds > 3600);
   const avg_hr = withHr.length > 0
     ? withHr.reduce((s, a) => s + a.average_heartrate!, 0) / withHr.length
     : null;
@@ -159,6 +159,45 @@ async function fetchActivitiesForPeriod(from: string, to: string): Promise<Activ
     .gte("start_date", from)
     .lt("start_date", to);
   return data ?? [];
+}
+
+export async function fetchMonthlyNpHr(): Promise<MonthlyNpHr[]> {
+  const { data } = await supabase
+    .from("activities")
+    .select("start_date,normalized_power,average_heartrate,has_power_data,moving_time_seconds")
+    .eq("is_ride", true)
+    .gte("start_date", "2025-01-01")
+    .gt("moving_time_seconds", 3600);
+
+  if (!data) return [];
+
+  const map = new Map<string, { np_sum: number; np_count: number; hr_sum: number; hr_count: number }>();
+  for (const a of data) {
+    const d = new Date(a.start_date);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const entry = map.get(key) ?? { np_sum: 0, np_count: 0, hr_sum: 0, hr_count: 0 };
+    if (a.has_power_data && a.normalized_power != null) {
+      entry.np_sum += a.normalized_power;
+      entry.np_count++;
+    }
+    if (a.average_heartrate != null && a.average_heartrate > 0) {
+      entry.hr_sum += a.average_heartrate;
+      entry.hr_count++;
+    }
+    map.set(key, entry);
+  }
+
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, entry]) => {
+      const [year, month] = key.split("-").map(Number);
+      const avg_np = entry.np_count > 0 ? Math.round(entry.np_sum / entry.np_count) : null;
+      const avg_hr = entry.hr_count > 0 ? Math.round(entry.hr_sum / entry.hr_count) : null;
+      const np_hr_ratio = avg_np != null && avg_hr != null && avg_hr > 0
+        ? Math.round((avg_np / avg_hr) * 100) / 100
+        : null;
+      return { year, month, avg_np, avg_hr, np_hr_ratio };
+    });
 }
 
 export async function fetchPeriodCompare(type: "ytd" | "month"): Promise<PeriodCompare> {
@@ -218,6 +257,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     npHrPrevYear,
     trainingLoad,
     weeklySummaries,
+    monthlyNpHr,
     recentActivities,
     prevYearActivities,
     ytdCompare,
@@ -233,6 +273,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     fetchNpHrByYear(CURRENT_YEAR - 1),
     fetchTrainingLoad(),
     fetchWeeklySummaries(),
+    fetchMonthlyNpHr(),
     fetchRecentActivities(),
     fetchRecentActivities(CURRENT_YEAR - 1),
     fetchPeriodCompare("ytd"),
@@ -250,6 +291,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     npHrPrevYear,
     trainingLoad,
     weeklySummaries,
+    monthlyNpHr,
     recentActivities,
     prevYearActivities,
     ytdCompare,

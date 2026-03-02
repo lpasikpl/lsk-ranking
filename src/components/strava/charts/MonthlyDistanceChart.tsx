@@ -3,7 +3,7 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 import type { MonthlyYoy } from "@/lib/strava-types";
 
-interface WeeklyVolumeChartProps {
+interface MonthlyDistanceChartProps {
   data: MonthlyYoy[];
 }
 
@@ -24,24 +24,24 @@ function CustomTooltip({ active, payload }: any) {
       color: "var(--text-primary)",
     }}>
       <div style={{ color: "var(--text-muted)", marginBottom: 4 }}>{d.label}</div>
-      <div><span style={{ color: "#f97316", fontWeight: 600 }}>{d.tss}</span> TSS</div>
+      <div><span style={{ color: "#f97316", fontWeight: 600 }}>{d.km.toLocaleString("pl-PL", { maximumFractionDigits: 0 })}</span> km</div>
     </div>
   );
 }
 
-export function WeeklyVolumeChart({ data }: WeeklyVolumeChartProps) {
+export function MonthlyDistanceChart({ data }: MonthlyDistanceChartProps) {
   const chartData = data
     .slice()
     .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
     .map((d) => ({
       label: MONTH_NAMES_SHORT[d.month - 1] + (d.year !== CURRENT_YEAR ? ` ${String(d.year).slice(2)}` : ""),
-      tss: Math.round(d.total_tss),
+      km: Math.round(d.distance_km),
     }));
 
   return (
     <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-6">
       <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-4">
-        TSS miesięczny — od stycznia 2025
+        Kilometry miesięcznie — od stycznia 2025
       </h2>
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={chartData} margin={{ top: 18, right: 8, left: 0, bottom: 0 }}>
@@ -59,9 +59,9 @@ export function WeeklyVolumeChart({ data }: WeeklyVolumeChartProps) {
             width={36}
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--border)", opacity: 0.4 }} />
-          <Bar dataKey="tss" radius={[4, 4, 0, 0]} fill="#f97316" opacity={0.85} maxBarSize={48}>
+          <Bar dataKey="km" radius={[4, 4, 0, 0]} fill="#f97316" opacity={0.85} maxBarSize={48}>
             <LabelList
-              dataKey="tss"
+              dataKey="km"
               position="top"
               style={{ fill: "var(--text-muted)", fontSize: 11 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any

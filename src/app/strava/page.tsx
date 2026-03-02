@@ -11,6 +11,8 @@ import { NpHrWeeklyChart } from "@/components/strava/charts/NpHrWeeklyChart";
 import { NpHrOverlayChart } from "@/components/strava/charts/NpHrOverlayChart";
 import { TrainingLoadChart } from "@/components/strava/charts/TrainingLoadChart";
 import { WeeklyVolumeChart } from "@/components/strava/charts/WeeklyVolumeChart";
+import { MonthlyDistanceChart } from "@/components/strava/charts/MonthlyDistanceChart";
+import { MonthlyNpHrChart } from "@/components/strava/charts/MonthlyNpHrChart";
 import { PowerZonesChart } from "@/components/strava/charts/PowerZonesChart";
 import { HrZonesChart } from "@/components/strava/charts/HrZonesChart";
 import { RecentRidesTable } from "@/components/strava/tables/RecentRidesTable";
@@ -78,7 +80,14 @@ export default async function StravaPage() {
       <section>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <TrainingLoadChart data={data.trainingLoad} />
-          <WeeklyVolumeChart data={data.weeklySummaries} />
+          <WeeklyVolumeChart data={data.monthlyYoy} />
+        </div>
+      </section>
+
+      <section>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <MonthlyDistanceChart data={data.monthlyYoy} />
+          <MonthlyNpHrChart data={data.monthlyNpHr} />
         </div>
       </section>
 

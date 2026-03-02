@@ -120,6 +120,14 @@ export interface Activity {
   has_power_data: boolean;
 }
 
+export interface MonthlyNpHr {
+  year: number;
+  month: number;
+  avg_np: number | null;
+  avg_hr: number | null;
+  np_hr_ratio: number | null;
+}
+
 export interface PeriodStats {
   distance_km: number;
   hours: number;
@@ -150,6 +158,7 @@ export interface DashboardData {
   npHrPrevYear: NpHrByYear[];
   trainingLoad: TrainingLoadDay[];
   weeklySummaries: WeeklySummary[];
+  monthlyNpHr: MonthlyNpHr[];
   recentActivities: Activity[];
   prevYearActivities: Activity[];
   ytdCompare: PeriodCompare;

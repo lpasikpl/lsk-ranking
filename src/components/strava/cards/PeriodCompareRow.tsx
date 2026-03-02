@@ -16,9 +16,10 @@ export function PeriodCompareRow({ data }: PeriodCompareRowProps) {
     { label: "Godziny", value: current.hours, prev: previous.hours, formatter: formatHours },
     { label: "Aktywne dni", value: current.active_days, prev: previous.active_days },
     { label: "Przewyższenia", value: current.elevation_m, prev: previous.elevation_m, suffix: " m" },
-    { label: "Śr. NP", value: current.avg_np ?? 0, prev: previous.avg_np ?? undefined, suffix: " W" },
-    { label: "TSS", value: current.total_tss, prev: previous.total_tss },
     { label: "Śr. dystans (>1h)", value: current.avg_distance_km ?? 0, prev: previous.avg_distance_km ?? undefined, suffix: " km", decimals: 1 },
+    { label: "Śr. NP", value: current.avg_np ?? 0, prev: previous.avg_np ?? undefined, suffix: " W" },
+    { label: "Śr. HR (>1h)", value: current.avg_hr ?? 0, prev: previous.avg_hr ?? undefined, suffix: " bpm" },
+    { label: "TSS", value: current.total_tss, prev: previous.total_tss },
     { label: "NP/HR", value: current.np_hr_ratio ?? 0, prev: previous.np_hr_ratio ?? undefined, decimals: 2 },
   ];
 
@@ -27,7 +28,7 @@ export function PeriodCompareRow({ data }: PeriodCompareRowProps) {
       <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-3 capitalize">
         {label}
       </h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 items-stretch">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-3 items-stretch">
         {stats.map((s) => (
           <StatCard
             key={s.label}

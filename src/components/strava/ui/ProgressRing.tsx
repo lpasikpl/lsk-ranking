@@ -59,7 +59,15 @@ export function ProgressRing({
               strokeLinecap="round"
               strokeDasharray={outerCirc}
               strokeDashoffset={yearOffset}
-              style={{ transition: "stroke 0.2s, stroke-width 0.2s", cursor: "pointer" }}
+              style={{ transition: "stroke 0.2s, stroke-width 0.2s", pointerEvents: "none" }}
+            />
+            {/* Hit area — niewidoczny szeroki ring do łatwego wykrycia hover */}
+            <circle
+              cx={cx} cy={cy} r={outerR}
+              fill="none"
+              stroke="transparent"
+              strokeWidth={20}
+              style={{ cursor: "pointer" }}
               onMouseEnter={() => setYearHovered(true)}
               onMouseLeave={() => setYearHovered(false)}
             />

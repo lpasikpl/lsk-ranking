@@ -91,6 +91,21 @@ function RefreshButton() {
   );
 }
 
+function BackButton() {
+  const router = useRouter();
+  return (
+    <button
+      onClick={() => router.push("/")}
+      className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-colors"
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 12H5" /><path d="M12 19l-7-7 7-7" />
+      </svg>
+      Ranking
+    </button>
+  );
+}
+
 export function Header() {
   return (
     <header className="flex items-center justify-between py-6">
@@ -99,10 +114,11 @@ export function Header() {
           <span className="text-[var(--accent-orange)]">Strava</span> Dashboard
         </h1>
         <p className="text-sm text-[var(--text-muted)] mt-0.5">
-          Sezon {CURRENT_YEAR} — kolarstwo szosowe
+          Sezon {CURRENT_YEAR}
         </p>
       </div>
       <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
+        <BackButton />
         <RefreshButton />
         <SyncButton />
         <span className="flex items-center gap-1.5">
