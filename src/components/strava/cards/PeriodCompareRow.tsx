@@ -18,7 +18,7 @@ export function PeriodCompareRow({ data }: PeriodCompareRowProps) {
     { label: "Przewyższenia", value: current.elevation_m, prev: previous.elevation_m, suffix: " m" },
     { label: "Śr. dystans (>1h)", value: current.avg_distance_km ?? 0, prev: previous.avg_distance_km ?? undefined, suffix: " km", decimals: 1 },
     { label: "Śr. NP", value: current.avg_np ?? 0, prev: previous.avg_np ?? undefined, suffix: " W" },
-    { label: "Śr. HR (>1h)", value: current.avg_hr ?? 0, prev: previous.avg_hr ?? undefined, suffix: " bpm" },
+    { label: "Śr. HR (>1h)", value: current.avg_hr ?? 0, prev: previous.avg_hr ?? undefined, suffix: " bpm", invert: true },
     { label: "TSS", value: current.total_tss, prev: previous.total_tss },
     { label: "NP/HR", value: current.np_hr_ratio ?? 0, prev: previous.np_hr_ratio ?? undefined, decimals: 2 },
   ];
@@ -38,6 +38,7 @@ export function PeriodCompareRow({ data }: PeriodCompareRowProps) {
             suffix={s.suffix}
             decimals={s.decimals}
             formatter={s.formatter}
+            invert={s.invert}
           />
         ))}
       </div>

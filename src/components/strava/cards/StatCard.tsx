@@ -11,9 +11,10 @@ interface StatCardProps {
   suffix?: string;
   prefix?: string;
   formatter?: (value: number) => string;
+  invert?: boolean;
 }
 
-export function StatCard({ label, value, prevValue, decimals = 0, suffix = "", prefix = "", formatter }: StatCardProps) {
+export function StatCard({ label, value, prevValue, decimals = 0, suffix = "", prefix = "", formatter, invert }: StatCardProps) {
   return (
     <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-4 hover:bg-[var(--bg-card-hover)] transition-colors h-full flex flex-col justify-between">
       <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-2 leading-tight">{label}</div>
@@ -27,7 +28,7 @@ export function StatCard({ label, value, prevValue, decimals = 0, suffix = "", p
           formatter={formatter}
         />
         {prevValue !== undefined && (
-          <DeltaBadge current={value} previous={prevValue} valueSuffix={suffix} valueDecimals={decimals} formatter={formatter} />
+          <DeltaBadge current={value} previous={prevValue} valueSuffix={suffix} valueDecimals={decimals} formatter={formatter} invert={invert} />
         )}
       </div>
     </div>
