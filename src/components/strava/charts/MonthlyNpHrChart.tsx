@@ -20,25 +20,29 @@ function CustomTooltip({ active, payload }: any) {
   if (d.ratio == null) return null;
   return (
     <div style={{
-      backgroundColor: "var(--bg-card)",
-      border: "1px solid var(--border)",
+      backgroundColor: "#0f1117",
+      border: "1px solid rgba(255,255,255,0.15)",
       borderRadius: 10,
       padding: "10px 14px",
       fontSize: 12,
-      color: "var(--text-primary)",
-      boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-      minWidth: 140,
+      color: "#fff",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
+      minWidth: 150,
     }}>
-      <div style={{ color: "var(--text-muted)", marginBottom: 6, fontWeight: 500 }}>{d.label}</div>
-      <div style={{ marginBottom: 4 }}>
-        <span style={{ color: "#f97316", fontWeight: 700, fontSize: 15 }}>{d.ratio.toFixed(2)}</span>
-        <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>NP/HR</span>
+      <div style={{ color: "rgba(255,255,255,0.45)", marginBottom: 6, fontWeight: 500 }}>{d.label}</div>
+      <div style={{ marginBottom: 5 }}>
+        <span style={{ color: "#f97316", fontWeight: 700, fontSize: 16 }}>{d.ratio.toFixed(2)}</span>
+        <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 5 }}>NP/HR</span>
       </div>
       {d.np != null && (
-        <div style={{ color: "var(--text-muted)" }}>Śr. NP: <span style={{ color: "var(--text-secondary)" }}>{d.np} W</span></div>
+        <div style={{ color: "rgba(255,255,255,0.5)", marginBottom: 2 }}>
+          Śr. NP: <span style={{ color: "rgba(255,255,255,0.85)" }}>{d.np} W</span>
+        </div>
       )}
       {d.hr != null && (
-        <div style={{ color: "var(--text-muted)" }}>Śr. HR: <span style={{ color: "var(--text-secondary)" }}>{d.hr} bpm</span></div>
+        <div style={{ color: "rgba(255,255,255,0.5)" }}>
+          Śr. HR: <span style={{ color: "rgba(255,255,255,0.85)" }}>{d.hr} bpm</span>
+        </div>
       )}
     </div>
   );
@@ -92,11 +96,12 @@ export function MonthlyNpHrChart({ data }: MonthlyNpHrChartProps) {
               strokeDasharray="4 3"
             />
           )}
-          <Bar dataKey="ratio" radius={[4, 4, 0, 0]} maxBarSize={48}>
+          <Bar dataKey="ratio" radius={[4, 4, 0, 0]} maxBarSize={48} fill="#f97316">
             {chartData.map((d, i) => (
               <Cell
                 key={i}
-                fill={avg != null && d.ratio != null && d.ratio >= avg ? "#f97316" : "#f9731699"}
+                fill="#f97316"
+                opacity={avg != null && d.ratio != null && d.ratio >= avg ? 0.9 : 0.4}
               />
             ))}
             <LabelList
