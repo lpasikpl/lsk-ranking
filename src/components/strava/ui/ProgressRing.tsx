@@ -1,89 +1,101 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 interface ProgressRingProps {
-  progress: number;
-  yearProgress?: number;
+  progress: number;       // % realizacji celu (0–100)
+  yearProgress?: number;  // % upływu roku (0–100)
   size?: number;
   strokeWidth?: number;
-  color?: string;
   children?: React.ReactNode;
 }
 
 export function ProgressRing({
   progress,
   yearProgress,
-  size = 120,
-  strokeWidth = 14,
-  color = "var(--accent-orange)",
+  size = 160,
+  strokeWidth = 20,
   children,
 }: ProgressRingProps) {
-  const hasYearRing = yearProgress !== undefined;
-  const outerStroke = 4;
-  const gap = 6;
+  const cx = size / 2;
+  const cy = size / 2;
 
-  const mainRadius = (size - strokeWidth) / 2 - (hasYearRing ? outerStroke + gap : 0);
-  const mainCirc = mainRadius * 2 * Math.PI;
-  const clamped = Math.min(Math.max(progress, 0), 100);
-  const targetOffset = mainCirc - (clamped / 100) * mainCirc;
+  // Zewnętrzny gruby ring — % realizacji celu
+  const outerR = (size - strokeWidth) / 2;
+  const outerCirc = outerR * 2 * Math.PI;
+  const goalClamped = Math.min(Math.max(progress, 0), 100);
+  const goalOffset = outerCirc - (goalClamped / 100) * outerCirc;
 
-  const outerRadius = (size - outerStroke) / 2;
-  const outerCirc = outerRadius * 2 * Math.PI;
+  // Wewnętrzny cienki ring — % upływu roku
+  const innerStroke = 5;
+  const gap = 10;
+  const innerR = outerR - strokeWidth / 2 - gap - innerStroke / 2;
+  const innerCirc = innerR * 2 * Math.PI;
   const yearClamped = Math.min(Math.max(yearProgress ?? 0, 0), 100);
-  const yearOffset = outerCirc - (yearClamped / 100) * outerCirc;
-
-  // Animacja przez transition — niezawodna w każdej przeglądarce
-  const [offset, setOffset] = useState(mainCirc);
-  useEffect(() => {
-    const t = setTimeout(() => setOffset(targetOffset), 60);
-    return () => clearTimeout(t);
-  }, [targetOffset]);
+  const yearOffset = innerCirc - (yearClamped / 100) * innerCirc;
 
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        {/* Ścieżka tła — główny ring */}
+    <div
+      className="relative inline-flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
+      <svg width={size} height={size} className="-rotate-90" overflow="visible">
+        {/* === Zewnętrzny ring — cel === */}
+        {/* Track */}
         <circle
-          cx={size / 2} cy={size / 2} r={mainRadius}
+          cx={cx} cy={cy} r={outerR}
           fill="none"
           stroke="rgba(255,255,255,0.08)"
           strokeWidth={strokeWidth}
         />
-        {/* Wypełnienie głównego ringa */}
+        {/* Progress */}
         <circle
-          cx={size / 2} cy={size / 2} r={mainRadius}
+          cx={cx} cy={cy} r={outerR}
           fill="none"
-          stroke={color}
+          stroke="#FC4C02"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          style={{
-            strokeDasharray: mainCirc,
-            strokeDashoffset: offset,
-            transition: "stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1)",
-          }}
-        />
-        {/* Zewnętrzny ring postępu roku */}
-        {hasYearRing && (
+          strokeDasharray={outerCirc}
+          strokeDashoffset={outerCirc}
+        >
+          <animate
+            attributeName="stroke-dashoffset"
+            from={outerCirc}
+            to={goalOffset}
+            dur="1.5s"
+            begin="0.1s"
+            fill="freeze"
+            calcMode="spline"
+            keyTimes="0;1"
+            keySplines="0.4 0 0.2 1"
+          />
+        </circle>
+
+        {/* === Wewnętrzny ring — rok === */}
+        {yearProgress !== undefined && (
           <>
+            {/* Track */}
             <circle
-              cx={size / 2} cy={size / 2} r={outerRadius}
+              cx={cx} cy={cy} r={innerR}
               fill="none"
-              stroke="rgba(255,255,255,0.07)"
-              strokeWidth={outerStroke}
+              stroke="rgba(255,255,255,0.06)"
+              strokeWidth={innerStroke}
             />
+            {/* Progress */}
             <circle
-              cx={size / 2} cy={size / 2} r={outerRadius}
+              cx={cx} cy={cy} r={innerR}
               fill="none"
-              stroke="rgba(255,255,255,0.30)"
-              strokeWidth={outerStroke}
+              stroke="rgba(255,255,255,0.28)"
+              strokeWidth={innerStroke}
               strokeLinecap="round"
-              style={{ strokeDasharray: outerCirc, strokeDashoffset: yearOffset }}
+              strokeDasharray={innerCirc}
+              strokeDashoffset={yearOffset}
             />
           </>
         )}
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center">{children}</div>
+
+      <div className="absolute inset-0 flex items-center justify-center">
+        {children}
+      </div>
     </div>
   );
 }
