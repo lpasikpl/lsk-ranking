@@ -50,6 +50,7 @@ export default async function StravaPage() {
             <CumulativeLineChart
               currentYear={data.cumulativeDaily}
               prevYear={data.cumulativePrevYear}
+              goalKm={data.ytdProgress?.goal_km}
             />
           </div>
         </div>
