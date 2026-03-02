@@ -1,7 +1,8 @@
 "use client";
 
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  ReferenceLine, LabelList, Cell,
 } from "recharts";
 import type { MonthlyNpHr } from "@/lib/strava-types";
 
@@ -16,21 +17,29 @@ const CURRENT_YEAR = new Date().getFullYear();
 function CustomTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
+  if (d.ratio == null) return null;
   return (
     <div style={{
       backgroundColor: "var(--bg-card)",
       border: "1px solid var(--border)",
-      borderRadius: 8,
-      padding: "8px 12px",
+      borderRadius: 10,
+      padding: "10px 14px",
       fontSize: 12,
       color: "var(--text-primary)",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+      minWidth: 140,
     }}>
-      <div style={{ color: "var(--text-muted)", marginBottom: 4 }}>{d.label}</div>
-      {d.ratio != null && (
-        <div><span style={{ color: "#f97316", fontWeight: 600 }}>{d.ratio.toFixed(2)}</span> NP/HR</div>
+      <div style={{ color: "var(--text-muted)", marginBottom: 6, fontWeight: 500 }}>{d.label}</div>
+      <div style={{ marginBottom: 4 }}>
+        <span style={{ color: "#f97316", fontWeight: 700, fontSize: 15 }}>{d.ratio.toFixed(2)}</span>
+        <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>NP/HR</span>
+      </div>
+      {d.np != null && (
+        <div style={{ color: "var(--text-muted)" }}>Śr. NP: <span style={{ color: "var(--text-secondary)" }}>{d.np} W</span></div>
       )}
-      {d.np != null && <div style={{ color: "var(--text-muted)" }}>Śr. NP: {d.np} W</div>}
-      {d.hr != null && <div style={{ color: "var(--text-muted)" }}>Śr. HR: {d.hr} bpm</div>}
+      {d.hr != null && (
+        <div style={{ color: "var(--text-muted)" }}>Śr. HR: <span style={{ color: "var(--text-secondary)" }}>{d.hr} bpm</span></div>
+      )}
     </div>
   );
 }
@@ -59,7 +68,7 @@ export function MonthlyNpHrChart({ data }: MonthlyNpHrChartProps) {
         )}
       </div>
       <ResponsiveContainer width="100%" height={260}>
-        <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <BarChart data={chartData} margin={{ top: 24, right: 8, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
           <XAxis
             dataKey="label"
@@ -75,7 +84,7 @@ export function MonthlyNpHrChart({ data }: MonthlyNpHrChartProps) {
             domain={["auto", "auto"]}
             tickFormatter={(v) => v.toFixed(2)}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
           {avg != null && (
             <ReferenceLine
               y={avg}
@@ -83,16 +92,22 @@ export function MonthlyNpHrChart({ data }: MonthlyNpHrChartProps) {
               strokeDasharray="4 3"
             />
           )}
-          <Line
-            type="monotone"
-            dataKey="ratio"
-            stroke="#f97316"
-            strokeWidth={2}
-            dot={{ fill: "#f97316", r: 3 }}
-            activeDot={{ r: 5 }}
-            connectNulls={false}
-          />
-        </LineChart>
+          <Bar dataKey="ratio" radius={[4, 4, 0, 0]} maxBarSize={48}>
+            {chartData.map((d, i) => (
+              <Cell
+                key={i}
+                fill={avg != null && d.ratio != null && d.ratio >= avg ? "#f97316" : "#f9731699"}
+              />
+            ))}
+            <LabelList
+              dataKey="ratio"
+              position="top"
+              style={{ fill: "var(--text-muted)", fontSize: 11 }}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              formatter={(v: any) => (v != null ? (v as number).toFixed(2) : "") as any}
+            />
+          </Bar>
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );

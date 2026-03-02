@@ -16,15 +16,20 @@ function CustomTooltip({ active, payload }: any) {
   const d = payload[0].payload;
   return (
     <div style={{
-      backgroundColor: "var(--bg-card)",
-      border: "1px solid var(--border)",
-      borderRadius: 8,
-      padding: "8px 12px",
+      backgroundColor: "#1a1a2e",
+      border: "1px solid rgba(255,255,255,0.12)",
+      borderRadius: 10,
+      padding: "10px 14px",
       fontSize: 12,
       color: "var(--text-primary)",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+      minWidth: 120,
     }}>
-      <div style={{ color: "var(--text-muted)", marginBottom: 4 }}>{d.label}</div>
-      <div><span style={{ color: "#f97316", fontWeight: 600 }}>{d.km.toLocaleString("pl-PL", { maximumFractionDigits: 0 })}</span> km</div>
+      <div style={{ color: "rgba(255,255,255,0.5)", marginBottom: 6, fontWeight: 500 }}>{d.label}</div>
+      <div>
+        <span style={{ color: "#f97316", fontWeight: 700, fontSize: 15 }}>{d.km.toLocaleString("pl-PL", { maximumFractionDigits: 0 })}</span>
+        <span style={{ color: "rgba(255,255,255,0.5)", marginLeft: 4 }}>km</span>
+      </div>
     </div>
   );
 }
