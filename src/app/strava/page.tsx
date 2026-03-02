@@ -91,12 +91,6 @@ export default async function StravaPage() {
         </div>
       </section>
 
-      <section>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <PowerZonesChart data={data.weeklySummaries} />
-          <HrZonesChart data={data.weeklySummaries} />
-        </div>
-      </section>
 
       <section className="space-y-6">
         <RecentRidesTable data={data.recentActivities} title="Wszystkie jazdy 2026" />
