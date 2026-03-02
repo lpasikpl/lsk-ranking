@@ -29,7 +29,7 @@ export function GoalProgressCard({ data }: GoalProgressCardProps) {
 
       {/* Ring — wycentrowany, duży */}
       <div className="flex justify-center mb-6">
-        <ProgressRing progress={data.pct_complete} yearProgress={yearProgress} size={240} strokeWidth={22}>
+        <ProgressRing progress={data.pct_complete} yearProgress={yearProgress} size={240} strokeWidth={36}>
           <div className="text-center">
             <AnimatedNumber
               value={data.pct_complete}

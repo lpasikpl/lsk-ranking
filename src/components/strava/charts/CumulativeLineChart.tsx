@@ -136,7 +136,7 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
   const header = (
     <div className="flex items-center justify-between mb-4">
       <h2 className="text-sm font-medium text-[var(--text-secondary)]">
-        Kumulatywne kilometry — {CURRENT_YEAR}
+        Realizacja {CURRENT_YEAR} vs. {CURRENT_YEAR - 1}
       </h2>
       <button
         onClick={() => setShowFullYear((v) => !v)}
@@ -176,7 +176,7 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
       {/* Karta normalna */}
       <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-6 h-full relative">
         {header}
-        <ResponsiveContainer width="100%" height={280}>
+        <ResponsiveContainer width="100%" height={380}>
           <ChartContent data={data} showFullYear={showFullYear} />
         </ResponsiveContainer>
         <Legend />

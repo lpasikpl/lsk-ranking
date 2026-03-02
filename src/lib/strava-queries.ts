@@ -55,17 +55,23 @@ export async function fetchYearlyByType(): Promise<YearlyByType[]> {
 
   function aggregate(activities: Activity[], year: number): YearlyByType[] {
     const groups = new Map<string, YearlyByType>();
+    const days = new Map<string, Set<string>>();
     for (const a of activities) {
       const ride_type = a.sport_type === "VirtualRide" ? "Zwift" : a.sport_type === "GravelRide" ? "Gravel" : "Szosa";
       const environment = a.sport_type === "VirtualRide" ? "Indoor" : "Outdoor";
       const key = `${ride_type}|${environment}`;
-      const g = groups.get(key) ?? { year, ride_type, environment, rides: 0, hours: 0, distance_km: 0, elevation_m: 0, avg_np: null, total_tss: 0 };
+      const g = groups.get(key) ?? { year, ride_type, environment, rides: 0, active_days: 0, hours: 0, distance_km: 0, elevation_m: 0, avg_np: null, total_tss: 0 };
       g.rides += 1;
       g.hours += a.moving_time_seconds / 3600;
       g.distance_km += a.distance_meters / 1000;
       g.elevation_m += a.total_elevation_gain;
       g.total_tss += a.effective_tss ?? 0;
+      if (!days.has(key)) days.set(key, new Set());
+      days.get(key)!.add(a.start_date.slice(0, 10));
       groups.set(key, g);
+    }
+    for (const [key, g] of groups) {
+      g.active_days = days.get(key)?.size ?? 0;
     }
     return Array.from(groups.values());
   }

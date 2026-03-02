@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 interface ProgressRingProps {
   progress: number;       // % realizacji celu (0–100)
   yearProgress?: number;  // % upływu roku (0–100)
@@ -12,9 +14,11 @@ export function ProgressRing({
   progress,
   yearProgress,
   size = 160,
-  strokeWidth = 20,
+  strokeWidth = 36,
   children,
 }: ProgressRingProps) {
+  const [yearHovered, setYearHovered] = useState(false);
+
   const cx = size / 2;
   const cy = size / 2;
 
@@ -50,11 +54,14 @@ export function ProgressRing({
             <circle
               cx={cx} cy={cy} r={outerR}
               fill="none"
-              stroke="rgba(255,255,255,0.28)"
-              strokeWidth={innerStroke}
+              stroke={yearHovered ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.28)"}
+              strokeWidth={yearHovered ? innerStroke + 2 : innerStroke}
               strokeLinecap="round"
               strokeDasharray={outerCirc}
               strokeDashoffset={yearOffset}
+              style={{ transition: "stroke 0.2s, stroke-width 0.2s", cursor: "pointer" }}
+              onMouseEnter={() => setYearHovered(true)}
+              onMouseLeave={() => setYearHovered(false)}
             />
           </>
         )}
@@ -88,6 +95,19 @@ export function ProgressRing({
           />
         </circle>
       </svg>
+
+      {/* Tooltip roku — wyświetlany po najechaniu na ring */}
+      {yearHovered && yearProgress !== undefined && (
+        <div
+          className="absolute pointer-events-none z-10"
+          style={{ top: 8, right: 8 }}
+        >
+          <div className="bg-gray-900/95 border border-white/15 rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap shadow-xl rotate-0">
+            <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">Upływ roku</div>
+            <div className="font-bold text-white">{yearProgress.toFixed(1)}%</div>
+          </div>
+        </div>
+      )}
 
       <div className="absolute inset-0 flex items-center justify-center">
         {children}

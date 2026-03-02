@@ -9,21 +9,24 @@ interface YearByTypeCardProps {
   data: YearlyByType[];
 }
 
+function sumGroup(items: YearlyByType[]) {
+  return {
+    rides: items.reduce((a, b) => a + b.rides, 0),
+    active_days: items.reduce((a, b) => a + b.active_days, 0),
+    hours: items.reduce((a, b) => a + b.hours, 0),
+    distance_km: items.reduce((a, b) => a + b.distance_km, 0),
+    elevation_m: items.reduce((a, b) => a + b.elevation_m, 0),
+  };
+}
+
 function TypeTable({ data, title, groupBy }: { data: YearlyByType[]; title: string; groupBy: "ride_type" | "environment" }) {
   const currentYear = data.filter((d) => d.year === CURRENT_YEAR);
   const prevYear = data.filter((d) => d.year === CURRENT_YEAR - 1);
 
   const groups = [...new Set(data.map((d) => d[groupBy]))];
 
-  const totals = (items: YearlyByType[]) => ({
-    rides: items.reduce((a, b) => a + b.rides, 0),
-    hours: items.reduce((a, b) => a + b.hours, 0),
-    distance_km: items.reduce((a, b) => a + b.distance_km, 0),
-    elevation_m: items.reduce((a, b) => a + b.elevation_m, 0),
-  });
-
-  const currentTotals = totals(currentYear);
-  const prevTotals = totals(prevYear);
+  const currentTotals = sumGroup(currentYear);
+  const prevTotals = sumGroup(prevYear);
 
   return (
     <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] overflow-hidden">
@@ -37,16 +40,19 @@ function TypeTable({ data, title, groupBy }: { data: YearlyByType[]; title: stri
               <th className="text-left px-4 py-2">Typ</th>
               <th className="text-right px-4 py-2">km</th>
               <th className="text-right px-4 py-2">Czas</th>
-              <th className="text-right px-4 py-2">Jazdy</th>
+              <th className="text-right px-4 py-2">Dni</th>
               <th className="text-right px-4 py-2">Elev.</th>
               <th className="text-right px-4 py-2">vs {CURRENT_YEAR - 1}</th>
             </tr>
           </thead>
           <tbody>
             {groups.map((group) => {
-              const curr = currentYear.find((d) => d[groupBy] === group);
-              const prev = prevYear.find((d) => d[groupBy] === group);
-              if (!curr) return null;
+              // Sumuj WSZYSTKIE rekordy pasujące do grupy (fix: Gravel + Szosa → Outdoor)
+              const currItems = currentYear.filter((d) => d[groupBy] === group);
+              const prevItems = prevYear.filter((d) => d[groupBy] === group);
+              if (currItems.length === 0) return null;
+              const curr = sumGroup(currItems);
+              const prev = sumGroup(prevItems);
               const color = groupBy === "ride_type" ? RIDE_TYPE_COLORS[group] : undefined;
               return (
                 <tr key={group} className="border-t border-[var(--border)] hover:bg-[var(--bg-card-hover)]">
@@ -58,10 +64,10 @@ function TypeTable({ data, title, groupBy }: { data: YearlyByType[]; title: stri
                   </td>
                   <td className="text-right px-4 py-2">{formatKm(curr.distance_km)}</td>
                   <td className="text-right px-4 py-2">{formatHours(curr.hours)}</td>
-                  <td className="text-right px-4 py-2">{curr.rides}</td>
+                  <td className="text-right px-4 py-2">{curr.active_days}</td>
                   <td className="text-right px-4 py-2">{formatKm(curr.elevation_m)}m</td>
                   <td className="text-right px-4 py-2">
-                    <DeltaBadge current={curr.distance_km} previous={prev?.distance_km ?? 0} />
+                    <DeltaBadge current={curr.distance_km} previous={prev.distance_km} />
                   </td>
                 </tr>
               );
@@ -70,7 +76,7 @@ function TypeTable({ data, title, groupBy }: { data: YearlyByType[]; title: stri
               <td className="px-4 py-2">Razem</td>
               <td className="text-right px-4 py-2">{formatKm(currentTotals.distance_km)}</td>
               <td className="text-right px-4 py-2">{formatHours(currentTotals.hours)}</td>
-              <td className="text-right px-4 py-2">{currentTotals.rides}</td>
+              <td className="text-right px-4 py-2">{currentTotals.active_days}</td>
               <td className="text-right px-4 py-2">{formatKm(currentTotals.elevation_m)}m</td>
               <td className="text-right px-4 py-2">
                 <DeltaBadge current={currentTotals.distance_km} previous={prevTotals.distance_km} />

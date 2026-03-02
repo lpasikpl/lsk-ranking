@@ -46,6 +46,7 @@ export interface YearlyByType {
   ride_type: string;
   environment: string;
   rides: number;
+  active_days: number;
   hours: number;
   distance_km: number;
   elevation_m: number;
