@@ -10,10 +10,18 @@ interface MonthlyData {
   activity_count: number;
 }
 
+type BestDayEntry = { day: string; value: number };
+
 interface MonthlyChartProps {
   data: MonthlyData[];
   year: number;
   metric: "distance" | "elevation" | "time" | "count";
+  yearBestDays?: {
+    distance: BestDayEntry;
+    elevation: BestDayEntry;
+    time: BestDayEntry;
+    count: BestDayEntry;
+  } | null;
 }
 
 const MONTHS = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"];
@@ -69,7 +77,29 @@ function formatAxisLabel(val: number, metric: MonthlyChartProps["metric"]): stri
 
 const BAR_HEIGHT = 200;
 
-export default function MonthlyChart({ data, year, metric: initialMetric }: MonthlyChartProps) {
+const MONTH_NAMES = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"];
+
+function formatBestDayValue(value: number, metric: MonthlyChartProps["metric"]): string {
+  switch (metric) {
+    case "distance": return `${Math.round(value)} km`;
+    case "elevation": return `${Math.round(value)} m`;
+    case "time": {
+      const h = Math.floor(value);
+      const m = Math.round((value - h) * 60);
+      if (h > 0 && m > 0) return `${h}h ${m}m`;
+      if (h > 0) return `${h}h`;
+      return `${m}m`;
+    }
+    case "count": return `${Math.round(value)}`;
+  }
+}
+
+function formatBestDayDate(dayStr: string): string {
+  const [, m, d] = dayStr.split("-").map(Number);
+  return `${d} ${MONTH_NAMES[m - 1]}`;
+}
+
+export default function MonthlyChart({ data, year, metric: initialMetric, yearBestDays }: MonthlyChartProps) {
   const [metric, setMetric] = useState(initialMetric);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
@@ -81,10 +111,6 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
   const values = fullYear.map(d => getValue(d, metric));
   const maxVal = Math.max(...values, 1);
   const ticks = getNiceTicks(maxVal);
-
-  const bestIdx = values.reduce((best, v, i) => v > values[best] ? i : best, 0);
-  const bestVal = values[bestIdx];
-  const hasBest = bestVal > 0;
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -196,16 +222,16 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
 
     </div>
 
-    {/* Najlepszy miesiąc — osobny kafelek */}
+    {/* Najlepszy dzień roku — osobny kafelek */}
     <div className="glass rounded-2xl px-6 py-4 flex items-center justify-between">
-      <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Najlepszy miesiąc</span>
-      {hasBest ? (
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Najlepszy dzień</span>
+      {yearBestDays ? (
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-400">
-            {MONTHS_FULL[bestIdx]} {year}
+            {formatBestDayDate(yearBestDays[metric].day)} {year}
           </span>
           <span className="text-xl font-bold text-orange-400">
-            {formatTooltip(bestVal, metric)}
+            {formatBestDayValue(yearBestDays[metric].value, metric)}
           </span>
         </div>
       ) : (

@@ -62,6 +62,43 @@ async function getDailyData(year: number, month: number) {
   return data || [];
 }
 
+async function getYearlyBestDays(year: number) {
+  const supabase = createServiceClient();
+  const { data } = await supabase
+    .from("lsk_activities")
+    .select("start_date_local, distance, total_elevation_gain, moving_time")
+    .gte("start_date_local", `${year}-01-01`)
+    .lt("start_date_local", `${year + 1}-01-01`);
+
+  if (!data || data.length === 0) return null;
+
+  const byDay = new Map<string, { distance: number; elevation: number; time: number; count: number }>();
+  for (const a of data) {
+    const day = (a.start_date_local as string)?.slice(0, 10);
+    if (!day) continue;
+    const prev = byDay.get(day) ?? { distance: 0, elevation: 0, time: 0, count: 0 };
+    byDay.set(day, {
+      distance: prev.distance + (a.distance || 0),
+      elevation: prev.elevation + (a.total_elevation_gain || 0),
+      time: prev.time + (a.moving_time || 0),
+      count: prev.count + 1,
+    });
+  }
+
+  if (byDay.size === 0) return null;
+
+  const entries = Array.from(byDay.entries()) as [string, { distance: number; elevation: number; time: number; count: number }][];
+  const best = (key: "distance" | "elevation" | "time" | "count") =>
+    entries.reduce((b, e) => (e[1][key] > b[1][key] ? e : b), entries[0]);
+
+  return {
+    distance: { day: best("distance")[0], value: best("distance")[1].distance / 1000 },
+    elevation: { day: best("elevation")[0], value: best("elevation")[1].elevation },
+    time: { day: best("time")[0], value: best("time")[1].time / 3600 },
+    count: { day: best("count")[0], value: best("count")[1].count },
+  };
+}
+
 function StatsCards({ entries }: { entries: RankingEntry[] }) {
   const totalDistance = entries.reduce((s, e) => s + e.total_distance, 0);
   const totalElevation = entries.reduce((s, e) => s + e.total_elevation, 0);
@@ -107,12 +144,13 @@ export default async function HomePage({ searchParams }: PageProps) {
   const selMonth = params.month ? parseInt(params.month) : currentMonth;
   const selRYear = params.ryear ? parseInt(params.ryear) : currentYear;
 
-  const [user, monthData, yearData, monthlyData, dailyData] = await Promise.all([
+  const [user, monthData, yearData, monthlyData, dailyData, yearBestDays] = await Promise.all([
     getCurrentUser(userId),
     getRankingData("month", selYear, selMonth),
     getRankingData("year", selRYear, 1),
     getMonthlyData(selRYear),
     getDailyData(selYear, selMonth),
+    getYearlyBestDays(selRYear),
   ]);
 
   const daysInMonth = new Date(selYear, selMonth, 0).getDate();
@@ -186,7 +224,7 @@ export default async function HomePage({ searchParams }: PageProps) {
         {/* Wykres miesięczny */}
         <div className="mb-10">
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Progresja miesięczna <span className="text-gray-500">— {selRYear}</span></h2>
-          <MonthlyChart data={monthlyData} year={selRYear} metric={chartMetric} />
+          <MonthlyChart data={monthlyData} year={selRYear} metric={chartMetric} yearBestDays={yearBestDays} />
           <TopEfforts year={selRYear} />
         </div>
 
