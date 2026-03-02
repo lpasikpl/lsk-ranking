@@ -20,7 +20,7 @@ export function ProgressRing({
 
   // Zewnętrzny cienki ring — % upływu roku
   const innerStroke = 5;
-  const gap = 10;
+  const gap = 4;
   const outerR = (size - innerStroke) / 2;
   const outerCirc = outerR * 2 * Math.PI;
   const yearClamped = Math.min(Math.max(yearProgress ?? 0, 0), 100);
