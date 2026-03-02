@@ -129,6 +129,15 @@ function aggregateActivities(activities: Activity[]): PeriodStats {
     ? withPower.reduce((s, a) => s + a.normalized_power!, 0) / withPower.length
     : null;
 
+  const withHr = activities.filter((a) => a.average_heartrate != null && a.average_heartrate > 0);
+  const avg_hr = withHr.length > 0
+    ? withHr.reduce((s, a) => s + a.average_heartrate!, 0) / withHr.length
+    : null;
+
+  const np_hr_ratio = avg_np != null && avg_hr != null && avg_hr > 0
+    ? Math.round((avg_np / avg_hr) * 100) / 100
+    : null;
+
   const uniqueDays = new Set(activities.map((a) => a.start_date.slice(0, 10)));
   const active_days = uniqueDays.size;
 
@@ -139,7 +148,7 @@ function aggregateActivities(activities: Activity[]): PeriodStats {
     ? longRides.reduce((s, a) => s + a.distance_meters, 0) / longRides.length / 1000
     : null;
 
-  return { distance_km, hours, rides, elevation_m, avg_np, active_days, total_tss, avg_distance_km };
+  return { distance_km, hours, rides, elevation_m, avg_np, avg_hr, np_hr_ratio, active_days, total_tss, avg_distance_km };
 }
 
 async function fetchActivitiesForPeriod(from: string, to: string): Promise<Activity[]> {

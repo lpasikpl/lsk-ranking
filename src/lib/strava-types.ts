@@ -126,6 +126,8 @@ export interface PeriodStats {
   rides: number;
   elevation_m: number;
   avg_np: number | null;
+  avg_hr: number | null;
+  np_hr_ratio: number | null;
   active_days: number;
   total_tss: number;
   avg_distance_km: number | null;

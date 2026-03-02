@@ -14,12 +14,12 @@ export function PeriodCompareRow({ data }: PeriodCompareRowProps) {
   const stats = [
     { label: "Kilometry", value: current.distance_km, prev: previous.distance_km, suffix: " km" },
     { label: "Godziny", value: current.hours, prev: previous.hours, formatter: formatHours },
-    { label: "Jazdy", value: current.rides, prev: previous.rides },
+    { label: "Aktywne dni", value: current.active_days, prev: previous.active_days },
     { label: "Przewyższenia", value: current.elevation_m, prev: previous.elevation_m, suffix: " m" },
     { label: "Śr. NP", value: current.avg_np ?? 0, prev: previous.avg_np ?? undefined, suffix: " W" },
     { label: "TSS", value: current.total_tss, prev: previous.total_tss },
     { label: "Śr. dystans (>1h)", value: current.avg_distance_km ?? 0, prev: previous.avg_distance_km ?? undefined, suffix: " km", decimals: 1 },
-    { label: "Aktywne dni", value: current.active_days, prev: previous.active_days },
+    { label: "NP/HR", value: current.np_hr_ratio ?? 0, prev: previous.np_hr_ratio ?? undefined, decimals: 2 },
   ];
 
   return (
