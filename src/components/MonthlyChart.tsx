@@ -90,7 +90,7 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
-  return (
+  return <>
     <div className="glass rounded-2xl p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-1">
@@ -194,24 +194,23 @@ export default function MonthlyChart({ data, year, metric: initialMetric }: Mont
         </div>
       </div>
 
-      {/* Najlepszy miesiąc */}
-      <div className="mt-4 pt-3 border-t border-white/5">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Najlepszy miesiąc</span>
-          {hasBest ? (
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] text-gray-400">
-                {MONTHS_FULL[bestIdx]} {year}
-              </span>
-              <span className="text-sm font-bold text-orange-400">
-                {formatTooltip(bestVal, metric)}
-              </span>
-            </div>
-          ) : (
-            <span className="text-[11px] text-gray-600">Brak danych</span>
-          )}
-        </div>
-      </div>
     </div>
-  );
+
+    {/* Najlepszy miesiąc — osobny kafelek */}
+    <div className="glass rounded-2xl px-6 py-4 flex items-center justify-between">
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Najlepszy miesiąc</span>
+      {hasBest ? (
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-400">
+            {MONTHS_FULL[bestIdx]} {year}
+          </span>
+          <span className="text-xl font-bold text-orange-400">
+            {formatTooltip(bestVal, metric)}
+          </span>
+        </div>
+      ) : (
+        <span className="text-sm text-gray-600">Brak danych</span>
+      )}
+    </div>
+  </>;
 }

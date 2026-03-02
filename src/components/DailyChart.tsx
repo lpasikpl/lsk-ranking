@@ -185,7 +185,7 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
   const bestVal = values[bestIdx];
   const hasBest = bestVal > 0;
 
-  return (
+  return <>
     <div ref={ref} className="glass rounded-2xl p-6">
       <div className="flex items-center justify-start mb-6">
         <div className="flex gap-1">
@@ -328,24 +328,23 @@ export default function DailyChart({ data, year, month, daysInMonth }: DailyChar
         </div>
       </div>
 
-      {/* Najlepszy dzień */}
-      <div className="mt-3 pt-3 border-t border-white/5">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Najlepszy dzień</span>
-          {hasBest ? (
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] text-gray-400">
-                {bestDay.day} {MONTH_GENITIVE[month - 1]} {year}
-              </span>
-              <span className="text-sm font-bold text-orange-400">
-                {formatValueWithUnit(bestVal, metric)}
-              </span>
-            </div>
-          ) : (
-            <span className="text-[11px] text-gray-600">Brak danych</span>
-          )}
-        </div>
-      </div>
     </div>
-  );
+
+    {/* Najlepszy dzień — osobny kafelek */}
+    <div className="glass rounded-2xl px-6 py-4 flex items-center justify-between">
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Najlepszy dzień</span>
+      {hasBest ? (
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-400">
+            {bestDay.day} {MONTH_GENITIVE[month - 1]} {year}
+          </span>
+          <span className="text-xl font-bold text-orange-400">
+            {formatValueWithUnit(bestVal, metric)}
+          </span>
+        </div>
+      ) : (
+        <span className="text-sm text-gray-600">Brak danych</span>
+      )}
+    </div>
+  </>;
 }
