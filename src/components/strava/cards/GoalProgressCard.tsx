@@ -28,7 +28,7 @@ export function GoalProgressCard({ data }: GoalProgressCardProps) {
       </h2>
 
       <div className="flex items-center gap-6">
-        <ProgressRing progress={data.pct_complete} yearProgress={yearProgress} size={150} strokeWidth={16}>
+        <ProgressRing progress={data.pct_complete} yearProgress={yearProgress} size={160} strokeWidth={20}>
           <div className="text-center">
             <AnimatedNumber
               value={data.pct_complete}
