@@ -15,15 +15,15 @@ interface StatCardProps {
 
 export function StatCard({ label, value, prevValue, decimals = 0, suffix = "", prefix = "", formatter }: StatCardProps) {
   return (
-    <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-4 hover:bg-[var(--bg-card-hover)] transition-colors">
-      <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">{label}</div>
-      <div className="flex items-end gap-2">
+    <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-4 hover:bg-[var(--bg-card-hover)] transition-colors h-full flex flex-col justify-between">
+      <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-2 leading-tight">{label}</div>
+      <div className="flex flex-col items-start gap-1.5">
         <AnimatedNumber
           value={value}
           decimals={decimals}
           prefix={prefix}
           suffix={suffix}
-          className="text-xl font-bold"
+          className="text-xl font-bold leading-tight"
           formatter={formatter}
         />
         {prevValue !== undefined && (

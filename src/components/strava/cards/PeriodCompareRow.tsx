@@ -27,7 +27,7 @@ export function PeriodCompareRow({ data }: PeriodCompareRowProps) {
       <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-3 capitalize">
         {label}
       </h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 items-stretch">
         {stats.map((s) => (
           <StatCard
             key={s.label}
@@ -35,6 +35,7 @@ export function PeriodCompareRow({ data }: PeriodCompareRowProps) {
             value={s.value}
             prevValue={s.prev}
             suffix={s.suffix}
+            decimals={s.decimals}
             formatter={s.formatter}
           />
         ))}
