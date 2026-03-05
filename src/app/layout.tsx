@@ -7,6 +7,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "LSK Ranking - Ranking Kolarski",
   description: "Ranking kolarski oparty na danych ze Stravy",
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+  },
   openGraph: {
     title: "LSK Ranking - Ranking Kolarski",
     description: "Ranking kolarski oparty na danych ze Stravy",
