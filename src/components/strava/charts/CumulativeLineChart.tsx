@@ -1,36 +1,118 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ComposedChart } from "recharts";
 import type { CumulativeDay, CumulativeByYear } from "@/lib/strava-types";
 import { CURRENT_YEAR } from "@/lib/strava-constants";
 
+const fmt = (v: number) => v.toLocaleString("pl-PL", { maximumFractionDigits: 1 });
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label, currentActualKm }: any) {
   if (!active || !payload?.length) return null;
 
   const actual = payload.find((p: any) => p.dataKey === "actual")?.value as number | undefined;
   const plan = payload.find((p: any) => p.dataKey === "plan")?.value as number | undefined;
   const prev = payload.find((p: any) => p.dataKey === "prevYear")?.value as number | undefined;
 
-  const diff = actual != null && plan != null ? actual - plan : null;
+  const isFuture = actual == null || actual === undefined;
+  // Na przyszłych datach używamy aktualnych km (dziś) do porównania z 2025
+  const km2026 = isFuture ? (currentActualKm ?? null) : actual;
+
+  const diffVsPlan = km2026 != null && plan != null ? km2026 - plan : null;
+  const diffVs2025 = km2026 != null && prev != null ? km2026 - prev : null;
+
   const dateStr = new Date(CURRENT_YEAR, 0, Number(label)).toLocaleDateString("pl-PL", {
     day: "numeric",
     month: "long",
   });
-  const fmt = (v: number) => v.toLocaleString("pl-PL", { maximumFractionDigits: 1 });
+
+  const DiffBadge = ({ val }: { val: number }) => (
+    <div style={{
+      display: "inline-block",
+      color: val >= 0 ? "#34d399" : "#f87171",
+      fontWeight: 700,
+      fontSize: 13,
+      marginTop: 4,
+    }}>
+      {val >= 0 ? "+" : ""}{fmt(val)} km
+    </div>
+  );
 
   return (
-    <div style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "var(--text-primary)" }}>
-      <div style={{ marginBottom: 6, fontWeight: 500 }}>{dateStr}</div>
-      {actual != null && <div style={{ color: "#f97316" }}>{CURRENT_YEAR} : {fmt(actual)} km</div>}
-      {plan != null && <div style={{ color: "rgba(255,255,255,0.4)" }}>Plan : {fmt(plan)} km</div>}
-      {diff != null && (
-        <div style={{ color: diff >= 0 ? "#34d399" : "#f87171", fontWeight: 600, marginTop: 4, borderTop: "1px solid var(--border)", paddingTop: 4 }}>
-          {diff >= 0 ? "+" : ""}{fmt(diff)} km
+    <div style={{
+      backgroundColor: "#0f1117",
+      border: "1px solid rgba(255,255,255,0.15)",
+      borderRadius: 12,
+      padding: "12px 16px",
+      fontSize: 12,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.85)",
+      minWidth: 190,
+      pointerEvents: "none",
+    }}>
+      {/* Nagłówek — data */}
+      <div style={{ marginBottom: 10, fontWeight: 700, fontSize: 13, color: "rgba(255,255,255,0.95)" }}>
+        {dateStr}
+      </div>
+
+      {/* Sekcja 1: vs Plan */}
+      <div style={{ marginBottom: 10 }}>
+        <div style={{
+          color: "rgba(255,255,255,0.35)",
+          fontSize: 10,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          marginBottom: 5,
+          fontWeight: 600,
+        }}>
+          vs Plan
         </div>
-      )}
-      {prev != null && <div style={{ color: "#3b82f6", marginTop: 4 }}>{CURRENT_YEAR - 1} : {fmt(prev)} km</div>}
+        {!isFuture && km2026 != null && (
+          <div style={{ color: "#f97316", marginBottom: 2 }}>
+            {CURRENT_YEAR} : {fmt(km2026)} km
+          </div>
+        )}
+        {plan != null && (
+          <div style={{ color: "rgba(255,255,255,0.5)", marginBottom: 2 }}>
+            Plan : {fmt(plan)} km
+          </div>
+        )}
+        {diffVsPlan != null ? (
+          <DiffBadge val={diffVsPlan} />
+        ) : (
+          plan != null && isFuture && (
+            <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 11, marginTop: 2 }}>brak danych 2026</div>
+          )
+        )}
+      </div>
+
+      {/* Separator */}
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", marginBottom: 10 }} />
+
+      {/* Sekcja 2: vs 2025 */}
+      <div>
+        <div style={{
+          color: "rgba(255,255,255,0.35)",
+          fontSize: 10,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          marginBottom: 5,
+          fontWeight: 600,
+        }}>
+          vs {CURRENT_YEAR - 1}
+        </div>
+        {km2026 != null && (
+          <div style={{ color: "#f97316", marginBottom: 2 }}>
+            {isFuture ? `${CURRENT_YEAR} teraz` : CURRENT_YEAR} : {fmt(km2026)} km
+          </div>
+        )}
+        {prev != null && (
+          <div style={{ color: "#3b82f6", marginBottom: 2 }}>
+            {CURRENT_YEAR - 1} : {fmt(prev)} km
+          </div>
+        )}
+        {diffVs2025 != null && <DiffBadge val={diffVs2025} />}
+      </div>
     </div>
   );
 }
@@ -43,43 +125,6 @@ interface CumulativeLineChartProps {
 
 const DOY_TICKS = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
 const DAYS_IN_YEAR = 365;
-
-function ChartContent({ data, showFullYear }: { data: ReturnType<typeof buildData>; showFullYear: boolean }) {
-  const tickFormatter = (v: number) =>
-    new Date(CURRENT_YEAR, 0, v).toLocaleDateString("pl-PL", { month: "short" });
-
-  return (
-    <ComposedChart data={data}>
-      <defs>
-        <linearGradient id="gradActual2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#f97316" stopOpacity={0.3} />
-          <stop offset="100%" stopColor="#f97316" stopOpacity={0.02} />
-        </linearGradient>
-      </defs>
-      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-      <XAxis
-        dataKey="doy"
-        tick={{ fill: "var(--text-muted)", fontSize: 11 }}
-        axisLine={{ stroke: "var(--border)" }}
-        tickLine={false}
-        tickFormatter={tickFormatter}
-        ticks={showFullYear ? DOY_TICKS : undefined}
-        type="number"
-        domain={showFullYear ? [1, DAYS_IN_YEAR] : ["dataMin", "dataMax"]}
-      />
-      <YAxis
-        tick={{ fill: "var(--text-muted)", fontSize: 11 }}
-        axisLine={false}
-        tickLine={false}
-        tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
-      />
-      <Tooltip content={<CustomTooltip />} />
-      <Area type="monotone" dataKey="actual" stroke="#f97316" strokeWidth={2.5} fill="url(#gradActual2)" connectNulls={false} />
-      <Line type="monotone" dataKey="plan" stroke="rgba(255,255,255,0.35)" strokeWidth={1.5} strokeDasharray="6 4" dot={false} connectNulls={true} />
-      <Line type="monotone" dataKey="prevYear" stroke="#3b82f6" strokeWidth={1.5} strokeOpacity={0.6} dot={false} connectNulls={false} />
-    </ComposedChart>
-  );
-}
 
 type DataPoint = { doy: number; actual: number | null; plan: number | null; prevYear: number | null };
 
@@ -109,6 +154,49 @@ function buildData(currentYear: CumulativeDay[], prevYear: CumulativeByYear[], s
   }));
 }
 
+function ChartContent({ data, showFullYear, currentActualKm }: { data: DataPoint[]; showFullYear: boolean; currentActualKm: number | null }) {
+  const tickFormatter = (v: number) =>
+    new Date(CURRENT_YEAR, 0, v).toLocaleDateString("pl-PL", { month: "short" });
+
+  const tooltipContent = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (props: any) => <CustomTooltip {...props} currentActualKm={currentActualKm} />,
+    [currentActualKm]
+  );
+
+  return (
+    <ComposedChart data={data}>
+      <defs>
+        <linearGradient id="gradActual2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f97316" stopOpacity={0.3} />
+          <stop offset="100%" stopColor="#f97316" stopOpacity={0.02} />
+        </linearGradient>
+      </defs>
+      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" vertical={false} />
+      <XAxis
+        dataKey="doy"
+        tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+        axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+        tickLine={false}
+        tickFormatter={tickFormatter}
+        ticks={showFullYear ? DOY_TICKS : undefined}
+        type="number"
+        domain={showFullYear ? [1, DAYS_IN_YEAR] : ["dataMin", "dataMax"]}
+      />
+      <YAxis
+        tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+        axisLine={false}
+        tickLine={false}
+        tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+      />
+      <Tooltip content={tooltipContent} />
+      <Area type="monotone" dataKey="actual" stroke="#f97316" strokeWidth={2.5} fill="url(#gradActual2)" connectNulls={false} />
+      <Line type="monotone" dataKey="plan" stroke="rgba(255,255,255,0.35)" strokeWidth={1.5} strokeDasharray="6 4" dot={false} connectNulls={true} />
+      <Line type="monotone" dataKey="prevYear" stroke="#3b82f6" strokeWidth={1.5} strokeOpacity={0.6} dot={false} connectNulls={false} />
+    </ComposedChart>
+  );
+}
+
 function Legend() {
   return (
     <div className="flex items-center gap-6 mt-3 text-xs text-[var(--text-muted)]">
@@ -123,7 +211,11 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
   const [showFullYear, setShowFullYear] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Zamknij na Escape
+  // Ostatnia znana wartość km 2026 (do porównania na przyszłych datach)
+  const currentActualKm = currentYear.length > 0
+    ? currentYear[currentYear.length - 1].actual_cumulative_km
+    : null;
+
   useEffect(() => {
     if (!isFullscreen) return;
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setIsFullscreen(false); };
@@ -151,7 +243,6 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
     </div>
   );
 
-  // Ikonka expand (SVG)
   const expandIcon = (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M8 3H5a2 2 0 0 0-2 2v3" />
@@ -161,7 +252,6 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
     </svg>
   );
 
-  // Ikonka collapse (SVG)
   const collapseIcon = (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M8 3v3a2 2 0 0 1-2 2H3" />
@@ -173,14 +263,12 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
 
   return (
     <>
-      {/* Karta normalna */}
       <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-6 h-full relative">
         {header}
         <ResponsiveContainer width="100%" height={380}>
-          <ChartContent data={data} showFullYear={showFullYear} />
+          <ChartContent data={data} showFullYear={showFullYear} currentActualKm={currentActualKm} />
         </ResponsiveContainer>
         <Legend />
-        {/* Przycisk fullscreen — prawy dolny róg */}
         <button
           onClick={() => setIsFullscreen(true)}
           className="absolute bottom-4 right-4 p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-white/5 transition-colors"
@@ -190,7 +278,6 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
         </button>
       </div>
 
-      {/* Overlay fullscreen */}
       {isFullscreen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-6"
@@ -203,10 +290,9 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
           >
             {header}
             <ResponsiveContainer width="100%" height={520}>
-              <ChartContent data={data} showFullYear={showFullYear} />
+              <ChartContent data={data} showFullYear={showFullYear} currentActualKm={currentActualKm} />
             </ResponsiveContainer>
             <Legend />
-            {/* Przycisk zamknij */}
             <button
               onClick={() => setIsFullscreen(false)}
               className="absolute bottom-6 right-6 p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-white/5 transition-colors"
