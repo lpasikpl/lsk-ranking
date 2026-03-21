@@ -36,6 +36,8 @@ function ChartContent({ data, gradientId, height }: { data: TrainingLoadDay[]; g
           tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
+          domain={[-30, 90]}
+          ticks={[-30, -20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90]}
         />
         <ReferenceLine y={0} stroke="rgba(255,255,255,0.08)" strokeWidth={1} />
         <Tooltip
