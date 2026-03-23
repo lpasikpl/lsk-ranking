@@ -88,7 +88,7 @@ export async function parseFitFile(buffer: Buffer): Promise<ParsedFitData> {
       mode: "list",
     });
 
-    parser.parse(buffer, (error: Error | null, data: any) => {
+    parser.parse(buffer as Buffer<ArrayBuffer>, (error: Error | null, data: any) => {
       if (error) {
         reject(error);
         return;
