@@ -13,7 +13,7 @@ export async function POST(
 
   // Weryfikacja sekretu
   const secret = req.headers.get("x-webhook-secret");
-  if (secret !== process.env.N8N_WEBHOOK_SECRET) {
+  if (secret !== (process.env.N8N_WEBHOOK_SECRET ?? "").trim()) {
     return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
   }
 
