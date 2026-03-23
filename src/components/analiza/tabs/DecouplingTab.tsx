@@ -17,18 +17,23 @@ interface DecouplingTabProps {
 }
 
 export default function DecouplingTab({ laps, aiComment }: DecouplingTabProps) {
-  // Oblicz EF per lap
+  // Oblicz EF per lap — NP preferowany, avg_power jako fallback
   const lapsWithEf = laps
-    .filter(l => l.normalized_power && l.avg_hr && l.avg_hr > 0)
-    .map(l => ({ ...l, ef: l.normalized_power / l.avg_hr }));
+    .filter(l => (l.normalized_power || l.avg_power) && l.avg_hr && l.avg_hr > 0)
+    .map(l => {
+      const power = l.normalized_power ?? l.avg_power;
+      return { ...l, ef: power / l.avg_hr, usedNp: !!l.normalized_power };
+    });
 
   if (lapsWithEf.length === 0) {
     return (
       <div className="text-center py-12" style={{ color: "rgba(255,255,255,0.3)" }}>
-        Brak danych do analizy decoupling (wymagane NP i HR per okrążenie)
+        Brak danych do analizy decoupling (wymagane moc i HR per okrążenie)
       </div>
     );
   }
+
+  const usingNp = lapsWithEf.some(l => l.usedNp);
 
   const half = Math.floor(lapsWithEf.length / 2);
   const avgEf = (arr: any[]) => arr.reduce((s, l) => s + l.ef, 0) / arr.length;
@@ -44,8 +49,8 @@ export default function DecouplingTab({ laps, aiComment }: DecouplingTabProps) {
       {/* Karty EF */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "EF - 1. polowa", value: ef1.toFixed(3) },
-          { label: "EF - 2. polowa", value: ef2.toFixed(3) },
+          { label: `EF - 1. polowa (${usingNp ? "NP" : "AvgP"}/HR)`, value: ef1.toFixed(3) },
+          { label: `EF - 2. polowa (${usingNp ? "NP" : "AvgP"}/HR)`, value: ef2.toFixed(3) },
           { label: "Cardiac drift", value: `${drift >= 0 ? "+" : ""}${drift.toFixed(1)}%`, color },
         ].map(c => (
           <div
