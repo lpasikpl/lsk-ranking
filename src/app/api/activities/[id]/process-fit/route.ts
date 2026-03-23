@@ -189,7 +189,7 @@ export async function POST(
   const payload: N8nPayload = {
     activity_id: activityId,
     callback_url: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://lsk-ranking.vercel.app"}/api/activities/${activityId}/ai-comment`,
-    secret: process.env.N8N_WEBHOOK_SECRET ?? "",
+    secret: (process.env.N8N_WEBHOOK_SECRET ?? "").trim(),
     athlete: { ftp, weight: 80, max_hr: maxHr, resting_hr: restingHr },
     session: {
       name: activity.name ?? "",
