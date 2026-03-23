@@ -1,6 +1,7 @@
 // Lista treningów z analizą FIT
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createServiceClient } from "@/lib/supabase/server";
 import RankingHeader from "@/components/RankingHeader";
 import Footer from "@/components/Footer";
@@ -37,6 +38,21 @@ export default async function AnalizaPage() {
               Kliknij na trening aby zobaczyc szczegolowa analize
             </p>
           </div>
+          <Link
+            href="/analiza/trendy"
+            style={{
+              background: "rgba(33,150,243,0.15)",
+              border: "1px solid rgba(33,150,243,0.3)",
+              borderRadius: 8,
+              padding: "8px 16px",
+              color: "#2196F3",
+              fontSize: 13,
+              fontWeight: 500,
+              textDecoration: "none",
+            }}
+          >
+            📈 Analiza trendów
+          </Link>
         </div>
 
         <div
