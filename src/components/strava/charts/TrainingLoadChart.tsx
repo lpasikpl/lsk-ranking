@@ -104,10 +104,7 @@ function CtlStats({ data }: { data: TrainingLoadDay[] }) {
   };
 
   return (
-    <div
-      className="mt-4 pt-4 flex flex-wrap items-center gap-x-6 gap-y-2"
-      style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
-    >
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pb-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
       {/* Aktualne wartości */}
       <div className="flex items-center gap-4 mr-2">
         <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Teraz</span>
@@ -182,11 +179,16 @@ export function TrainingLoadChart({ data }: TrainingLoadChartProps) {
         onClick={() => setExpanded(true)}
         title="Kliknij, aby powiększyć"
       >
-        <h2 className="text-sm font-medium mb-4" style={{ color: "rgba(255,255,255,0.6)" }}>
-          CTL / ATL / TSB — ostatnie 90 dni
-        </h2>
-        <ChartContent data={data} gradientId="gradTsb" height={420} />
-        <LegendWithStats data={data} />
+        <div className="flex items-start justify-between mb-4">
+          <h2 className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>
+            CTL / ATL / TSB — ostatnie 90 dni
+          </h2>
+        </div>
+        <CtlStats data={data} />
+        <div className="mt-4">
+          <ChartContent data={data} gradientId="gradTsb" height={420} />
+        </div>
+        <Legend />
       </div>
 
       {expanded && (
@@ -204,11 +206,14 @@ export function TrainingLoadChart({ data }: TrainingLoadChartProps) {
             >
               &times;
             </button>
-            <h2 className="text-base font-medium text-white/80 mb-6">
+            <h2 className="text-base font-medium text-white/80 mb-4">
               CTL / ATL / TSB — ostatnie 90 dni
             </h2>
-            <ChartContent data={data} gradientId="gradTsbExpanded" height={500} />
-            <LegendWithStats data={data} />
+            <CtlStats data={data} />
+            <div className="mt-4">
+              <ChartContent data={data} gradientId="gradTsbExpanded" height={500} />
+            </div>
+            <Legend />
           </div>
         </div>
       )}
