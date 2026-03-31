@@ -68,21 +68,14 @@ export default async function StravaPage() {
         <YearByTypeCard data={data.yearlyByType} />
       </section>
 
-      <section>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6">
-          <MonthlyDistanceChart data={data.monthlyYoy} />
-          <MonthlyNpHrChart data={data.monthlyNpHr} />
-        </div>
-      </section>
-
-      <section>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6">
-          <NpHrWeeklyChart data={data.weeklyNpHr} />
-          <NpHrOverlayChart
-            currentYear={data.npHrCurrentYear}
-            prevYear={data.npHrPrevYear}
-          />
-        </div>
+      <section className="space-y-6">
+        <MonthlyDistanceChart data={data.monthlyYoy} />
+        <MonthlyNpHrChart data={data.monthlyNpHr} />
+        <NpHrWeeklyChart data={data.weeklyNpHr} />
+        <NpHrOverlayChart
+          currentYear={data.npHrCurrentYear}
+          prevYear={data.npHrPrevYear}
+        />
       </section>
 
       <section>

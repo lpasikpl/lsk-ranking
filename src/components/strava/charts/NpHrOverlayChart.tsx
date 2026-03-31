@@ -36,7 +36,7 @@ export function NpHrOverlayChart({ currentYear, prevYear }: NpHrOverlayChartProp
       <h2 style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.5)", marginBottom: 20, margin: "0 0 20px 0" }}>
         NP/HR — {CURRENT_YEAR} vs {CURRENT_YEAR - 1}
       </h2>
-      <ResponsiveContainer width="100%" height={250}>
+      <ResponsiveContainer width="100%" height={320}>
         <AreaChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="currYearGrad" x1="0" y1="0" x2="0" y2="1">

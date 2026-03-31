@@ -75,7 +75,7 @@ export function MonthlyNpHrChart({ data }: MonthlyNpHrChartProps) {
           </span>
         )}
       </div>
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer width="100%" height={320}>
         <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="nphrGrad" x1="0" y1="0" x2="0" y2="1">
