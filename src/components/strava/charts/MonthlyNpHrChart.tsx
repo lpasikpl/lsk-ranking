@@ -30,7 +30,7 @@ function CustomTooltip({ active, payload }: any) {
     }}>
       <div style={{ color: "rgba(255,255,255,0.45)", marginBottom: 6, fontWeight: 500 }}>{d.label}</div>
       <div style={{ marginBottom: 5 }}>
-        <span style={{ color: "#f97316", fontWeight: 700, fontSize: 16 }}>{d.ratio.toFixed(2)}</span>
+        <span style={{ color: "#FC5200", fontWeight: 700, fontSize: 16 }}>{d.ratio.toFixed(2)}</span>
         <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 5 }}>NP/HR</span>
       </div>
       {d.np != null && (
@@ -79,9 +79,9 @@ export function MonthlyNpHrChart({ data }: MonthlyNpHrChartProps) {
         <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="nphrGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f97316" stopOpacity={0.35} />
-              <stop offset="60%" stopColor="#f97316" stopOpacity={0.08} />
-              <stop offset="100%" stopColor="#f97316" stopOpacity={0} />
+              <stop offset="0%" stopColor="#FC5200" stopOpacity={0.35} />
+              <stop offset="60%" stopColor="#FC5200" stopOpacity={0.08} />
+              <stop offset="100%" stopColor="#FC5200" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -110,11 +110,11 @@ export function MonthlyNpHrChart({ data }: MonthlyNpHrChartProps) {
           <Area
             type="monotone"
             dataKey="ratio"
-            stroke="#f97316"
+            stroke="#FC5200"
             strokeWidth={2}
             fill="url(#nphrGrad)"
-            dot={{ r: 1.5, fill: "#f97316", stroke: "#f97316", strokeWidth: 1 }}
-            activeDot={{ r: 3, fill: "#f97316", stroke: "#fff", strokeWidth: 1.5 }}
+            dot={{ r: 1.5, fill: "#FC5200", stroke: "#FC5200", strokeWidth: 1 }}
+            activeDot={{ r: 3, fill: "#FC5200", stroke: "#fff", strokeWidth: 1.5 }}
             connectNulls
           />
         </AreaChart>

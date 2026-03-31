@@ -32,11 +32,11 @@ export function NpHrWeeklyChart({ data }: NpHrWeeklyChartProps) {
         <div style={{ display: "flex", gap: 16, fontSize: 12 }}>
           <div>
             <span style={{ color: "rgba(255,255,255,0.3)" }}>Śr. 4tyg: </span>
-            <span style={{ fontWeight: 600, color: "#f97316" }}>{avg4w.toFixed(3)}</span>
+            <span style={{ fontWeight: 600, color: "#FC5200" }}>{avg4w.toFixed(3)}</span>
           </div>
           <div>
             <span style={{ color: "rgba(255,255,255,0.3)" }}>Max: </span>
-            <span style={{ fontWeight: 600, color: "#fb923c" }}>{maxRatio.toFixed(3)}</span>
+            <span style={{ fontWeight: 600, color: "#FC5200" }}>{maxRatio.toFixed(3)}</span>
           </div>
           <div>
             <span style={{ color: "rgba(255,255,255,0.3)" }}>Min: </span>
@@ -49,9 +49,9 @@ export function NpHrWeeklyChart({ data }: NpHrWeeklyChartProps) {
         <AreaChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="weeklyNphrGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f97316" stopOpacity={0.3} />
-              <stop offset="70%" stopColor="#f97316" stopOpacity={0.05} />
-              <stop offset="100%" stopColor="#f97316" stopOpacity={0} />
+              <stop offset="0%" stopColor="#FC5200" stopOpacity={0.3} />
+              <stop offset="70%" stopColor="#FC5200" stopOpacity={0.05} />
+              <stop offset="100%" stopColor="#FC5200" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -81,11 +81,11 @@ export function NpHrWeeklyChart({ data }: NpHrWeeklyChartProps) {
           <Area
             type="monotone"
             dataKey="np_hr_ratio"
-            stroke="#f97316"
+            stroke="#FC5200"
             strokeWidth={2}
             fill="url(#weeklyNphrGrad)"
-            dot={{ r: 1.5, fill: "#f97316", stroke: "#f97316", strokeWidth: 1 }}
-            activeDot={{ r: 3, fill: "#f97316", stroke: "#fff", strokeWidth: 1.5 }}
+            dot={{ r: 1.5, fill: "#FC5200", stroke: "#FC5200", strokeWidth: 1 }}
+            activeDot={{ r: 3, fill: "#FC5200", stroke: "#fff", strokeWidth: 1.5 }}
             name="NP/HR"
           />
         </AreaChart>

@@ -40,8 +40,8 @@ export function NpHrOverlayChart({ currentYear, prevYear }: NpHrOverlayChartProp
         <AreaChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="currYearGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f97316" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="#f97316" stopOpacity={0} />
+              <stop offset="0%" stopColor="#FC5200" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#FC5200" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="prevYearGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#6b7280" stopOpacity={0.15} />
@@ -92,11 +92,11 @@ export function NpHrOverlayChart({ currentYear, prevYear }: NpHrOverlayChartProp
           <Area
             type="monotone"
             dataKey="current"
-            stroke="#f97316"
+            stroke="#FC5200"
             strokeWidth={2}
             fill="url(#currYearGrad)"
-            dot={{ r: 1.5, fill: "#f97316", stroke: "#f97316", strokeWidth: 1 }}
-            activeDot={{ r: 3, fill: "#f97316", stroke: "#fff", strokeWidth: 1.5 }}
+            dot={{ r: 1.5, fill: "#FC5200", stroke: "#FC5200", strokeWidth: 1 }}
+            activeDot={{ r: 3, fill: "#FC5200", stroke: "#fff", strokeWidth: 1.5 }}
             connectNulls
             name="current"
           />
@@ -104,7 +104,7 @@ export function NpHrOverlayChart({ currentYear, prevYear }: NpHrOverlayChartProp
       </ResponsiveContainer>
       <div style={{ display: "flex", alignItems: "center", gap: 24, marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
         <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ display: "inline-block", width: 12, height: 2, background: "#f97316", borderRadius: 1 }} />
+          <span style={{ display: "inline-block", width: 12, height: 2, background: "#FC5200", borderRadius: 1 }} />
           {CURRENT_YEAR}
         </span>
         <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
