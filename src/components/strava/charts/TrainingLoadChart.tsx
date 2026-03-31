@@ -185,7 +185,7 @@ export function TrainingLoadChart({ data }: TrainingLoadChartProps) {
         <h2 className="text-sm font-medium mb-4" style={{ color: "rgba(255,255,255,0.6)" }}>
           CTL / ATL / TSB — ostatnie 90 dni
         </h2>
-        <ChartContent data={data} gradientId="gradTsb" height={280} />
+        <ChartContent data={data} gradientId="gradTsb" height={420} />
         <LegendWithStats data={data} />
       </div>
 
