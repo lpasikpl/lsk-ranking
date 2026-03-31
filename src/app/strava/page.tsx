@@ -61,6 +61,7 @@ export default async function StravaPage() {
       <section className="space-y-6">
         <PeriodCompareRow data={data.ytdCompare} />
         <PeriodCompareRow data={data.monthPartialCompare} />
+        <TrainingLoadChart data={data.trainingLoad} />
       </section>
 
       <section>
@@ -85,10 +86,7 @@ export default async function StravaPage() {
       </section>
 
       <section>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6">
-          <TrainingLoadChart data={data.trainingLoad} />
-          <WeeklyVolumeChart data={data.monthlyYoy} />
-        </div>
+        <WeeklyVolumeChart data={data.monthlyYoy} />
       </section>
 
       <section className="space-y-6">

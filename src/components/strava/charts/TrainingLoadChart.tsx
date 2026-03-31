@@ -66,19 +66,95 @@ function ChartContent({ data, gradientId, height }: { data: TrainingLoadDay[]; g
   );
 }
 
-function Legend() {
+function getCtlDaysAgo(data: TrainingLoadDay[], days: number): number | null {
+  if (data.length === 0) return null;
+  const latest = new Date(data[data.length - 1].day);
+  const target = new Date(latest);
+  target.setDate(target.getDate() - days);
+  const targetStr = target.toISOString().split("T")[0];
+  const filtered = data.filter((d) => d.day <= targetStr);
+  if (filtered.length === 0) return null;
+  return filtered[filtered.length - 1].ctl;
+}
+
+function CtlStats({ data }: { data: TrainingLoadDay[] }) {
+  if (data.length === 0) return null;
+  const current = data[data.length - 1];
+  const ctlNow = Math.round(current.ctl * 10) / 10;
+  const atlNow = Math.round(current.atl * 10) / 10;
+  const tsbNow = Math.round(current.tsb * 10) / 10;
+
+  const periods = [7, 14, 30, 60, 90];
+  const deltas = periods.map((d) => {
+    const past = getCtlDaysAgo(data, d);
+    if (past === null) return null;
+    return Math.round((current.ctl - past) * 10) / 10;
+  });
+
+  const deltaColor = (v: number | null) => {
+    if (v === null) return "rgba(255,255,255,0.3)";
+    if (v > 0) return "#34d399";
+    if (v < 0) return "#f87171";
+    return "rgba(255,255,255,0.5)";
+  };
+
+  const fmt = (v: number | null) => {
+    if (v === null) return "—";
+    return v > 0 ? `+${v}` : `${v}`;
+  };
+
   return (
-    <div className="flex items-center gap-6 mt-3 text-xs text-[var(--text-muted)]">
-      <span className="flex items-center gap-1.5">
-        <span className="w-3 h-0.5 bg-[#3b82f6] rounded" /> CTL (fitness)
-      </span>
-      <span className="flex items-center gap-1.5">
-        <span className="w-3 h-0.5 bg-[#ef4444] rounded" /> ATL (zmęczenie)
-      </span>
-      <span className="flex items-center gap-1.5">
-        <span className="w-3 h-0.5 bg-[#22c55e] rounded" /> TSB (forma)
-      </span>
+    <div
+      className="mt-4 pt-4 flex flex-wrap items-center gap-x-6 gap-y-2"
+      style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
+    >
+      {/* Aktualne wartości */}
+      <div className="flex items-center gap-4 mr-2">
+        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Teraz</span>
+        <span style={{ fontSize: 13 }}>
+          <span style={{ color: "#3b82f6", fontWeight: 600 }}>CTL {ctlNow}</span>
+        </span>
+        <span style={{ fontSize: 13 }}>
+          <span style={{ color: "#ef4444", fontWeight: 600 }}>ATL {atlNow}</span>
+        </span>
+        <span style={{ fontSize: 13 }}>
+          <span style={{ color: tsbNow >= 0 ? "#34d399" : "#f87171", fontWeight: 600 }}>TSB {tsbNow > 0 ? `+${tsbNow}` : tsbNow}</span>
+        </span>
+      </div>
+
+      {/* Separator */}
+      <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.1)" }} className="hidden sm:block" />
+
+      {/* Deltas CTL */}
+      <div className="flex items-center gap-1" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+        CTL Δ
+      </div>
+      {periods.map((d, i) => (
+        <div key={d} className="flex items-center gap-1.5">
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{d}d</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: deltaColor(deltas[i]) }}>{fmt(deltas[i])}</span>
+        </div>
+      ))}
     </div>
+  );
+}
+
+function LegendWithStats({ data }: { data: TrainingLoadDay[] }) {
+  return (
+    <>
+      <div className="flex items-center gap-6 mt-3 text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+        <span className="flex items-center gap-1.5">
+          <span className="w-3 h-0.5 rounded" style={{ background: "#3b82f6" }} /> CTL (fitness)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-3 h-0.5 rounded" style={{ background: "#ef4444" }} /> ATL (zmęczenie)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-3 h-0.5 rounded" style={{ background: "#22c55e" }} /> TSB (forma)
+        </span>
+      </div>
+      <CtlStats data={data} />
+    </>
   );
 }
 
@@ -106,7 +182,7 @@ export function TrainingLoadChart({ data }: TrainingLoadChartProps) {
           CTL / ATL / TSB — ostatnie 90 dni
         </h2>
         <ChartContent data={data} gradientId="gradTsb" height={280} />
-        <Legend />
+        <LegendWithStats data={data} />
       </div>
 
       {expanded && (
@@ -128,7 +204,7 @@ export function TrainingLoadChart({ data }: TrainingLoadChartProps) {
               CTL / ATL / TSB — ostatnie 90 dni
             </h2>
             <ChartContent data={data} gradientId="gradTsbExpanded" height={500} />
-            <Legend />
+            <LegendWithStats data={data} />
           </div>
         </div>
       )}
