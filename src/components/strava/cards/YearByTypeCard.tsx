@@ -29,14 +29,19 @@ function TypeTable({ data, title, groupBy }: { data: YearlyByType[]; title: stri
   const prevTotals = sumGroup(prevYear);
 
   return (
-    <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] overflow-hidden">
-      <div className="px-4 py-3 border-b border-[var(--border)]">
-        <h3 className="text-sm font-medium text-[var(--text-secondary)]">{title}</h3>
+    <div style={{
+      borderRadius: 16,
+      background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)",
+      border: "1px solid rgba(255,255,255,0.07)",
+      overflow: "hidden",
+    }}>
+      <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <h3 style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.8)" }}>{title}</h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-xs text-[var(--text-muted)] uppercase tracking-wider">
+            <tr style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
               <th className="text-left px-4 py-2">Typ</th>
               <th className="text-right px-4 py-2">km</th>
               <th className="text-right px-4 py-2">Czas</th>
@@ -55,7 +60,7 @@ function TypeTable({ data, title, groupBy }: { data: YearlyByType[]; title: stri
               const prev = sumGroup(prevItems);
               const color = groupBy === "ride_type" ? RIDE_TYPE_COLORS[group] : undefined;
               return (
-                <tr key={group} className="border-t border-[var(--border)] hover:bg-[var(--bg-card-hover)]">
+                <tr key={group} style={{ borderTop: "1px solid rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.85)" }}>
                   <td className="px-4 py-2 font-medium">
                     <span className="flex items-center gap-2">
                       {color && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />}
@@ -72,7 +77,7 @@ function TypeTable({ data, title, groupBy }: { data: YearlyByType[]; title: stri
                 </tr>
               );
             })}
-            <tr className="border-t-2 border-[var(--border)] font-semibold">
+            <tr style={{ borderTop: "2px solid rgba(255,255,255,0.1)", fontWeight: 700, color: "rgba(255,255,255,0.95)" }}>
               <td className="px-4 py-2">Razem</td>
               <td className="text-right px-4 py-2">{formatKm(currentTotals.distance_km)}</td>
               <td className="text-right px-4 py-2">{formatHours(currentTotals.hours)}</td>

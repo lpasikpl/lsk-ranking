@@ -22,8 +22,16 @@ export function GoalProgressCard({ data }: GoalProgressCardProps) {
   const yearProgress = getYearProgress();
 
   return (
-    <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-6 h-full flex flex-col">
-      <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-6">
+    <div
+      className="h-full flex flex-col"
+      style={{
+        borderRadius: 16,
+        background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        padding: "24px",
+      }}
+    >
+      <h2 style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.55)", marginBottom: 24 }}>
         Cel {data.year}: {formatKm(data.goal_km)} km
       </h2>
 
@@ -37,7 +45,7 @@ export function GoalProgressCard({ data }: GoalProgressCardProps) {
               suffix="%"
               className="text-3xl font-bold"
             />
-            <div className="text-xs text-[var(--text-muted)] mt-1">realizacji</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>realizacji</div>
           </div>
         </ProgressRing>
       </div>
@@ -45,49 +53,52 @@ export function GoalProgressCard({ data }: GoalProgressCardProps) {
       {/* Statystyki w siatce 2×2 */}
       <div className="grid grid-cols-2 gap-x-6 gap-y-4 flex-1">
         <div>
-          <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-0.5">Przejechane</div>
-          <div className="text-lg font-semibold">
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 2 }}>Przejechane</div>
+          <div style={{ fontSize: 18, fontWeight: 600, color: "rgba(255,255,255,0.95)" }}>
             <AnimatedNumber value={data.actual_km} decimals={0} suffix=" km" />
           </div>
         </div>
 
         <div>
-          <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-0.5">Plan na dziś</div>
-          <div className="text-lg text-[var(--text-secondary)]">
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 2 }}>Plan na dziś</div>
+          <div style={{ fontSize: 18, color: "rgba(255,255,255,0.75)" }}>
             {formatKm(data.planned_km)} km
           </div>
         </div>
 
         <div>
-          <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-0.5">
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 2 }}>
             {isAhead ? "Zapas" : "Strata"}
           </div>
-          <div className={`text-lg font-medium ${isAhead ? "text-emerald-400" : "text-red-400"}`}>
+          <div style={{ fontSize: 18, fontWeight: 500, color: isAhead ? "#34d399" : "#f87171" }}>
             {isAhead ? "+" : ""}{formatKm(aheadBehind)} km
           </div>
         </div>
 
         <div>
-          <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-0.5">Prognoza roczna</div>
-          <div className="text-lg text-[var(--text-secondary)]">
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 2 }}>Prognoza roczna</div>
+          <div style={{ fontSize: 18, color: "rgba(255,255,255,0.75)" }}>
             {formatKm(data.projected_km)} km
           </div>
         </div>
       </div>
 
       {/* Dolny pasek */}
-      <div className="mt-5 grid grid-cols-3 gap-4 pt-4 border-t border-[var(--border)]">
+      <div
+        className="mt-5 grid grid-cols-3 gap-4 pt-4"
+        style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
+      >
         <div>
-          <div className="text-xs text-[var(--text-muted)]">Aktywne dni</div>
-          <div className="text-sm font-medium">{data.active_days}</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Aktywne dni</div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.9)" }}>{data.active_days}</div>
         </div>
         <div>
-          <div className="text-xs text-[var(--text-muted)]">Godziny</div>
-          <div className="text-sm font-medium">{formatHours(data.actual_hours)}</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Godziny</div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.9)" }}>{formatHours(data.actual_hours)}</div>
         </div>
         <div>
-          <div className="text-xs text-[var(--text-muted)]">Przewyższenia</div>
-          <div className="text-sm font-medium">{formatKm(data.actual_elevation)}m</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Przewyższenia</div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.9)" }}>{formatKm(data.actual_elevation)}m</div>
         </div>
       </div>
     </div>
