@@ -1,6 +1,8 @@
 "use client";
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from "recharts";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, defs,
+} from "recharts";
 import type { MonthlyYoy } from "@/lib/strava-types";
 
 interface MonthlyDistanceChartProps {
@@ -16,19 +18,19 @@ function CustomTooltip({ active, payload }: any) {
   const d = payload[0].payload;
   return (
     <div style={{
-      backgroundColor: "#1a1a2e",
-      border: "1px solid rgba(255,255,255,0.12)",
+      backgroundColor: "rgba(10,10,10,0.95)",
+      border: "1px solid rgba(16,185,129,0.2)",
       borderRadius: 10,
       padding: "10px 14px",
       fontSize: 12,
-      color: "var(--text-primary)",
-      boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+      color: "#fff",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.8)",
       minWidth: 120,
     }}>
-      <div style={{ color: "rgba(255,255,255,0.5)", marginBottom: 6, fontWeight: 500 }}>{d.label}</div>
+      <div style={{ color: "rgba(255,255,255,0.45)", marginBottom: 6, fontWeight: 500 }}>{d.label}</div>
       <div>
-        <span style={{ color: "#f97316", fontWeight: 700, fontSize: 15 }}>{d.km.toLocaleString("pl-PL", { maximumFractionDigits: 0 })}</span>
-        <span style={{ color: "rgba(255,255,255,0.5)", marginLeft: 4 }}>km</span>
+        <span style={{ color: "#10b981", fontWeight: 700, fontSize: 15 }}>{d.km.toLocaleString("pl-PL", { maximumFractionDigits: 0 })}</span>
+        <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 4 }}>km</span>
       </div>
     </div>
   );
@@ -44,36 +46,48 @@ export function MonthlyDistanceChart({ data }: MonthlyDistanceChartProps) {
     }));
 
   return (
-    <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-6">
-      <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-4">
+    <div style={{
+      borderRadius: 16,
+      background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)",
+      border: "1px solid rgba(255,255,255,0.06)",
+      padding: "24px",
+    }}>
+      <h2 style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.5)", marginBottom: 20, margin: "0 0 20px 0" }}>
         Kilometry miesięcznie — od stycznia 2025
       </h2>
       <ResponsiveContainer width="100%" height={260}>
-        <BarChart data={chartData} margin={{ top: 18, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+        <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="distGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
+              <stop offset="60%" stopColor="#10b981" stopOpacity={0.08} />
+              <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
           <XAxis
             dataKey="label"
-            tick={{ fill: "var(--text-muted)", fontSize: 11 }}
-            axisLine={{ stroke: "var(--border)" }}
+            tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
+            axisLine={false}
             tickLine={false}
           />
           <YAxis
-            tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+            tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={36}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--border)", opacity: 0.4 }} />
-          <Bar dataKey="km" radius={[4, 4, 0, 0]} fill="#f97316" opacity={0.85} maxBarSize={48}>
-            <LabelList
-              dataKey="km"
-              position="top"
-              style={{ fill: "var(--text-muted)", fontSize: 11 }}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              formatter={(v: any) => (v > 0 ? v : "") as any}
-            />
-          </Bar>
-        </BarChart>
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: "rgba(16,185,129,0.3)", strokeWidth: 1 }} />
+          <Area
+            type="monotone"
+            dataKey="km"
+            stroke="#10b981"
+            strokeWidth={2}
+            fill="url(#distGrad)"
+            dot={{ r: 3, fill: "#10b981", stroke: "#10b981", strokeWidth: 1 }}
+            activeDot={{ r: 5, fill: "#10b981", stroke: "#fff", strokeWidth: 1.5 }}
+          />
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

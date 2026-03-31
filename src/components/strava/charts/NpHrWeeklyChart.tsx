@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from "recharts";
 import type { WeeklyNpHr } from "@/lib/strava-types";
@@ -19,71 +19,76 @@ export function NpHrWeeklyChart({ data }: NpHrWeeklyChartProps) {
   const minRatio = data.length > 0 ? Math.min(...data.map((d) => d.np_hr_ratio)) : 0;
 
   return (
-    <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-6">
-      <div className="flex items-start justify-between mb-4">
-        <h2 className="text-sm font-medium text-[var(--text-secondary)]">
+    <div style={{
+      borderRadius: 16,
+      background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)",
+      border: "1px solid rgba(255,255,255,0.06)",
+      padding: "24px",
+    }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+        <h2 style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.5)", margin: 0 }}>
           NP/HR — tygodniowy (treningi &gt;1h z mocą)
         </h2>
-        <div className="flex gap-4 text-xs">
+        <div style={{ display: "flex", gap: 16, fontSize: 12 }}>
           <div>
-            <span className="text-[var(--text-muted)]">Śr. 4tyg: </span>
-            <span className="font-medium text-[var(--accent-orange)]">{avg4w.toFixed(3)}</span>
+            <span style={{ color: "rgba(255,255,255,0.3)" }}>Śr. 4tyg: </span>
+            <span style={{ fontWeight: 600, color: "#10b981" }}>{avg4w.toFixed(3)}</span>
           </div>
           <div>
-            <span className="text-[var(--text-muted)]">Max: </span>
-            <span className="font-medium text-emerald-400">{maxRatio.toFixed(3)}</span>
+            <span style={{ color: "rgba(255,255,255,0.3)" }}>Max: </span>
+            <span style={{ fontWeight: 600, color: "#34d399" }}>{maxRatio.toFixed(3)}</span>
           </div>
           <div>
-            <span className="text-[var(--text-muted)]">Min: </span>
-            <span className="font-medium text-red-400">{minRatio.toFixed(3)}</span>
+            <span style={{ color: "rgba(255,255,255,0.3)" }}>Min: </span>
+            <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.4)" }}>{minRatio.toFixed(3)}</span>
           </div>
         </div>
       </div>
 
       <ResponsiveContainer width="100%" height={250}>
-        <ComposedChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+        <AreaChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="weeklyNphrGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
+              <stop offset="70%" stopColor="#10b981" stopOpacity={0.05} />
+              <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
           <XAxis
             dataKey="iso_week"
-            tick={{ fill: "var(--text-muted)", fontSize: 11 }}
-            axisLine={{ stroke: "var(--border)" }}
+            tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
+            axisLine={false}
             tickLine={false}
             tickFormatter={(w) => `T${w}`}
           />
           <YAxis
-            yAxisId="ratio"
-            tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+            tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             domain={["auto", "auto"]}
           />
-          <YAxis
-            yAxisId="rides"
-            orientation="right"
-            tick={{ fill: "var(--text-muted)", fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-          />
           <Tooltip
             contentStyle={{
-              backgroundColor: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              borderRadius: "8px",
-              color: "var(--text-primary)",
+              backgroundColor: "rgba(10,10,10,0.95)",
+              border: "1px solid rgba(16,185,129,0.2)",
+              borderRadius: 8,
+              color: "#fff",
               fontSize: 12,
             }}
+            cursor={{ stroke: "rgba(16,185,129,0.3)", strokeWidth: 1 }}
           />
-          <Bar yAxisId="rides" dataKey="qualifying_rides" fill="var(--border)" opacity={0.5} name="Jazdy" />
-          <Line
-            yAxisId="ratio"
+          <Area
             type="monotone"
             dataKey="np_hr_ratio"
-            stroke="#f97316"
-            strokeWidth={2.5}
-            dot={{ r: 3, fill: "#f97316" }}
+            stroke="#10b981"
+            strokeWidth={2}
+            fill="url(#weeklyNphrGrad)"
+            dot={{ r: 2.5, fill: "#10b981", stroke: "#10b981", strokeWidth: 1 }}
+            activeDot={{ r: 5, fill: "#10b981", stroke: "#fff", strokeWidth: 1.5 }}
             name="NP/HR"
           />
-        </ComposedChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

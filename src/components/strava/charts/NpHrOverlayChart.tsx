@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from "recharts";
 import type { NpHrByYear } from "@/lib/strava-types";
@@ -27,67 +27,89 @@ export function NpHrOverlayChart({ currentYear, prevYear }: NpHrOverlayChartProp
   }));
 
   return (
-    <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-6">
-      <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-4">
+    <div style={{
+      borderRadius: 16,
+      background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)",
+      border: "1px solid rgba(255,255,255,0.06)",
+      padding: "24px",
+    }}>
+      <h2 style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.5)", marginBottom: 20, margin: "0 0 20px 0" }}>
         NP/HR — {CURRENT_YEAR} vs {CURRENT_YEAR - 1}
       </h2>
       <ResponsiveContainer width="100%" height={250}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+        <AreaChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="currYearGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="prevYearGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#6b7280" stopOpacity={0.15} />
+              <stop offset="100%" stopColor="#6b7280" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
           <XAxis
             dataKey="week"
-            tick={{ fill: "var(--text-muted)", fontSize: 11 }}
-            axisLine={{ stroke: "var(--border)" }}
+            tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
+            axisLine={false}
             tickLine={false}
             tickFormatter={(w) => `T${w}`}
           />
           <YAxis
-            tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+            tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             domain={["auto", "auto"]}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              borderRadius: "8px",
-              color: "var(--text-primary)",
+              backgroundColor: "rgba(10,10,10,0.95)",
+              border: "1px solid rgba(16,185,129,0.2)",
+              borderRadius: 8,
+              color: "#fff",
               fontSize: 12,
             }}
+            cursor={{ stroke: "rgba(16,185,129,0.3)", strokeWidth: 1 }}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             formatter={((value: any, name: any) => [
               value?.toFixed(3) ?? "—",
               name === "current" ? String(CURRENT_YEAR) : String(CURRENT_YEAR - 1),
             ]) as any}
           />
-          <Line
-            type="monotone"
-            dataKey="current"
-            stroke="#f97316"
-            strokeWidth={2.5}
-            dot={{ r: 3, fill: "#f97316" }}
-            connectNulls
-            name="current"
-          />
-          <Line
+          {/* Poprzedni rok — szara linia za bieżącym */}
+          <Area
             type="monotone"
             dataKey="prev"
-            stroke="#3b82f6"
+            stroke="rgba(255,255,255,0.2)"
             strokeWidth={1.5}
-            strokeOpacity={0.6}
+            fill="url(#prevYearGrad)"
             dot={false}
             connectNulls
             name="prev"
           />
-        </LineChart>
+          {/* Bieżący rok — zielona linia na wierzchu */}
+          <Area
+            type="monotone"
+            dataKey="current"
+            stroke="#10b981"
+            strokeWidth={2}
+            fill="url(#currYearGrad)"
+            dot={{ r: 2.5, fill: "#10b981", stroke: "#10b981", strokeWidth: 1 }}
+            activeDot={{ r: 5, fill: "#10b981", stroke: "#fff", strokeWidth: 1.5 }}
+            connectNulls
+            name="current"
+          />
+        </AreaChart>
       </ResponsiveContainer>
-      <div className="flex items-center gap-6 mt-3 text-xs text-[var(--text-muted)]">
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-0.5 bg-[#f97316] rounded" /> {CURRENT_YEAR}
+      <div style={{ display: "flex", alignItems: "center", gap: 24, marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ display: "inline-block", width: 12, height: 2, background: "#10b981", borderRadius: 1 }} />
+          {CURRENT_YEAR}
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-0.5 bg-[#3b82f6] rounded opacity-60" /> {CURRENT_YEAR - 1}
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ display: "inline-block", width: 12, height: 2, background: "rgba(255,255,255,0.2)", borderRadius: 1 }} />
+          {CURRENT_YEAR - 1}
         </span>
       </div>
     </div>
