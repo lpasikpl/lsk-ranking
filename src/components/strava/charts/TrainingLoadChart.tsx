@@ -140,22 +140,19 @@ function CtlStats({ data }: { data: TrainingLoadDay[] }) {
   );
 }
 
-function LegendWithStats({ data }: { data: TrainingLoadDay[] }) {
+function Legend() {
   return (
-    <>
-      <div className="flex items-center gap-6 mt-3 text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-0.5 rounded" style={{ background: "#3b82f6" }} /> CTL (fitness)
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-0.5 rounded" style={{ background: "#ef4444" }} /> ATL (zmęczenie)
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-0.5 rounded" style={{ background: "#22c55e" }} /> TSB (forma)
-        </span>
-      </div>
-      <CtlStats data={data} />
-    </>
+    <div className="flex items-center gap-6 mt-3 text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+      <span className="flex items-center gap-1.5">
+        <span className="w-3 h-0.5 rounded" style={{ background: "#3b82f6" }} /> CTL (fitness)
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="w-3 h-0.5 rounded" style={{ background: "#ef4444" }} /> ATL (zmęczenie)
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="w-3 h-0.5 rounded" style={{ background: "#22c55e" }} /> TSB (forma)
+      </span>
+    </div>
   );
 }
 
