@@ -285,7 +285,7 @@ export function TrainingLoadChart({ data }: TrainingLoadChartProps) {
         </div>
         <CtlStats data={data} />
         <div className="mt-4">
-          <ChartContent data={data} gradientId="gradTsb" height={420} showZones={showZones} />
+          <ChartContent data={data} gradientId="gradTsb" height={560} showZones={showZones} />
         </div>
         <Legend showZones={showZones} onToggle={toggleZones} />
       </div>
