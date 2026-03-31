@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, defs,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import type { MonthlyYoy } from "@/lib/strava-types";
 
