@@ -51,10 +51,12 @@ export function NpHrOverlayChart({ currentYear, prevYear }: NpHrOverlayChartProp
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
           <XAxis
             dataKey="week"
-            tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
+            tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(w) => `T${w}`}
+            minTickGap={28}
+            interval="preserveStartEnd"
           />
           <YAxis
             tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
