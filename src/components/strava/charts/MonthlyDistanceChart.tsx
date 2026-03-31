@@ -67,9 +67,11 @@ export function MonthlyDistanceChart({ data }: MonthlyDistanceChartProps) {
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
           <XAxis
             dataKey="label"
-            tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
+            tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
+            minTickGap={36}
+            interval="preserveStartEnd"
           />
           <YAxis
             tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
