@@ -111,15 +111,9 @@ function CtlStats({ data }: { data: TrainingLoadDay[] }) {
       {/* Aktualne wartości */}
       <div className="flex items-center gap-4 mr-2">
         <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Teraz</span>
-        <span style={{ fontSize: 13 }}>
-          <span style={{ color: "#3b82f6", fontWeight: 600 }}>CTL {ctlNow}</span>
-        </span>
-        <span style={{ fontSize: 13 }}>
-          <span style={{ color: "#ef4444", fontWeight: 600 }}>ATL {atlNow}</span>
-        </span>
-        <span style={{ fontSize: 13 }}>
-          <span style={{ color: tsbNow >= 0 ? "#34d399" : "#f87171", fontWeight: 600 }}>TSB {tsbNow > 0 ? `+${tsbNow}` : tsbNow}</span>
-        </span>
+        <span style={{ fontSize: 16, fontWeight: 700, color: "#3b82f6" }}>CTL {ctlNow}</span>
+        <span style={{ fontSize: 16, fontWeight: 700, color: "#ef4444" }}>ATL {atlNow}</span>
+        <span style={{ fontSize: 16, fontWeight: 700, color: tsbNow >= 0 ? "#34d399" : "#f87171" }}>TSB {tsbNow > 0 ? `+${tsbNow}` : tsbNow}</span>
       </div>
 
       {/* Separator */}
@@ -129,12 +123,22 @@ function CtlStats({ data }: { data: TrainingLoadDay[] }) {
       <div className="flex items-center gap-1" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
         CTL Δ
       </div>
-      {periods.map((d, i) => (
-        <div key={d} className="flex items-center gap-1.5">
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{d}d</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: deltaColor(deltas[i]) }}>{fmt(deltas[i])}</span>
-        </div>
-      ))}
+      {periods.map((d, i) => {
+        const delta = deltas[i];
+        const past = getCtlDaysAgo(data, d);
+        const pct = past && past !== 0 ? Math.round((delta! / past) * 100) : null;
+        return (
+          <div key={d} className="flex flex-col items-start">
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{d}d</span>
+            <span style={{ fontSize: 16, fontWeight: 700, color: deltaColor(delta), lineHeight: 1.2 }}>{fmt(delta)}</span>
+            {pct !== null && (
+              <span style={{ fontSize: 11, color: deltaColor(delta), opacity: 0.7 }}>
+                {pct > 0 ? `+${pct}%` : `${pct}%`}
+              </span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
