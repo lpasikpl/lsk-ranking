@@ -84,8 +84,8 @@ export function NpHrWeeklyChart({ data }: NpHrWeeklyChartProps) {
             stroke="#10b981"
             strokeWidth={2}
             fill="url(#weeklyNphrGrad)"
-            dot={{ r: 2.5, fill: "#10b981", stroke: "#10b981", strokeWidth: 1 }}
-            activeDot={{ r: 5, fill: "#10b981", stroke: "#fff", strokeWidth: 1.5 }}
+            dot={{ r: 1.5, fill: "#10b981", stroke: "#10b981", strokeWidth: 1 }}
+            activeDot={{ r: 3, fill: "#10b981", stroke: "#fff", strokeWidth: 1.5 }}
             name="NP/HR"
           />
         </AreaChart>
