@@ -29,7 +29,7 @@ function CustomTooltip({ active, payload }: any) {
     }}>
       <div style={{ color: "rgba(255,255,255,0.45)", marginBottom: 6, fontWeight: 500 }}>{d.label}</div>
       <div>
-        <span style={{ color: "#10b981", fontWeight: 700, fontSize: 15 }}>{d.km.toLocaleString("pl-PL", { maximumFractionDigits: 0 })}</span>
+        <span style={{ color: "#f97316", fontWeight: 700, fontSize: 15 }}>{d.km.toLocaleString("pl-PL", { maximumFractionDigits: 0 })}</span>
         <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 4 }}>km</span>
       </div>
     </div>
@@ -59,9 +59,9 @@ export function MonthlyDistanceChart({ data }: MonthlyDistanceChartProps) {
         <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="distGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
-              <stop offset="60%" stopColor="#10b981" stopOpacity={0.08} />
-              <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+              <stop offset="0%" stopColor="#f97316" stopOpacity={0.35} />
+              <stop offset="60%" stopColor="#f97316" stopOpacity={0.08} />
+              <stop offset="100%" stopColor="#f97316" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -81,11 +81,11 @@ export function MonthlyDistanceChart({ data }: MonthlyDistanceChartProps) {
           <Area
             type="monotone"
             dataKey="km"
-            stroke="#10b981"
+            stroke="#f97316"
             strokeWidth={2}
             fill="url(#distGrad)"
-            dot={{ r: 1.5, fill: "#10b981", stroke: "#10b981", strokeWidth: 1 }}
-            activeDot={{ r: 3, fill: "#10b981", stroke: "#fff", strokeWidth: 1.5 }}
+            dot={{ r: 1.5, fill: "#f97316", stroke: "#f97316", strokeWidth: 1 }}
+            activeDot={{ r: 3, fill: "#f97316", stroke: "#fff", strokeWidth: 1.5 }}
           />
         </AreaChart>
       </ResponsiveContainer>
