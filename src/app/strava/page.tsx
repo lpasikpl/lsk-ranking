@@ -44,11 +44,11 @@ export default async function StravaPage() {
   return (
     <DashboardShell>
       <section>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 xl:gap-6">
           <div className="lg:col-span-1">
             {data.ytdProgress && <GoalProgressCard data={data.ytdProgress} />}
           </div>
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 xl:col-span-3">
             <CumulativeLineChart
               currentYear={data.cumulativeDaily}
               prevYear={data.cumulativePrevYear}
@@ -68,14 +68,14 @@ export default async function StravaPage() {
       </section>
 
       <section>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6">
           <MonthlyDistanceChart data={data.monthlyYoy} />
           <MonthlyNpHrChart data={data.monthlyNpHr} />
         </div>
       </section>
 
       <section>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6">
           <NpHrWeeklyChart data={data.weeklyNpHr} />
           <NpHrOverlayChart
             currentYear={data.npHrCurrentYear}
@@ -85,12 +85,11 @@ export default async function StravaPage() {
       </section>
 
       <section>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xl:gap-6">
           <TrainingLoadChart data={data.trainingLoad} />
           <WeeklyVolumeChart data={data.monthlyYoy} />
         </div>
       </section>
-
 
       <section className="space-y-6">
         <RecentRidesTable data={data.recentActivities} title="Wszystkie jazdy 2026" />

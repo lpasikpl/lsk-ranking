@@ -108,7 +108,15 @@ function BackButton() {
 
 export function Header() {
   return (
-    <header className="flex items-center justify-between py-6">
+    <header
+      className="sticky top-0 z-40 flex items-center justify-between px-4 sm:px-6 lg:px-10 xl:px-14 2xl:px-20 py-4"
+      style={{
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        backgroundColor: "rgba(8,8,8,0.85)",
+        borderBottom: "1px solid rgba(255,255,255,0.07)",
+      }}
+    >
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
           <span className="text-[var(--accent-orange)]">Strava</span> Dashboard

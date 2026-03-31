@@ -147,7 +147,7 @@ export function RecentRidesTable({ data, title = "Wszystkie jazdy 2026" }: Recen
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-xs uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+            <tr className="text-xs uppercase tracking-wider sticky top-[57px] z-10" style={{ color: "rgba(255,255,255,0.35)", borderBottom: "1px solid rgba(255,255,255,0.07)", background: "#0d0d0d" }}>
               <th className="text-left px-6 py-3 w-[90px]">Data</th>
               <th className="text-left px-4 py-3 w-[100px]">Typ</th>
               <th className="text-right px-4 py-3">km</th>
