@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ComposedChart } from "recharts";
+import { Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ComposedChart, ReferenceLine } from "recharts";
 import type { CumulativeDay, CumulativeByYear } from "@/lib/strava-types";
 import { CURRENT_YEAR } from "@/lib/strava-constants";
 
@@ -126,35 +126,33 @@ interface CumulativeLineChartProps {
 const DOY_TICKS = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
 const DAYS_IN_YEAR = 365;
 
+function getTodayDoy(): number {
+  const today = new Date();
+  return Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+}
+
 type DataPoint = { doy: number; actual: number | null; plan: number | null; prevYear: number | null };
 
 function buildData(currentYear: CumulativeDay[], prevYear: CumulativeByYear[], showFullYear: boolean, goalKm?: number): DataPoint[] {
   const prevMap = new Map(prevYear.map((d) => [d.doy, d.cumulative_km]));
-  const today = new Date();
-  const todayDoy = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+  const todayDoy = getTodayDoy();
   const dailyPlanRate = goalKm ? goalKm / DAYS_IN_YEAR : null;
   const actualMap = new Map(currentYear.map((d) => [d.doy, d.actual_cumulative_km]));
 
-  if (showFullYear) {
-    return Array.from({ length: DAYS_IN_YEAR }, (_, i) => {
-      const doy = i + 1;
-      return {
-        doy,
-        actual: doy <= todayDoy ? (actualMap.get(doy) ?? null) : null,
-        plan: dailyPlanRate ? dailyPlanRate * doy : null,
-        prevYear: prevMap.get(doy) ?? null,
-      };
-    });
-  }
-  return currentYear.map((d) => ({
-    doy: d.doy,
-    actual: d.actual_cumulative_km,
-    plan: d.plan_cumulative_km,
-    prevYear: prevMap.get(d.doy) ?? null,
-  }));
+  const maxDoy = showFullYear ? DAYS_IN_YEAR : Math.min(todayDoy + 30, DAYS_IN_YEAR);
+
+  return Array.from({ length: maxDoy }, (_, i) => {
+    const doy = i + 1;
+    return {
+      doy,
+      actual: doy <= todayDoy ? (actualMap.get(doy) ?? null) : null,
+      plan: dailyPlanRate ? dailyPlanRate * doy : null,
+      prevYear: prevMap.get(doy) ?? null,
+    };
+  });
 }
 
-function ChartContent({ data, showFullYear, currentActualKm }: { data: DataPoint[]; showFullYear: boolean; currentActualKm: number | null }) {
+function ChartContent({ data, showFullYear, currentActualKm, todayDoy }: { data: DataPoint[]; showFullYear: boolean; currentActualKm: number | null; todayDoy: number }) {
   const tickFormatter = (v: number) =>
     new Date(CURRENT_YEAR, 0, v).toLocaleDateString("pl-PL", { month: "short" });
 
@@ -190,6 +188,13 @@ function ChartContent({ data, showFullYear, currentActualKm }: { data: DataPoint
         tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
       />
       <Tooltip content={tooltipContent} />
+      <ReferenceLine
+        x={todayDoy}
+        stroke="rgba(255,255,255,0.5)"
+        strokeWidth={1.5}
+        strokeDasharray="4 3"
+        label={{ value: "Dziś", position: "insideTopRight", fill: "rgba(255,255,255,0.5)", fontSize: 11, dy: -4 }}
+      />
       <Area type="monotone" dataKey="actual" stroke="#f97316" strokeWidth={2.5} fill="url(#gradActual2)" connectNulls={false} />
       <Line type="monotone" dataKey="plan" stroke="rgba(255,255,255,0.35)" strokeWidth={1.5} strokeDasharray="6 4" dot={false} connectNulls={true} />
       <Line type="monotone" dataKey="prevYear" stroke="#3b82f6" strokeWidth={1.5} strokeOpacity={0.6} dot={false} connectNulls={false} />
@@ -207,14 +212,66 @@ function Legend() {
   );
 }
 
+function StatsRow({ currentKm, prevYearKm, planKm }: { currentKm: number | null; prevYearKm: number | null; planKm: number | null }) {
+  if (currentKm == null) return null;
+
+  const diffVs2025 = prevYearKm != null ? currentKm - prevYearKm : null;
+  const diffVsPlan = planKm != null ? currentKm - planKm : null;
+
+  const color = (v: number | null) => v == null ? "rgba(255,255,255,0.5)" : v >= 0 ? "#34d399" : "#f87171";
+  const fmtDiff = (v: number) => `${v >= 0 ? "+" : ""}${Math.round(v)} km`;
+  const fmtPct = (v: number, base: number) => `${v >= 0 ? "+" : ""}${Math.round((v / base) * 100)}%`;
+
+  return (
+    <div
+      className="mt-4 pt-4 flex flex-wrap items-center gap-x-8 gap-y-2"
+      style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
+    >
+      <div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>
+          {CURRENT_YEAR} teraz
+        </div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#f97316" }}>{Math.round(currentKm)} km</div>
+      </div>
+
+      {diffVs2025 != null && prevYearKm != null && (
+        <div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>
+            vs {CURRENT_YEAR - 1}
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: color(diffVs2025) }}>{fmtDiff(diffVs2025)}</div>
+          <div style={{ fontSize: 11, color: color(diffVs2025), opacity: 0.75 }}>{fmtPct(diffVs2025, prevYearKm)}</div>
+        </div>
+      )}
+
+      {diffVsPlan != null && planKm != null && (
+        <div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>
+            vs Plan (cel)
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: color(diffVsPlan) }}>{fmtDiff(diffVsPlan)}</div>
+          <div style={{ fontSize: 11, color: color(diffVsPlan), opacity: 0.75 }}>{fmtPct(diffVsPlan, planKm)}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function CumulativeLineChart({ currentYear, prevYear, goalKm }: CumulativeLineChartProps) {
   const [showFullYear, setShowFullYear] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Ostatnia znana wartość km 2026 (do porównania na przyszłych datach)
+  const todayDoy = getTodayDoy();
+
+  // Ostatnia znana wartość km 2026
   const currentActualKm = currentYear.length > 0
     ? currentYear[currentYear.length - 1].actual_cumulative_km
     : null;
+
+  // Wartości YTD na dziś
+  const prevMap = new Map(prevYear.map((d) => [d.doy, d.cumulative_km]));
+  const prevYearKmAtToday = prevMap.get(todayDoy) ?? (prevYear.length > 0 ? prevYear[prevYear.length - 1].cumulative_km : null);
+  const planKmAtToday = goalKm ? (goalKm / DAYS_IN_YEAR) * todayDoy : null;
 
   useEffect(() => {
     if (!isFullscreen) return;
@@ -273,9 +330,10 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
       >
         {header}
         <ResponsiveContainer width="100%" height={380}>
-          <ChartContent data={data} showFullYear={showFullYear} currentActualKm={currentActualKm} />
+          <ChartContent data={data} showFullYear={showFullYear} currentActualKm={currentActualKm} todayDoy={todayDoy} />
         </ResponsiveContainer>
         <Legend />
+        <StatsRow currentKm={currentActualKm} prevYearKm={prevYearKmAtToday} planKm={planKmAtToday} />
         <button
           onClick={() => setIsFullscreen(true)}
           className="absolute bottom-4 right-4 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
@@ -301,9 +359,10 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
           >
             {header}
             <ResponsiveContainer width="100%" height={520}>
-              <ChartContent data={data} showFullYear={showFullYear} currentActualKm={currentActualKm} />
+              <ChartContent data={data} showFullYear={showFullYear} currentActualKm={currentActualKm} todayDoy={todayDoy} />
             </ResponsiveContainer>
             <Legend />
+            <StatsRow currentKm={currentActualKm} prevYearKm={prevYearKmAtToday} planKm={planKmAtToday} />
             <button
               onClick={() => setIsFullscreen(false)}
               className="absolute bottom-6 right-6 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
