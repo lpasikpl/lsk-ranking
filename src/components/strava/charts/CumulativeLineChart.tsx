@@ -199,10 +199,10 @@ function ChartContent({ data, showFullYear, currentActualKm }: { data: DataPoint
 
 function Legend() {
   return (
-    <div className="flex items-center gap-6 mt-3 text-xs text-[var(--text-muted)]">
+    <div className="flex items-center gap-6 mt-3 text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
       <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-[#f97316] rounded" /> {CURRENT_YEAR}</span>
       <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-[#3b82f6] rounded opacity-60" /> {CURRENT_YEAR - 1}</span>
-      <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 border-t border-dashed border-[var(--text-muted)]" /> Plan</span>
+      <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 border-t border-dashed" style={{ borderColor: "rgba(255,255,255,0.35)" }} /> Plan</span>
     </div>
   );
 }
@@ -227,16 +227,15 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
 
   const header = (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-sm font-medium text-[var(--text-secondary)]">
+      <h2 style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.8)" }}>
         Realizacja {CURRENT_YEAR} vs. {CURRENT_YEAR - 1}
       </h2>
       <button
         onClick={() => setShowFullYear((v) => !v)}
-        className={`text-xs px-3 py-1 rounded-lg border transition-colors ${
-          showFullYear
-            ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
-            : "text-[var(--text-muted)] border-[var(--border)] hover:text-[var(--text-secondary)]"
-        }`}
+        style={showFullYear
+          ? { fontSize: 12, padding: "3px 12px", borderRadius: 8, border: "1px solid rgba(249,115,22,0.35)", background: "rgba(249,115,22,0.15)", color: "#fb923c", transition: "all 0.2s" }
+          : { fontSize: 12, padding: "3px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.12)", background: "transparent", color: "rgba(255,255,255,0.45)", transition: "all 0.2s" }
+        }
       >
         Cały rok
       </button>
@@ -263,7 +262,15 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
 
   return (
     <>
-      <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-6 h-full relative">
+      <div
+        className="h-full relative"
+        style={{
+          borderRadius: 16,
+          background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          padding: "24px",
+        }}
+      >
         {header}
         <ResponsiveContainer width="100%" height={380}>
           <ChartContent data={data} showFullYear={showFullYear} currentActualKm={currentActualKm} />
@@ -271,7 +278,8 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
         <Legend />
         <button
           onClick={() => setIsFullscreen(true)}
-          className="absolute bottom-4 right-4 p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-white/5 transition-colors"
+          className="absolute bottom-4 right-4 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+          style={{ color: "rgba(255,255,255,0.35)" }}
           title="Pełny ekran"
         >
           {expandIcon}
@@ -285,8 +293,11 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
           onClick={(e) => { if (e.target === e.currentTarget) setIsFullscreen(false); }}
         >
           <div
-            className="rounded-2xl border border-[var(--border)] p-8 w-full max-w-6xl relative"
-            style={{ backgroundColor: "var(--bg-card)" }}
+            className="rounded-2xl p-8 w-full max-w-6xl relative"
+            style={{
+              background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)",
+              border: "1px solid rgba(255,255,255,0.07)",
+            }}
           >
             {header}
             <ResponsiveContainer width="100%" height={520}>
@@ -295,7 +306,8 @@ export function CumulativeLineChart({ currentYear, prevYear, goalKm }: Cumulativ
             <Legend />
             <button
               onClick={() => setIsFullscreen(false)}
-              className="absolute bottom-6 right-6 p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-white/5 transition-colors"
+              className="absolute bottom-6 right-6 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+              style={{ color: "rgba(255,255,255,0.35)" }}
               title="Zamknij"
             >
               {collapseIcon}
