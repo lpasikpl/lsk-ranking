@@ -39,10 +39,10 @@ function MonthSection({ group, defaultOpen }: { group: ReturnType<typeof groupBy
   const totalTss = rides.reduce((s, r) => s + (r.effective_tss ?? 0), 0);
 
   return (
-    <div className="border-t border-[var(--border)] first:border-t-0">
+    <div className="first:border-t-0" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-6 py-3 hover:bg-[var(--bg-card-hover)] transition-colors text-left"
+        className="w-full flex items-center justify-between px-6 py-3 transition-colors text-left hover:bg-white/5"
       >
         <div className="flex items-center gap-3">
           <span
@@ -52,9 +52,9 @@ function MonthSection({ group, defaultOpen }: { group: ReturnType<typeof groupBy
             ▶
           </span>
           <span className="text-sm font-medium">{group.label}</span>
-          <span className="text-xs text-[var(--text-muted)]">{rides.length} jazd</span>
+          <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>{rides.length} jazd</span>
         </div>
-        <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
+        <div className="flex items-center gap-4 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
           <span>{totalKm.toFixed(0)} km</span>
           <span>{totalTss} TSS</span>
         </div>
@@ -69,14 +69,15 @@ function MonthSection({ group, defaultOpen }: { group: ReturnType<typeof groupBy
               return (
                 <tr
                   key={ride.id}
-                  className="border-t border-[var(--border)] hover:bg-[var(--bg-card-hover)] transition-colors"
+                  className="transition-colors hover:bg-white/5"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
                 >
                   <td className="px-6 py-3 whitespace-nowrap w-[90px]">
                     <Link
                       href={`https://www.strava.com/activities/${ride.strava_activity_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[var(--text-secondary)] hover:text-orange-400 transition-colors"
+                      className="hover:text-orange-400 transition-colors" style={{ color: "rgba(255,255,255,0.6)" }}
                     >
                       {new Date(ride.start_date).toLocaleDateString("pl-PL", {
                         day: "numeric",
@@ -96,7 +97,7 @@ function MonthSection({ group, defaultOpen }: { group: ReturnType<typeof groupBy
                   <td className="text-right px-4 py-3">
                     {(ride.distance_meters / 1000).toFixed(1)}
                   </td>
-                  <td className="text-right px-4 py-3 text-[var(--text-secondary)]">
+                  <td className="text-right px-4 py-3" style={{ color: "rgba(255,255,255,0.6)" }}>
                     {formatDuration(ride.moving_time_seconds)}
                   </td>
                   <td className="text-right px-4 py-3">
@@ -111,7 +112,7 @@ function MonthSection({ group, defaultOpen }: { group: ReturnType<typeof groupBy
                   <td className="text-right px-4 py-3">
                     {ride.effective_tss ?? "—"}
                   </td>
-                  <td className="text-right px-4 py-3 text-[var(--text-secondary)]">
+                  <td className="text-right px-4 py-3" style={{ color: "rgba(255,255,255,0.6)" }}>
                     {ride.average_heartrate ? `${Math.round(ride.average_heartrate)}` : "—"}
                   </td>
                   <td className="text-right px-6 py-3 font-medium">
@@ -137,16 +138,16 @@ export function RecentRidesTable({ data, title = "Wszystkie jazdy 2026" }: Recen
   })();
 
   return (
-    <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] overflow-hidden">
-      <div className="px-6 py-4 border-b border-[var(--border)]">
-        <h2 className="text-sm font-medium text-[var(--text-secondary)]">
+    <div className="rounded-xl overflow-hidden" style={{ background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
+      <div className="px-6 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+        <h2 className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>
           {title}
         </h2>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-xs text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border)]">
+            <tr className="text-xs uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
               <th className="text-left px-6 py-3 w-[90px]">Data</th>
               <th className="text-left px-4 py-3 w-[100px]">Typ</th>
               <th className="text-right px-4 py-3">km</th>

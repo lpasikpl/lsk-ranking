@@ -97,11 +97,12 @@ export function TrainingLoadChart({ data }: TrainingLoadChartProps) {
   return (
     <>
       <div
-        className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-6 cursor-pointer transition-opacity hover:opacity-90"
+        className="rounded-xl p-6 cursor-pointer transition-opacity hover:opacity-90"
+        style={{ background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)", border: "1px solid rgba(255,255,255,0.07)" }}
         onClick={() => setExpanded(true)}
         title="Kliknij, aby powiększyć"
       >
-        <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-4">
+        <h2 className="text-sm font-medium mb-4" style={{ color: "rgba(255,255,255,0.6)" }}>
           CTL / ATL / TSB — ostatnie 90 dni
         </h2>
         <ChartContent data={data} gradientId="gradTsb" height={280} />

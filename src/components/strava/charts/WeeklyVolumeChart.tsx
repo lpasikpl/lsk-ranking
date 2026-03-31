@@ -44,31 +44,31 @@ export function WeeklyVolumeChart({ data }: WeeklyVolumeChartProps) {
     }));
 
   return (
-    <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border)] p-6">
-      <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-4">
+    <div className="rounded-xl p-6" style={{ background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
+      <h2 className="text-sm font-medium mb-4" style={{ color: "rgba(255,255,255,0.6)" }}>
         TSS miesięczny — od stycznia 2025
       </h2>
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={chartData} margin={{ top: 18, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" vertical={false} />
           <XAxis
             dataKey="label"
-            tick={{ fill: "var(--text-muted)", fontSize: 11 }}
-            axisLine={{ stroke: "var(--border)" }}
+            tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
+            axisLine={{ stroke: "rgba(255,255,255,0.07)" }}
             tickLine={false}
           />
           <YAxis
-            tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+            tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={36}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--border)", opacity: 0.4 }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.07)", opacity: 0.4 }} />
           <Bar dataKey="tss" radius={[4, 4, 0, 0]} fill="#f97316" opacity={0.85} maxBarSize={48}>
             <LabelList
               dataKey="tss"
               position="top"
-              style={{ fill: "var(--text-muted)", fontSize: 11 }}
+              style={{ fill: "rgba(255,255,255,0.35)", fontSize: 11 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               formatter={(v: any) => (v > 0 ? v : "") as any}
             />
