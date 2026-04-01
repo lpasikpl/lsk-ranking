@@ -73,6 +73,8 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
         <div>
           {localEntries.map((entry, index) => {
             const barWidth = Math.max(2, (entry.total_distance / maxDistance) * 100);
+            const gapToLeader = index > 0 ? maxDistance - entry.total_distance : 0;
+            const gapToPrev = index > 0 ? localEntries[index - 1].total_distance - entry.total_distance : 0;
             return (
               <div
                 key={entry.user_id}
@@ -113,6 +115,16 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
 
                   <div className="text-right">
                     <div className="text-sm font-semibold text-white/90 whitespace-nowrap">{formatDistance(entry.total_distance)} <span className="text-xs text-gray-400 font-normal">km</span></div>
+                    {index === 0 ? (
+                      <div className="text-[10px] text-orange-400/70 mt-0.5">Lider</div>
+                    ) : (
+                      <div className="hidden sm:block text-[10px] text-gray-500 mt-0.5 space-y-0.5">
+                        <div>−{formatDistance(gapToLeader)} do lidera</div>
+                        {gapToPrev !== gapToLeader && (
+                          <div className="text-gray-600">−{formatDistance(gapToPrev)} do poprz.</div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="hidden sm:block text-right">
