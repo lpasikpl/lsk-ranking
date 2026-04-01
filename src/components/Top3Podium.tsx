@@ -84,18 +84,17 @@ export default function Top3Podium({ entries, metric, title, unit, label }: Top3
                   ) : (
                     <div className="w-7 h-7 rounded-full bg-white/5 flex-shrink-0" />
                   )}
-                  <div className="flex-1 min-w-0">
-                    <a
-                      href={`/athlete/${entry.user_id}`}
-                      className="text-sm font-medium text-white/90 hover:text-white truncate block leading-tight"
-                    >
-                      {entry.firstname} {entry.lastname?.charAt(0)}.
-                      {getCountryFlag(entry.country) && (
-                        <span className="ml-1 text-xs">{getCountryFlag(entry.country)}</span>
-                      )}
-                    </a>
-                  </div>
-                  <span className={`text-sm font-bold ${medal.text} flex-shrink-0 whitespace-nowrap`}>
+                  <a
+                    href={`/athlete/${entry.user_id}`}
+                    className="text-sm font-medium text-white/90 hover:text-white whitespace-nowrap leading-tight flex-shrink-0"
+                  >
+                    {entry.firstname} {entry.lastname?.charAt(0)}.
+                    {getCountryFlag(entry.country) && (
+                      <span className="ml-1 text-xs">{getCountryFlag(entry.country)}</span>
+                    )}
+                  </a>
+                  <span className="flex-1 mx-2 self-end mb-[5px] border-b border-dotted border-white/10" />
+                  <span className={`text-base font-bold ${medal.text} flex-shrink-0 whitespace-nowrap tabular-nums`}>
                     {getValue(entry, metric)}{unit && metric !== "time" && <span className="text-xs font-normal ml-0.5">{unit}</span>}
                   </span>
                 </div>
