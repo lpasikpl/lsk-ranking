@@ -85,11 +85,7 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
 
                 <div className={`grid ${gridCols} gap-0 items-center relative`}>
                   <div className="flex items-center justify-start w-10">
-                    {index + 1 <= 10 ? (
-                      <RankBadge position={index + 1} showTrophyFrom={2} />
-                    ) : (
-                      <span className="text-sm text-gray-400">{index + 1}</span>
-                    )}
+                    <RankBadge position={index + 1} showTrophyFrom={2} />
                   </div>
 
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
