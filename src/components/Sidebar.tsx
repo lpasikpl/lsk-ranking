@@ -136,6 +136,7 @@ export default function Sidebar({ user }: { user: SidebarUser }) {
           </button>
         )}
 
+        {user?.is_admin && <NavLink href="/strava" icon="🚴" label="Priv" />}
         {user?.is_admin && <NavLink href="/admin" icon="⚙️" label="Panel Admina" />}
       </nav>
 
