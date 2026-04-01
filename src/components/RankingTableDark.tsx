@@ -78,11 +78,6 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
                 key={entry.user_id}
                 className="group relative px-3 sm:px-4 py-2.5 border-b border-white/[0.03] hover:bg-white/[0.03] transition-colors"
               >
-                <div
-                  className="absolute left-0 top-0 bottom-0 opacity-[0.03] bg-gradient-to-r from-orange-500 to-transparent pointer-events-none"
-                  style={{ width: `${barWidth}%` }}
-                />
-
                 <div className={`grid ${gridCols} gap-0 items-center relative`}>
                   <div className="flex items-center justify-start w-10">
                     <RankBadge position={index + 1} showTrophyFrom={2} />
@@ -95,7 +90,7 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
                     ) : (
                       <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 flex-shrink-0" />
                     )}
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <a href={`/athlete/${entry.user_id}`}
                         className="text-sm font-medium text-white/80 hover:text-white truncate block transition-colors">
                         <span className="sm:hidden">{entry.firstname} {entry.lastname?.charAt(0)}.</span>
@@ -104,8 +99,14 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
                           <span className="ml-1 text-xs">{getCountryFlag(entry.country)}</span>
                         )}
                       </a>
-                      <div className="hidden sm:block text-xs text-gray-400 mt-0.5">
+                      <div className="text-xs text-gray-400 mt-0.5">
                         {entry.active_days ?? entry.activity_count} {(entry.active_days ?? entry.activity_count) === 1 ? "aktywny dzień" : "aktywnych dni"}
+                      </div>
+                      <div className="hidden sm:block mt-2 h-[3px] bg-white/[0.04] rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-orange-500/70 to-orange-400/40 transition-all duration-500"
+                          style={{ width: `${barWidth}%` }}
+                        />
                       </div>
                     </div>
                   </div>
