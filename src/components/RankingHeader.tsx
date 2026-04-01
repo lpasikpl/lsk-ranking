@@ -4,20 +4,6 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-const COMPETITION_TARGET = new Date("2026-04-01T00:00:00");
-
-function useCountdown() {
-  const [diff, setDiff] = useState(() => Math.max(0, COMPETITION_TARGET.getTime() - Date.now()));
-  useEffect(() => {
-    const id = setInterval(() => setDiff(Math.max(0, COMPETITION_TARGET.getTime() - Date.now())), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const d = Math.floor(diff / 86_400_000);
-  const h = Math.floor((diff % 86_400_000) / 3_600_000);
-  const m = Math.floor((diff % 3_600_000) / 60_000);
-  const s = Math.floor((diff % 60_000) / 1_000);
-  return `${String(d).padStart(2,"0")}d ${String(h).padStart(2,"0")}h ${String(m).padStart(2,"0")}m ${String(s).padStart(2,"0")}s`;
-}
 import { User } from "@/types/database";
 
 interface RankingHeaderProps {
@@ -58,7 +44,6 @@ function useSyncUser(userId: string) {
 export default function RankingHeader({ title, subtitle, user }: RankingHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const countdown = useCountdown();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { status, message, handleSync } = useSyncUser(user?.id ?? "");
@@ -99,12 +84,8 @@ export default function RankingHeader({ title, subtitle, user }: RankingHeaderPr
                   pathname === "/rywalizacja" ? "bg-orange-500/20 text-orange-400" : "text-gray-500 hover:text-gray-300"
                 }`}
               >
-                Pre-Rywalizacja
-              </Link>
-              <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-gray-700 uppercase tracking-widest cursor-default">
                 Rywalizacja 2026
-                <span className="text-gray-700 tabular-nums normal-case tracking-normal font-normal">{countdown}</span>
-              </span>
+              </Link>
               {user?.is_admin && (
                 <Link
                   href="/analiza"
