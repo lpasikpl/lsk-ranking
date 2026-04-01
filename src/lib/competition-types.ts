@@ -1,5 +1,5 @@
 export const POINTS_SCALE = [15, 12, 10, 8, 6, 5, 4, 3, 2, 1];
-export const SEASON_MONTHS = [1, 2, 3] as const;
+export const SEASON_MONTHS = [4, 5, 6, 7, 8, 9] as const;
 export type SeasonMonth = (typeof SEASON_MONTHS)[number];
 
 export const MONTH_NAMES: Record<number, string> = {

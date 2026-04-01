@@ -49,8 +49,8 @@ export async function getSeasonData(year: number): Promise<SeasonData> {
   const supabase = createServiceClient();
 
   const pad = (n: number) => String(n).padStart(2, "0");
-  const seasonStart = `${year}-01-01T00:00:00`;
-  const seasonEnd = `${year}-03-31T23:59:59`;
+  const seasonStart = `${year}-04-01T00:00:00`;
+  const seasonEnd = `${year}-09-30T23:59:59`;
 
   const [usersResult, activitiesResult, effortsResult] = await Promise.all([
     supabase

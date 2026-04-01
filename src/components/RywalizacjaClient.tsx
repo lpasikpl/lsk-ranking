@@ -138,7 +138,7 @@ function TotalView({
               </tr>,
               isExpanded && (
                 <tr key={`${athlete.userId}-expand`} className="bg-orange-500/[0.03]">
-                  <td colSpan={9 + 2} className="pb-4 pt-2 px-4">
+                  <td colSpan={SEASON_MONTHS.length + 3} className="pb-4 pt-2 px-4">
                     <TotalBreakdown data={data} athlete={athlete} />
                   </td>
                 </tr>
@@ -156,7 +156,7 @@ function TotalView({
 
 function TotalBreakdown({ data, athlete }: { data: SeasonData; athlete: Athlete }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
       {SEASON_MONTHS.map((m) => {
         const monthData = data.months.find((md) => md.month === m);
         const bd = monthData?.breakdown[athlete.userId];
@@ -568,14 +568,6 @@ export default function RywalizacjaClient({ data, currentYear, selectedYear }: P
 
   return (
     <div>
-      <div className="mb-5 p-4 glass rounded-2xl border border-white/[0.06]">
-        <p className="text-sm text-gray-400 leading-relaxed">
-          <span className="text-white font-semibold">Pre-Rywalizacja</span> to rozgrzewka przed właściwym sezonem.
-          Sprawdź jak działa system punktacji, przetestuj kategorie i przyzwyczaj się do rywalizacji z kolegami z grupy.
-          Punkty zdobyte w tym okresie nie liczą się do wyników sezonu głównego.{" "}
-          <span className="text-orange-400">Rywalizacja 2026 startuje 1 kwietnia i potrwa do 30 września.</span>
-        </p>
-      </div>
       <ScoringLegend />
 
       {/* Tab bar */}
