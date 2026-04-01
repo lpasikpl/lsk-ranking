@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { User } from "@/types/database";
-import RankingHeader from "@/components/RankingHeader";
+import AppShell from "@/components/AppShell";
 import Footer from "@/components/Footer";
 import RywalizacjaClient from "@/components/RywalizacjaClient";
 import { getSeasonData } from "@/lib/competition";
@@ -39,10 +39,8 @@ export default async function RywalizacjaPage({ searchParams }: PageProps) {
   ]);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
-      <RankingHeader title="LSK Ranking" subtitle="Kolarstwo" user={user} />
-
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+    <AppShell user={user}>
+      <main className="flex-1 w-full px-4 lg:px-10 py-8">
         <RywalizacjaClient
           data={JSON.parse(JSON.stringify(seasonData))}
           currentYear={currentYear}
@@ -51,6 +49,6 @@ export default async function RywalizacjaPage({ searchParams }: PageProps) {
       </main>
 
       <Footer />
-    </div>
+    </AppShell>
   );
 }

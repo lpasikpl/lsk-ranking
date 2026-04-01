@@ -3,7 +3,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { RankingEntry, User } from "@/types/database";
 import { startOfMonth, endOfMonth, startOfYear, endOfYear, format } from "date-fns";
 import { pl } from "date-fns/locale";
-import RankingHeader from "@/components/RankingHeader";
+import AppShell from "@/components/AppShell";
 import Top3Podium from "@/components/Top3Podium";
 import RankingTableDark from "@/components/RankingTableDark";
 import MonthlyChart from "@/components/MonthlyChart";
@@ -158,10 +158,8 @@ export default async function HomePage({ searchParams }: PageProps) {
   const selMonthLabel = format(new Date(selYear, selMonth - 1, 1), "LLLL yyyy", { locale: pl }).replace(/^\w/, (c) => c.toUpperCase());
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
-      <RankingHeader title="LSK Ranking" subtitle="Kolarstwo" user={user} />
-
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+    <AppShell user={user}>
+      <main className="flex-1 w-full px-4 lg:px-10 py-8">
 
         {/* ===== MIESIĄC ===== */}
         <div className="mb-14 section-enter">
@@ -247,6 +245,6 @@ export default async function HomePage({ searchParams }: PageProps) {
       </main>
 
       <Footer />
-    </div>
+    </AppShell>
   );
 }
