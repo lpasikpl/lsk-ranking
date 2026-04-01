@@ -86,18 +86,6 @@ export default function RankingHeader({ title, subtitle, user }: RankingHeaderPr
               >
                 Rywalizacja 2026
               </Link>
-              {user?.is_admin && (
-                <Link
-                  href="/analiza"
-                  className={`text-xs font-semibold px-2.5 py-1 rounded-md uppercase tracking-widest transition-colors ${
-                    pathname.startsWith("/analiza")
-                      ? "bg-orange-500/20 text-orange-400"
-                      : "text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  Analiza
-                </Link>
-              )}
             </div>
             <h1 className="text-2xl font-black tracking-tight text-white mt-0.5">{title}</h1>
             <div className="flex items-center gap-2 mt-0.5">
