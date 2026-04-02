@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { RankingEntry } from "@/types/database";
 import { formatDistance, formatTime, getCountryFlag, formatNumber } from "@/lib/format";
@@ -18,6 +18,11 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
   const [localEntries, setLocalEntries] = useState(
     entries.filter(e => e.total_distance > 0 || e.total_elevation > 0 || e.total_time > 0)
   );
+  const [barsVisible, setBarsVisible] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setBarsVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   const maxDistance = localEntries[0]?.total_distance || 1;
   const totalDistance = localEntries.reduce((sum, e) => sum + e.total_distance, 0);
@@ -106,8 +111,11 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
                       </div>
                       <div className="hidden sm:block mt-2 h-[3px] bg-white/[0.04] rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-orange-500/70 to-orange-400/40 transition-all duration-500"
-                          style={{ width: `${barWidth}%` }}
+                          className="h-full rounded-full bg-gradient-to-r from-orange-500/70 to-orange-400/40 transition-[width] duration-700 ease-out"
+                          style={{
+                            width: barsVisible ? `${barWidth}%` : "0%",
+                            transitionDelay: barsVisible ? `${index * 60}ms` : "0ms",
+                          }}
                         />
                       </div>
                     </div>

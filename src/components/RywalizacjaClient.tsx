@@ -87,15 +87,16 @@ function TotalView({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-xs min-w-[600px]">
+      <table className="w-full text-xs min-w-[480px]">
         <thead>
           <tr className="text-gray-400 uppercase tracking-widest border-b border-white/[0.06]">
-            <th className="text-left pb-3 pr-3 w-8">#</th>
-            <th className="text-left pb-3 pr-4">Zawodnik</th>
+            <th className="text-left pb-3 pr-2 w-7">#</th>
+            <th className="text-left pb-3 pr-3">Zawodnik</th>
+            <th className="text-right pb-3 px-3 w-14 text-orange-400">Suma</th>
+            <th className="w-px pb-3" />
             {SEASON_MONTHS.map((m) => (
-              <th key={m} className="text-right pb-3 px-2 w-10">{MONTH_SHORT[m]}</th>
+              <th key={m} className="text-right pb-3 px-1.5 w-9 text-gray-500">{MONTH_SHORT[m]}</th>
             ))}
-            <th className="text-right pb-3 pl-3 w-14 text-orange-400">Suma</th>
           </tr>
         </thead>
         <tbody>
@@ -111,10 +112,10 @@ function TotalView({
                   isExpanded ? "bg-orange-500/5" : "hover:bg-white/[0.03]"
                 }`}
               >
-                <td className="py-3 pr-3">
+                <td className="py-3 pr-2">
                   <RankBadgeSmall position={idx + 1} />
                 </td>
-                <td className="py-3 pr-4">
+                <td className="py-3 pr-3">
                   <div className="flex items-center gap-2">
                     <AthleteAvatar athlete={athlete} />
                     <span className="text-white/80 font-medium">
@@ -122,19 +123,22 @@ function TotalView({
                     </span>
                   </div>
                 </td>
+                <td className="py-3 px-3 text-right tabular-nums font-bold text-orange-400">
+                  {formatPoints(total)}
+                </td>
+                <td className="w-px">
+                  <div className="w-px h-4 bg-white/[0.06]" />
+                </td>
                 {SEASON_MONTHS.map((m) => {
                   const score = monthScores[athlete.userId]?.[m] ?? 0;
                   return (
-                    <td key={m} className="py-3 px-2 text-right tabular-nums">
-                      <span className={score > 0 ? "text-white/70" : "text-gray-600"}>
+                    <td key={m} className="py-3 px-1.5 text-right tabular-nums">
+                      <span className={score > 0 ? "text-white/50" : "text-gray-700"}>
                         {score > 0 ? formatPoints(score) : "—"}
                       </span>
                     </td>
                   );
                 })}
-                <td className="py-3 pl-3 text-right tabular-nums font-bold text-orange-400">
-                  {formatPoints(total)}
-                </td>
               </tr>,
               isExpanded && (
                 <tr key={`${athlete.userId}-expand`} className="bg-orange-500/[0.03]">
