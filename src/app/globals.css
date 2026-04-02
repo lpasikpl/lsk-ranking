@@ -147,7 +147,7 @@ body {
 @keyframes barShine {
   0%   { transform: translateX(-100%); opacity: 0; }
   8%   { opacity: 1; }
-  65%  { opacity: 1; }
+  40%  { opacity: 1; }
   100% { transform: translateX(100%); opacity: 0; }
 }
 .bar-shine::after {
