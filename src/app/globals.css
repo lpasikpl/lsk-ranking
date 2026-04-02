@@ -145,8 +145,10 @@ body {
 
 /* Animacja paska dystansu — błysk */
 @keyframes barShine {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0%   { transform: translateX(-100%); opacity: 0; }
+  8%   { opacity: 1; }
+  65%  { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
 }
 .bar-shine::after {
   content: '';
