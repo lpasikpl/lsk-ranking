@@ -479,72 +479,56 @@ function DetailCard({
   return <div className="glass rounded-xl p-3 border border-white/[0.06]">{inner}</div>;
 }
 
-// ===================== SCORING LEGEND =====================
+// ===================== SCORING PANEL =====================
 
 const PLACE_MEDAL = ["text-yellow-400", "text-gray-300", "text-orange-500"];
 
-function ScoringLegend() {
-  const [open, setOpen] = useState(false);
+function ScoringPanel() {
   return (
-    <div className="mb-6">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="text-xs text-gray-400 hover:text-gray-300 flex items-center gap-1 transition-colors"
-      >
-        <span className={`transition-transform ${open ? "rotate-90" : ""}`}>▶</span>
-        Zasady punktacji
-      </button>
-      {open && (
-        <div className="mt-3 glass rounded-2xl border border-white/[0.06] overflow-hidden">
-          <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06]">
+    <div className="glass rounded-2xl border border-white/[0.06] overflow-hidden text-xs">
+      {/* Skala punktów */}
+      <div className="p-4 border-b border-white/[0.06]">
+        <div className="text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-3">Skala punktów — miejsca 1–10</div>
+        <table className="w-full">
+          <tbody>
+            {Array.from({ length: 5 }, (_, i) => (
+              <tr key={i} className="border-b border-white/[0.04] last:border-0">
+                <td className="py-1 pr-3 w-1/2">
+                  <span className={`font-black mr-1 ${PLACE_MEDAL[i] ?? "text-white/50"}`}>{i + 1}</span>
+                  <span className="text-white/50">miejsce</span>
+                  <span className="text-orange-400 font-bold ml-auto float-right">{POINTS_SCALE[i]} pkt</span>
+                </td>
+                <td className="py-1 pl-3 border-l border-white/[0.04]">
+                  <span className={`font-black mr-1 ${PLACE_MEDAL[i + 5] ?? "text-white/40"}`}>{i + 6}</span>
+                  <span className="text-white/50">miejsce</span>
+                  <span className="text-orange-400 font-bold ml-auto float-right">{POINTS_SCALE[i + 5]} pkt</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-            {/* Skala punktów */}
-            <div className="p-4">
-              <div className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">Skala punktów — miejsca 1–10</div>
-              <table className="w-full text-xs">
-                <tbody>
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <tr key={i} className="border-b border-white/[0.04] last:border-0">
-                      <td className="py-1.5 pr-4 w-1/2">
-                        <span className={`font-black mr-1.5 ${PLACE_MEDAL[i] ?? "text-white/50"}`}>{i + 1}</span>
-                        <span className="text-white/60">miejsce</span>
-                        <span className="text-orange-400 font-bold ml-auto float-right">{POINTS_SCALE[i]} pkt</span>
-                      </td>
-                      <td className="py-1.5 pl-4 border-l border-white/[0.04]">
-                        <span className={`font-black mr-1.5 ${PLACE_MEDAL[i + 5] ?? "text-white/50"}`}>{i + 6}</span>
-                        <span className="text-white/60">miejsce</span>
-                        <span className="text-orange-400 font-bold ml-auto float-right">{POINTS_SCALE[i + 5]} pkt</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Kategorie */}
-            <div className="p-4">
-              <div className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">Kategorie i wagi</div>
-              <table className="w-full text-xs">
-                <tbody>
-                  {[
-                    { label: "Dystans miesięczny", weight: "×1.0", green: false },
-                    { label: "Suma przewyższeń", weight: "×1.0", green: false },
-                    ...EFFORT_DISTANCES.map(d => ({ label: `Najszybsze ${d}`, weight: `×${EFFORT_WEIGHTS[d]}`, green: false })),
-                    { label: "Aktywne dni", weight: "+3 / +2 / +1", green: true },
-                    { label: "Najdłuższa jazda", weight: "+3 / +2 / +1", green: true },
-                  ].map((row, i) => (
-                    <tr key={i} className="border-b border-white/[0.04] last:border-0">
-                      <td className="py-1.5 text-white/70">{row.label}</td>
-                      <td className={`py-1.5 text-right font-bold ${row.green ? "text-green-400" : "text-orange-400"}`}>{row.weight}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-          </div>
-        </div>
-      )}
+      {/* Kategorie i wagi */}
+      <div className="p-4">
+        <div className="text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-3">Kategorie i wagi</div>
+        <table className="w-full">
+          <tbody>
+            {[
+              { label: "Dystans miesięczny", weight: "×1.0", green: false },
+              { label: "Suma przewyższeń", weight: "×1.0", green: false },
+              ...EFFORT_DISTANCES.map(d => ({ label: `Najszybsze ${d}`, weight: `×${EFFORT_WEIGHTS[d]}`, green: false })),
+              { label: "Aktywne dni", weight: "+3 / +2 / +1", green: true },
+              { label: "Najdłuższa jazda", weight: "+3 / +2 / +1", green: true },
+            ].map((row, i) => (
+              <tr key={i} className="border-b border-white/[0.04] last:border-0">
+                <td className="py-1 text-white/60">{row.label}</td>
+                <td className={`py-1 text-right font-bold ${row.green ? "text-green-400" : "text-orange-400"}`}>{row.weight}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -554,12 +538,6 @@ function ScoringLegend() {
 export default function RywalizacjaClient({ data, currentYear, selectedYear }: Props) {
   const [activeTab, setActiveTab] = useState<number | "total">("total");
   const [expandedAthlete, setExpandedAthlete] = useState<string | null>(null);
-
-  const now = new Date();
-  const isCurrentSeason = selectedYear === currentYear;
-  const seasonActive =
-    isCurrentSeason && now.getMonth() + 1 >= 3 && now.getMonth() + 1 <= 9;
-  const seasonNotStarted = isCurrentSeason && now.getMonth() + 1 < 3;
 
   const handleSelectAthlete = (uid: string) => {
     setExpandedAthlete((prev) => (prev === uid ? null : uid));
@@ -571,51 +549,57 @@ export default function RywalizacjaClient({ data, currentYear, selectedYear }: P
   };
 
   return (
-    <div>
-      <ScoringLegend />
-
-      {/* Tab bar */}
-      <div className="flex gap-1 flex-wrap mb-6">
-        <TabButton active={activeTab === "total"} onClick={() => handleTabChange("total")}>
-          Total
-        </TabButton>
-        {SEASON_MONTHS.map((m) => (
-          <TabButton
-            key={m}
-            active={activeTab === m}
-            onClick={() => handleTabChange(m)}
-          >
-            {MONTH_SHORT[m]}
+    <div className="flex gap-6 items-start">
+      {/* Lewa kolumna: zakładki + tabela */}
+      <div className="flex-1 min-w-0">
+        {/* Tab bar */}
+        <div className="flex gap-1 flex-wrap mb-6">
+          <TabButton active={activeTab === "total"} onClick={() => handleTabChange("total")}>
+            Total
           </TabButton>
-        ))}
+          {SEASON_MONTHS.map((m) => (
+            <TabButton
+              key={m}
+              active={activeTab === m}
+              onClick={() => handleTabChange(m)}
+            >
+              {MONTH_SHORT[m]}
+            </TabButton>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="glass rounded-2xl border border-white/[0.06] p-4 sm:p-6">
+          {activeTab === "total" ? (
+            <>
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+                Klasyfikacja generalna — Sezon {selectedYear}
+              </div>
+              <TotalView
+                data={data}
+                onSelectAthlete={handleSelectAthlete}
+                expandedAthlete={expandedAthlete}
+              />
+            </>
+          ) : (
+            <>
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+                {MONTH_NAMES[activeTab]} {selectedYear}
+              </div>
+              <MonthView
+                data={data}
+                month={activeTab}
+                onSelectAthlete={handleSelectAthlete}
+                expandedAthlete={expandedAthlete}
+              />
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="glass rounded-2xl border border-white/[0.06] p-4 sm:p-6">
-        {activeTab === "total" ? (
-          <>
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
-              Klasyfikacja generalna — Sezon {selectedYear}
-            </div>
-            <TotalView
-              data={data}
-              onSelectAthlete={handleSelectAthlete}
-              expandedAthlete={expandedAthlete}
-            />
-          </>
-        ) : (
-          <>
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
-              {MONTH_NAMES[activeTab]} {selectedYear}
-            </div>
-            <MonthView
-              data={data}
-              month={activeTab}
-              onSelectAthlete={handleSelectAthlete}
-              expandedAthlete={expandedAthlete}
-            />
-          </>
-        )}
+      {/* Prawa kolumna: zasady punktacji */}
+      <div className="hidden lg:block w-64 flex-shrink-0 sticky top-20">
+        <ScoringPanel />
       </div>
 
     </div>
