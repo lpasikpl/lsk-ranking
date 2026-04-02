@@ -111,12 +111,20 @@ export default function RankingTableDark({ entries, isAdmin }: RankingTableDarkP
                       </div>
                       <div className="hidden sm:block mt-2 h-[3px] bg-white/[0.04] rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-orange-500/70 to-orange-400/40 transition-[width] duration-700 ease-out"
+                          className="relative h-full rounded-full bg-gradient-to-r from-orange-500/70 to-orange-400/40 transition-[width] ease-out overflow-hidden"
                           style={{
                             width: barsVisible ? `${barWidth}%` : "0%",
-                            transitionDelay: barsVisible ? `${index * 60}ms` : "0ms",
+                            transitionDuration: "1400ms",
+                            transitionDelay: barsVisible ? `${index * 80}ms` : "0ms",
                           }}
-                        />
+                        >
+                          {barsVisible && (
+                            <span
+                              className="bar-shine"
+                              style={{ animationDelay: `${index * 80 + 200}ms` }}
+                            />
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
