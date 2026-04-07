@@ -8,7 +8,6 @@ import { CumulativeLineChart } from "@/components/strava/charts/CumulativeLineCh
 import { PeriodCompareRow } from "@/components/strava/cards/PeriodCompareRow";
 import { YearByTypeCard } from "@/components/strava/cards/YearByTypeCard";
 import { NpHrWeeklyChart } from "@/components/strava/charts/NpHrWeeklyChart";
-import { NpHrOverlayChart } from "@/components/strava/charts/NpHrOverlayChart";
 import { TrainingLoadChart } from "@/components/strava/charts/TrainingLoadChart";
 import { WeeklyVolumeChart } from "@/components/strava/charts/WeeklyVolumeChart";
 import { MonthlyDistanceChart } from "@/components/strava/charts/MonthlyDistanceChart";
@@ -72,10 +71,6 @@ export default async function StravaPage() {
         <MonthlyDistanceChart data={data.monthlyYoy} />
         <MonthlyNpHrChart data={data.monthlyNpHr} />
         <NpHrWeeklyChart data={data.weeklyNpHr} />
-        <NpHrOverlayChart
-          currentYear={data.npHrCurrentYear}
-          prevYear={data.npHrPrevYear}
-        />
       </section>
 
       <section>

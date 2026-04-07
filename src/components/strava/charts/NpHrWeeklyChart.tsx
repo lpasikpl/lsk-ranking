@@ -48,7 +48,7 @@ export function NpHrWeeklyChart({ data }: NpHrWeeklyChartProps) {
   );
   const allWeeks = new Set([...map2025.keys(), ...map2026.keys()]);
   const chartData = [...allWeeks].sort((a, b) => a - b).map((w) => ({
-    label: `T${w}`,
+    label: `${w}`,
     ratio2025: map2025.get(w) ?? null,
     ratio2026: map2026.get(w) ?? null,
   }));
@@ -113,7 +113,7 @@ export function NpHrWeeklyChart({ data }: NpHrWeeklyChartProps) {
             tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
-            domain={["auto", "auto"]}
+            domain={[1, "auto"]}
             tickFormatter={(v) => v.toFixed(2)}
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
