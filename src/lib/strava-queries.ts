@@ -1,4 +1,4 @@
-import { supabaseStrava as supabase } from "./supabase-strava";
+import { supabaseStrava as supabase, supabaseStravaService } from "./supabase-strava";
 import type {
   YtdProgress, CumulativeDay, CumulativeByYear,
   MonthlyYoy, YearlyByType, WeeklyNpHr, NpHrByYear,
@@ -108,7 +108,7 @@ export async function fetchWeeklySummaries(): Promise<WeeklySummary[]> {
 }
 
 export async function fetchRecentActivities(year = CURRENT_YEAR): Promise<Activity[]> {
-  const { data } = await supabase
+  const { data } = await supabaseStravaService
     .from("activities")
     .select("id,strava_activity_id,name,sport_type,start_date,elapsed_time_seconds,moving_time_seconds,distance_meters,total_elevation_gain,average_speed,average_watts,normalized_power,intensity_factor,tss,effective_tss,average_heartrate,max_heartrate,has_power_data")
     .eq("is_ride", true)
