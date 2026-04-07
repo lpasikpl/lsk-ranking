@@ -152,7 +152,7 @@ export function RecentRidesTable({ data, title = "Wszystkie jazdy 2026" }: Recen
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
-      <div className="px-6 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+      <div className="px-6 py-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <h2 className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.6)" }}>
           {title}
         </h2>
