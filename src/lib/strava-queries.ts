@@ -84,7 +84,7 @@ export async function fetchWeeklyNpHr(): Promise<WeeklyNpHr[]> {
     .from("weekly_np_hr")
     .select("*")
     .order("week_start", { ascending: false })
-    .limit(52);
+    .limit(104);
   return (data ?? []).reverse();
 }
 
