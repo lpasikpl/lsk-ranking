@@ -27,7 +27,7 @@ async function getAdminUser(userId: string | undefined) {
   return data;
 }
 
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export default async function StravaPage() {
   const cookieStore = await cookies();
