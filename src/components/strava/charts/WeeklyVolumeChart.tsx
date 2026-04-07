@@ -87,7 +87,7 @@ export function WeeklyVolumeChart({ data, weeklyData }: WeeklyVolumeChartProps) 
   );
   const allWeeks = new Set([...map2025.keys(), ...map2026.keys()]);
   const weeklyChartData = [...allWeeks].sort((a, b) => a - b).map((w) => ({
-    label: `T${w}`,
+    label: `${w}`,
     tss2025: map2025.get(w) ?? null,
     tss2026: map2026.get(w) ?? null,
   }));
