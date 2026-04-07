@@ -42,8 +42,8 @@ function MonthSection({ group, defaultOpen }: { group: ReturnType<typeof groupBy
     <tbody>
       <tr
         onClick={() => setOpen((v) => !v)}
-        className="cursor-pointer hover:bg-white/5 transition-colors"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
+        className="cursor-pointer hover:bg-white/5 transition-colors sticky z-[5]"
+        style={{ borderTop: "1px solid rgba(255,255,255,0.07)", top: "97px", background: "#0d0d0d" }}
       >
         <td colSpan={10} className="px-6 py-3">
           <div className="flex items-center justify-between">
