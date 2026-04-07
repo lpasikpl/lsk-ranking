@@ -171,19 +171,19 @@ export async function fetchMonthlyNpHr(): Promise<MonthlyNpHr[]> {
 
   if (!data) return [];
 
-  const map = new Map<string, { np_sum: number; np_count: number; hr_sum: number; hr_count: number }>();
+  const map = new Map<string, { ratio_sum: number; ratio_count: number; np_sum: number; hr_sum: number; count: number }>();
   for (const a of data) {
+    // tylko jazdy gdzie ta sama jazda ma i moc i tętno (spójnie z weekly_np_hr view)
+    if (!a.has_power_data || a.normalized_power == null) continue;
+    if (a.average_heartrate == null || a.average_heartrate <= 0) continue;
     const d = new Date(a.start_date);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const entry = map.get(key) ?? { np_sum: 0, np_count: 0, hr_sum: 0, hr_count: 0 };
-    if (a.has_power_data && a.normalized_power != null) {
-      entry.np_sum += a.normalized_power;
-      entry.np_count++;
-    }
-    if (a.average_heartrate != null && a.average_heartrate > 0) {
-      entry.hr_sum += a.average_heartrate;
-      entry.hr_count++;
-    }
+    const entry = map.get(key) ?? { ratio_sum: 0, ratio_count: 0, np_sum: 0, hr_sum: 0, count: 0 };
+    entry.ratio_sum += a.normalized_power / a.average_heartrate;
+    entry.ratio_count++;
+    entry.np_sum += a.normalized_power;
+    entry.hr_sum += a.average_heartrate;
+    entry.count++;
     map.set(key, entry);
   }
 
@@ -191,10 +191,10 @@ export async function fetchMonthlyNpHr(): Promise<MonthlyNpHr[]> {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, entry]) => {
       const [year, month] = key.split("-").map(Number);
-      const avg_np = entry.np_count > 0 ? Math.round(entry.np_sum / entry.np_count) : null;
-      const avg_hr = entry.hr_count > 0 ? Math.round(entry.hr_sum / entry.hr_count) : null;
-      const np_hr_ratio = avg_np != null && avg_hr != null && avg_hr > 0
-        ? Math.round((avg_np / avg_hr) * 100) / 100
+      const avg_np = entry.count > 0 ? Math.round(entry.np_sum / entry.count) : null;
+      const avg_hr = entry.count > 0 ? Math.round(entry.hr_sum / entry.count) : null;
+      const np_hr_ratio = entry.ratio_count > 0
+        ? Math.round((entry.ratio_sum / entry.ratio_count) * 1000) / 1000
         : null;
       return { year, month, avg_np, avg_hr, np_hr_ratio };
     });
