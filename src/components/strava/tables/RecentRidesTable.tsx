@@ -137,6 +137,8 @@ export function RecentRidesTable({ data, title = "Wszystkie jazdy 2026" }: Recen
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   })();
 
+  const hasCurrentMonth = groups.some((g) => g.key === currentKey);
+
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)", border: "1px solid rgba(255,255,255,0.07)" }}>
       <div className="px-6 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
@@ -175,11 +177,11 @@ export function RecentRidesTable({ data, title = "Wszystkie jazdy 2026" }: Recen
               <th className="text-right px-6 py-3">NP/HR</th>
             </tr>
           </thead>
-          {groups.map((group) => (
+          {groups.map((group, index) => (
             <MonthSection
               key={group.key}
               group={group}
-              defaultOpen={group.key === currentKey}
+              defaultOpen={group.key === currentKey || (!hasCurrentMonth && index === 0)}
             />
           ))}
         </table>
