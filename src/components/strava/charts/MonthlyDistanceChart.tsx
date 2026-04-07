@@ -13,9 +13,8 @@ const MONTH_NAMES_SHORT = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie
 const CURRENT_YEAR = new Date().getFullYear();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
-  const d = payload[0].payload;
   return (
     <div style={{
       backgroundColor: "#0f1117",
@@ -25,25 +24,34 @@ function CustomTooltip({ active, payload }: any) {
       fontSize: 12,
       color: "#fff",
       boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
-      minWidth: 120,
+      minWidth: 130,
     }}>
-      <div style={{ color: "rgba(255,255,255,0.45)", marginBottom: 6, fontWeight: 500 }}>{d.label}</div>
-      <div>
-        <span style={{ color: "#FC5200", fontWeight: 700, fontSize: 15 }}>{d.km.toLocaleString("pl-PL", { maximumFractionDigits: 0 })}</span>
-        <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 4 }}>km</span>
-      </div>
+      <div style={{ color: "rgba(255,255,255,0.45)", marginBottom: 8, fontWeight: 500 }}>{label}</div>
+      {payload.map((p: any) => (
+        <div key={p.dataKey} style={{ marginBottom: 3 }}>
+          <span style={{ color: p.dataKey === "km2026" ? "#FC5200" : "rgba(255,255,255,0.4)", fontWeight: 600, fontSize: 14 }}>
+            {p.value != null ? p.value.toLocaleString("pl-PL", { maximumFractionDigits: 0 }) : "—"}
+          </span>
+          <span style={{ color: "rgba(255,255,255,0.35)", marginLeft: 5 }}>km {p.name}</span>
+        </div>
+      ))}
     </div>
   );
 }
 
 export function MonthlyDistanceChart({ data }: MonthlyDistanceChartProps) {
-  const chartData = data
-    .slice()
-    .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
-    .map((d) => ({
-      label: MONTH_NAMES_SHORT[d.month - 1] + (d.year !== CURRENT_YEAR ? ` ${String(d.year).slice(2)}` : ""),
-      km: Math.round(d.distance_km),
-    }));
+  const map2025 = new Map(
+    data.filter((d) => d.year === CURRENT_YEAR - 1).map((d) => [d.month, Math.round(d.distance_km)])
+  );
+  const map2026 = new Map(
+    data.filter((d) => d.year === CURRENT_YEAR).map((d) => [d.month, Math.round(d.distance_km)])
+  );
+  const allMonths = Array.from({ length: 12 }, (_, i) => i + 1);
+  const chartData = allMonths.map((m) => ({
+    label: MONTH_NAMES_SHORT[m - 1],
+    km2025: map2025.get(m) ?? null,
+    km2026: map2026.get(m) ?? null,
+  }));
 
   return (
     <div style={{
@@ -53,14 +61,18 @@ export function MonthlyDistanceChart({ data }: MonthlyDistanceChartProps) {
       padding: "24px",
     }}>
       <h2 style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.5)", margin: "0 0 20px 0" }}>
-        Kilometry miesięcznie — od stycznia 2025
+        Kilometry miesięcznie — {CURRENT_YEAR} vs {CURRENT_YEAR - 1}
       </h2>
       <ResponsiveContainer width="100%" height={320}>
-        <BarChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%">
+        <BarChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }} barCategoryGap="25%" barGap={2}>
           <defs>
-            <linearGradient id="distBarGrad" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="distBar2026" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#FC5200" stopOpacity={1} />
               <stop offset="100%" stopColor="#7a2800" stopOpacity={0.7} />
+            </linearGradient>
+            <linearGradient id="distBar2025" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#555555" stopOpacity={0.8} />
+              <stop offset="100%" stopColor="#222222" stopOpacity={0.6} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -69,8 +81,6 @@ export function MonthlyDistanceChart({ data }: MonthlyDistanceChartProps) {
             tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }}
             axisLine={false}
             tickLine={false}
-            minTickGap={36}
-            interval="preserveStartEnd"
           />
           <YAxis
             tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 11 }}
@@ -79,9 +89,20 @@ export function MonthlyDistanceChart({ data }: MonthlyDistanceChartProps) {
             width={36}
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-          <Bar dataKey="km" fill="url(#distBarGrad)" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="km2025" name={String(CURRENT_YEAR - 1)} fill="url(#distBar2025)" radius={[3, 3, 0, 0]} />
+          <Bar dataKey="km2026" name={String(CURRENT_YEAR)} fill="url(#distBar2026)" radius={[3, 3, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
+      <div style={{ display: "flex", alignItems: "center", gap: 24, marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ display: "inline-block", width: 12, height: 10, backgroundColor: "#FC5200", borderRadius: 2 }} />
+          {CURRENT_YEAR}
+        </span>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ display: "inline-block", width: 12, height: 10, backgroundColor: "#555555", borderRadius: 2 }} />
+          {CURRENT_YEAR - 1}
+        </span>
+      </div>
     </div>
   );
 }

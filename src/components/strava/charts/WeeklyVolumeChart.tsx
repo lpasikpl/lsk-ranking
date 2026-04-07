@@ -12,9 +12,8 @@ const MONTH_NAMES_SHORT = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie
 const CURRENT_YEAR = new Date().getFullYear();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function MonthlyTooltip({ active, payload }: any) {
+function MonthlyTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
-  const d = payload[0].payload;
   return (
     <div style={{
       backgroundColor: "#0f1117",
@@ -24,13 +23,17 @@ function MonthlyTooltip({ active, payload }: any) {
       fontSize: 12,
       color: "#fff",
       boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
-      minWidth: 120,
+      minWidth: 130,
     }}>
-      <div style={{ color: "rgba(255,255,255,0.45)", marginBottom: 6, fontWeight: 500 }}>{d.label}</div>
-      <div>
-        <span style={{ color: "#FC5200", fontWeight: 700, fontSize: 15 }}>{d.tss}</span>
-        <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 4 }}>TSS</span>
-      </div>
+      <div style={{ color: "rgba(255,255,255,0.45)", marginBottom: 8, fontWeight: 500 }}>{label}</div>
+      {payload.map((p: any) => p.value != null && (
+        <div key={p.dataKey} style={{ marginBottom: 3 }}>
+          <span style={{ color: p.dataKey === "tss2026" ? "#FC5200" : "rgba(255,255,255,0.4)", fontWeight: 600, fontSize: 14 }}>
+            {p.value}
+          </span>
+          <span style={{ color: "rgba(255,255,255,0.35)", marginLeft: 5 }}>TSS {p.name}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -63,13 +66,17 @@ function WeeklyTooltip({ active, payload, label }: any) {
 }
 
 export function WeeklyVolumeChart({ data, weeklyData }: WeeklyVolumeChartProps) {
-  const chartData = data
-    .slice()
-    .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
-    .map((d) => ({
-      label: MONTH_NAMES_SHORT[d.month - 1] + (d.year !== CURRENT_YEAR ? ` ${String(d.year).slice(2)}` : ""),
-      tss: Math.round(d.total_tss),
-    }));
+  const tssMap2025 = new Map(
+    data.filter((d) => d.year === CURRENT_YEAR - 1).map((d) => [d.month, Math.round(d.total_tss)])
+  );
+  const tssMap2026 = new Map(
+    data.filter((d) => d.year === CURRENT_YEAR).map((d) => [d.month, Math.round(d.total_tss)])
+  );
+  const chartData = Array.from({ length: 12 }, (_, i) => i + 1).map((m) => ({
+    label: MONTH_NAMES_SHORT[m - 1],
+    tss2025: tssMap2025.get(m) ?? null,
+    tss2026: tssMap2026.get(m) ?? null,
+  }));
 
   // Grupuj tygodniowe dane per iso_week, dwa lata obok siebie
   const map2025 = new Map(
@@ -97,14 +104,18 @@ export function WeeklyVolumeChart({ data, weeklyData }: WeeklyVolumeChartProps) 
       {/* Miesięczny TSS */}
       <div style={cardStyle}>
         <h2 style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.5)", margin: "0 0 20px 0" }}>
-          TSS miesięczny — od stycznia 2025
+          TSS miesięczny — {CURRENT_YEAR} vs {CURRENT_YEAR - 1}
         </h2>
         <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%">
+          <BarChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }} barCategoryGap="25%" barGap={2}>
             <defs>
-              <linearGradient id="tssBarGrad" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="tssBarGrad2026" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#FC5200" stopOpacity={1} />
                 <stop offset="100%" stopColor="#7a2800" stopOpacity={0.7} />
+              </linearGradient>
+              <linearGradient id="tssBarGrad2025" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#555555" stopOpacity={0.8} />
+                <stop offset="100%" stopColor="#222222" stopOpacity={0.6} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -113,8 +124,6 @@ export function WeeklyVolumeChart({ data, weeklyData }: WeeklyVolumeChartProps) 
               tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }}
               axisLine={false}
               tickLine={false}
-              minTickGap={36}
-              interval="preserveStartEnd"
             />
             <YAxis
               tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 11 }}
@@ -123,9 +132,20 @@ export function WeeklyVolumeChart({ data, weeklyData }: WeeklyVolumeChartProps) 
               width={36}
             />
             <Tooltip content={<MonthlyTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-            <Bar dataKey="tss" fill="url(#tssBarGrad)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="tss2025" name={String(CURRENT_YEAR - 1)} fill="url(#tssBarGrad2025)" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="tss2026" name={String(CURRENT_YEAR)} fill="url(#tssBarGrad2026)" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
+        <div style={{ display: "flex", alignItems: "center", gap: 24, marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ display: "inline-block", width: 12, height: 10, backgroundColor: "#FC5200", borderRadius: 2 }} />
+            {CURRENT_YEAR}
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ display: "inline-block", width: 12, height: 10, backgroundColor: "#555555", borderRadius: 2 }} />
+            {CURRENT_YEAR - 1}
+          </span>
+        </div>
       </div>
 
       {/* Tygodniowy TSS — 2025 vs 2026 */}
