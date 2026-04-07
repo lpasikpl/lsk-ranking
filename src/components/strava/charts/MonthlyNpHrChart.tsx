@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts";
 import type { MonthlyNpHr } from "@/lib/strava-types";
 
@@ -19,8 +19,8 @@ function CustomTooltip({ active, payload }: any) {
   if (d.ratio == null) return null;
   return (
     <div style={{
-      backgroundColor: "rgba(10,10,10,0.95)",
-      border: "1px solid rgba(16,185,129,0.2)",
+      backgroundColor: "#0f1117",
+      border: "1px solid rgba(255,255,255,0.15)",
       borderRadius: 10,
       padding: "10px 14px",
       fontSize: 12,
@@ -76,12 +76,11 @@ export function MonthlyNpHrChart({ data }: MonthlyNpHrChartProps) {
         )}
       </div>
       <ResponsiveContainer width="100%" height={320}>
-        <AreaChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+        <BarChart data={chartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }} barCategoryGap="30%">
           <defs>
-            <linearGradient id="nphrGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#FC5200" stopOpacity={0.35} />
-              <stop offset="60%" stopColor="#FC5200" stopOpacity={0.08} />
-              <stop offset="100%" stopColor="#FC5200" stopOpacity={0} />
+            <linearGradient id="nphrBarGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#FC5200" stopOpacity={1} />
+              <stop offset="100%" stopColor="#7a2800" stopOpacity={0.7} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -101,25 +100,16 @@ export function MonthlyNpHrChart({ data }: MonthlyNpHrChartProps) {
             domain={["auto", "auto"]}
             tickFormatter={(v) => v.toFixed(2)}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: "rgba(16,185,129,0.3)", strokeWidth: 1 }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
           {avg != null && (
             <ReferenceLine
               y={avg}
-              stroke="rgba(16,185,129,0.25)"
+              stroke="rgba(255,255,255,0.15)"
               strokeDasharray="4 3"
             />
           )}
-          <Area
-            type="monotone"
-            dataKey="ratio"
-            stroke="#FC5200"
-            strokeWidth={2}
-            fill="url(#nphrGrad)"
-            dot={{ r: 1.5, fill: "#FC5200", stroke: "#FC5200", strokeWidth: 1 }}
-            activeDot={{ r: 3, fill: "#FC5200", stroke: "#fff", strokeWidth: 1.5 }}
-            connectNulls
-          />
-        </AreaChart>
+          <Bar dataKey="ratio" fill="url(#nphrBarGrad)" radius={[4, 4, 0, 0]} />
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );
