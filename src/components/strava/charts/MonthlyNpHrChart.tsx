@@ -97,7 +97,7 @@ export function MonthlyNpHrChart({ data }: MonthlyNpHrChartProps) {
             axisLine={false}
             tickLine={false}
             width={36}
-            domain={["auto", "auto"]}
+            domain={[1, "auto"]}
             tickFormatter={(v) => v.toFixed(2)}
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
