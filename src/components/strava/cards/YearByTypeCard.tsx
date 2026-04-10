@@ -97,10 +97,10 @@ function TypeTable({ data, title, groupBy }: { data: YearlyByType[]; title: stri
 }
 
 const METRIC_OPTIONS = [
-  { key: "distance_km", label: "Dystans" },
-  { key: "hours", label: "Czas" },
-  { key: "elevation_m", label: "Przewyższenia" },
-  { key: "active_days", label: "Dni" },
+  { key: "distance_km", label: "Dystans", unit: "km" },
+  { key: "hours", label: "Czas", unit: "" },
+  { key: "elevation_m", label: "Przewyższenia", unit: "m" },
+  { key: "active_days", label: "Dni", unit: "dni" },
 ] as const;
 
 type MetricKey = (typeof METRIC_OPTIONS)[number]["key"];
@@ -115,46 +115,26 @@ function formatMetricValue(key: MetricKey, value: number): string {
     case "distance_km": return `${formatKm(value)} km`;
     case "hours": return formatHours(value);
     case "elevation_m": return `${formatKm(value)}m`;
-    case "active_days": return `${value} dni`;
+    case "active_days": return `${value}`;
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function PieTooltipContent({ active, payload, metricKey }: any) {
-  if (!active || !payload?.length) return null;
-  const d = payload[0].payload;
-  return (
-    <div style={{
-      backgroundColor: "#0f1117",
-      border: "1px solid rgba(255,255,255,0.15)",
-      borderRadius: 10,
-      padding: "10px 14px",
-      fontSize: 12,
-      color: "#fff",
-      boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
-    }}>
-      <div style={{ fontWeight: 600, marginBottom: 4 }}>{d.name}</div>
-      <div><span style={{ color: "#FC5200", fontWeight: 600 }}>{formatMetricValue(metricKey, d.value)}</span></div>
-      <div style={{ color: "rgba(255,255,255,0.4)" }}>{d.pct.toFixed(1)}%</div>
-    </div>
-  );
+function formatMetricTotal(key: MetricKey, value: number): string {
+  switch (key) {
+    case "distance_km": return formatKm(value);
+    case "hours": return formatHours(value);
+    case "elevation_m": return formatKm(value);
+    case "active_days": return `${value}`;
+  }
 }
 
-const RADIAN = Math.PI / 180;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function renderCustomLabel({ cx, cy, midAngle, innerRadius, outerRadius, name, pct, value, metricKey, fill }: any) {
-  const radius = outerRadius + 24;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-  const anchor = x > cx ? "start" : "end";
-  return (
-    <text x={x} y={y} textAnchor={anchor} dominantBaseline="central" style={{ fontSize: 11 }}>
-      <tspan fill="rgba(255,255,255,0.8)" fontWeight={600}>{name}</tspan>
-      <tspan fill="rgba(255,255,255,0.5)" dx={6}>{formatMetricValue(metricKey, value)}</tspan>
-      <tspan fill={fill} dx={6} fontWeight={600}>{pct.toFixed(1)}%</tspan>
-    </text>
-  );
+function metricUnit(key: MetricKey): string {
+  switch (key) {
+    case "distance_km": return "km";
+    case "hours": return "";
+    case "elevation_m": return "m elev.";
+    case "active_days": return "dni";
+  }
 }
 
 function TypePieChart({ data, title, groupBy, colors }: {
@@ -175,32 +155,34 @@ function TypePieChart({ data, title, groupBy, colors }: {
   }).filter((s) => s.value > 0);
 
   const total = rawSlices.reduce((a, b) => a + b.value, 0);
-  const slices = rawSlices.map((s) => ({ ...s, pct: total > 0 ? (s.value / total) * 100 : 0, metricKey: metric }));
+  const slices = rawSlices.map((s) => ({ ...s, pct: total > 0 ? (s.value / total) * 100 : 0 }));
+  const maxPct = Math.max(...slices.map((s) => s.pct), 1);
 
   return (
     <div style={{
       borderRadius: 16,
       background: "linear-gradient(145deg, #0a0a0a 0%, #111111 100%)",
       border: "1px solid rgba(255,255,255,0.07)",
-      padding: "16px",
+      padding: "20px",
     }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+      {/* Header + toggle */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <h3 style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.8)", margin: 0 }}>{title}</h3>
-        <div style={{ display: "flex", gap: 4 }}>
+        <div style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: 2 }}>
           {METRIC_OPTIONS.map((opt) => (
             <button
               key={opt.key}
               onClick={() => setMetric(opt.key)}
               style={{
                 fontSize: 11,
-                padding: "3px 8px",
+                padding: "4px 10px",
                 borderRadius: 6,
-                border: "1px solid",
-                borderColor: metric === opt.key ? "rgba(252,82,0,0.5)" : "rgba(255,255,255,0.1)",
-                background: metric === opt.key ? "rgba(252,82,0,0.15)" : "transparent",
-                color: metric === opt.key ? "#FC5200" : "rgba(255,255,255,0.4)",
+                border: "none",
+                background: metric === opt.key ? "rgba(252,82,0,0.2)" : "transparent",
+                color: metric === opt.key ? "#FC5200" : "rgba(255,255,255,0.35)",
                 cursor: "pointer",
-                transition: "all 0.15s",
+                transition: "all 0.2s",
+                fontWeight: metric === opt.key ? 600 : 400,
               }}
             >
               {opt.label}
@@ -208,26 +190,71 @@ function TypePieChart({ data, title, groupBy, colors }: {
           ))}
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={220}>
-        <PieChart>
-          <Pie
-            data={slices}
-            cx="50%"
-            cy="50%"
-            innerRadius={50}
-            outerRadius={75}
-            dataKey="value"
-            stroke="none"
-            label={(props) => renderCustomLabel({ ...props, metricKey: metric })}
-            labelLine={false}
-          >
-            {slices.map((s, i) => (
-              <Cell key={i} fill={s.color} />
-            ))}
-          </Pie>
-          <Tooltip content={<PieTooltipContent metricKey={metric} />} />
-        </PieChart>
-      </ResponsiveContainer>
+
+      {/* Donut + center total */}
+      <div style={{ position: "relative" }}>
+        <ResponsiveContainer width="100%" height={180}>
+          <PieChart>
+            <Pie
+              data={slices}
+              cx="50%"
+              cy="50%"
+              innerRadius={55}
+              outerRadius={80}
+              dataKey="value"
+              stroke="rgba(0,0,0,0.4)"
+              strokeWidth={2}
+              paddingAngle={2}
+              cornerRadius={4}
+            >
+              {slices.map((s, i) => (
+                <Cell key={i} fill={s.color} style={{ filter: `drop-shadow(0 0 6px ${s.color}40)` }} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+        {/* Center label */}
+        <div style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          textAlign: "center",
+          pointerEvents: "none",
+        }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "rgba(255,255,255,0.9)", lineHeight: 1.1 }}>
+            {formatMetricTotal(metric, total)}
+          </div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
+            {metricUnit(metric)}
+          </div>
+        </div>
+      </div>
+
+      {/* Legend rows */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+        {slices.map((s) => (
+          <div key={s.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: s.color, flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", width: 64, flexShrink: 0 }}>{s.name}</span>
+            <div style={{ flex: 1, height: 6, borderRadius: 3, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+              <div style={{
+                height: "100%",
+                width: `${(s.pct / maxPct) * 100}%`,
+                borderRadius: 3,
+                background: `linear-gradient(90deg, ${s.color}, ${s.color}aa)`,
+                transition: "width 0.4s ease",
+              }} />
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)", width: 68, textAlign: "right", flexShrink: 0 }}>
+              {formatMetricValue(metric, s.value)}
+            </span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: s.color, width: 42, textAlign: "right", flexShrink: 0 }}>
+              {s.pct.toFixed(1)}%
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
