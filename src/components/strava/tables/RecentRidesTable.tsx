@@ -49,7 +49,7 @@ const colgroup = (
 const thead = (
   <thead>
     <tr
-      className="text-xs uppercase tracking-wider sticky top-[57px] z-10"
+      className="text-xs uppercase tracking-wider"
       style={{ color: "rgba(255,255,255,0.35)", borderBottom: "1px solid rgba(255,255,255,0.07)", background: "#0d0d0d" }}
     >
       <th className="text-left px-6 py-3">Data</th>
