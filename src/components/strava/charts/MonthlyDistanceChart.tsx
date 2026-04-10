@@ -13,6 +13,22 @@ interface MonthlyDistanceChartProps {
 const MONTH_NAMES_SHORT = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
 const CURRENT_YEAR = new Date().getFullYear();
 
+function isoWeekDateRange(isoWeek: number, isoYear: number): string {
+  const jan4 = new Date(Date.UTC(isoYear, 0, 4));
+  const dayOfWeek = jan4.getUTCDay() || 7;
+  const monday = new Date(jan4);
+  monday.setUTCDate(jan4.getUTCDate() - dayOfWeek + 1 + (isoWeek - 1) * 7);
+  const sunday = new Date(monday);
+  sunday.setUTCDate(monday.getUTCDate() + 6);
+  const dMon = monday.getUTCDate();
+  const mMon = monday.getUTCMonth() + 1;
+  const dSun = sunday.getUTCDate();
+  const mSun = sunday.getUTCMonth() + 1;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  if (mMon === mSun) return `${dMon}-${dSun}.${pad(mSun)}.${isoYear}`;
+  return `${dMon}.${pad(mMon)}-${dSun}.${pad(mSun)}.${isoYear}`;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function KmTooltip({ active, payload, label, keyName }: any) {
   if (!active || !payload?.length) return null;
@@ -27,7 +43,7 @@ function KmTooltip({ active, payload, label, keyName }: any) {
       boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
       minWidth: 130,
     }}>
-      <div style={{ color: "rgba(255,255,255,0.45)", marginBottom: 8, fontWeight: 500 }}>{label}</div>
+      <div style={{ color: "rgba(255,255,255,0.45)", marginBottom: 8, fontWeight: 500 }}>{payload[0]?.payload?.dateRange || label}</div>
       {payload.map((p: any) => (
         <div key={p.dataKey} style={{ marginBottom: 3 }}>
           <span style={{ color: p.dataKey === keyName ? "#FC5200" : "rgba(255,255,255,0.4)", fontWeight: 600, fontSize: 14 }}>
@@ -84,6 +100,7 @@ export function MonthlyDistanceChart({ data, weeklyData }: MonthlyDistanceChartP
     label: `${w}`,
     km2025: wMap2025.get(w) ?? null,
     km2026: wMap2026.get(w) ?? null,
+    dateRange: isoWeekDateRange(w, CURRENT_YEAR),
   }));
 
   return (
