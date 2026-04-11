@@ -43,6 +43,7 @@ const colgroup = (
     <col />
     <col />
     <col />
+    <col />
   </colgroup>
 );
 
@@ -55,6 +56,7 @@ const thead = (
       <th className="text-left px-6 py-3">Data</th>
       <th className="text-left px-4 py-3">Typ</th>
       <th className="text-right px-4 py-3">KM</th>
+      <th className="text-right px-4 py-3">km/h</th>
       <th className="text-right px-4 py-3">Czas</th>
       <th className="text-right px-4 py-3">Elev.</th>
       <th className="text-right px-4 py-3">NP</th>
@@ -138,6 +140,9 @@ function MonthSection({ group, defaultOpen }: { group: ReturnType<typeof groupBy
                     </td>
                     <td className="text-right px-4 py-3">
                       {(ride.distance_meters / 1000).toFixed(1)}
+                    </td>
+                    <td className="text-right px-4 py-3" style={{ color: "rgba(255,255,255,0.6)" }}>
+                      {(ride.average_speed * 3.6).toFixed(1)}
                     </td>
                     <td className="text-right px-4 py-3" style={{ color: "rgba(255,255,255,0.6)" }}>
                       {formatDuration(ride.moving_time_seconds)}
