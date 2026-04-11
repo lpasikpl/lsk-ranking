@@ -110,7 +110,7 @@ export async function fetchWeeklySummaries(): Promise<WeeklySummary[]> {
 export async function fetchRecentActivities(year = CURRENT_YEAR): Promise<Activity[]> {
   const { data } = await supabaseStravaService
     .from("activities")
-    .select("id,strava_activity_id,name,sport_type,start_date,elapsed_time_seconds,moving_time_seconds,distance_meters,total_elevation_gain,average_speed,average_watts,normalized_power,intensity_factor,tss,effective_tss,average_heartrate,max_heartrate,has_power_data")
+    .select("id,strava_activity_id,name,sport_type,start_date,elapsed_time_seconds,moving_time_seconds,distance_meters,total_elevation_gain,average_speed,average_watts,normalized_power,intensity_factor,tss,effective_tss,average_heartrate,max_heartrate,has_power_data,calories,total_cycles")
     .eq("is_ride", true)
     .gte("start_date", `${year}-01-01`)
     .lt("start_date", `${year + 1}-01-01`)
@@ -148,13 +148,26 @@ function aggregateActivities(activities: Activity[]): PeriodStats {
     ? longRides.reduce((s, a) => s + a.distance_meters, 0) / longRides.length / 1000
     : null;
 
-  return { distance_km, hours, rides, elevation_m, avg_np, avg_hr, np_hr_ratio, active_days, total_tss, avg_distance_km };
+  const total_calories = Math.round(activities.reduce((s, a) => s + (a.calories ?? 0), 0));
+
+  // Średnia prędkość na szosie (outdoor, >1h) — average_speed z Strava jest w m/s
+  const roadLong = activities.filter((a) => a.sport_type !== "VirtualRide" && a.moving_time_seconds > 3600);
+  const avg_speed_road = roadLong.length > 0
+    ? roadLong.reduce((s, a) => s + a.average_speed, 0) / roadLong.length * 3.6
+    : null;
+
+  // Obroty korb — suma total_cycles z bazy (ze streamu kadencji Strava)
+  const total_pedal_strokes = Math.round(
+    activities.reduce((s, a) => s + (a.total_cycles ?? 0), 0)
+  );
+
+  return { distance_km, hours, rides, elevation_m, avg_np, avg_hr, np_hr_ratio, active_days, total_tss, avg_distance_km, total_calories, avg_speed_road, total_pedal_strokes };
 }
 
 async function fetchActivitiesForPeriod(from: string, to: string): Promise<Activity[]> {
   const { data } = await supabase
     .from("activities")
-    .select("id,strava_activity_id,name,sport_type,start_date,elapsed_time_seconds,moving_time_seconds,distance_meters,total_elevation_gain,average_speed,average_watts,normalized_power,intensity_factor,tss,effective_tss,average_heartrate,max_heartrate,has_power_data")
+    .select("id,strava_activity_id,name,sport_type,start_date,elapsed_time_seconds,moving_time_seconds,distance_meters,total_elevation_gain,average_speed,average_watts,normalized_power,intensity_factor,tss,effective_tss,average_heartrate,max_heartrate,has_power_data,calories,total_cycles")
     .eq("is_ride", true)
     .gte("start_date", from)
     .lt("start_date", to);
@@ -198,6 +211,46 @@ export async function fetchMonthlyNpHr(): Promise<MonthlyNpHr[]> {
         : null;
       return { year, month, avg_np, avg_hr, np_hr_ratio };
     });
+}
+
+export async function fetchWeeklyAvgSpeed(): Promise<import("./strava-types").WeeklyAvgSpeed[]> {
+  const { data } = await supabase
+    .from("activities")
+    .select("start_date,average_speed,moving_time_seconds,sport_type")
+    .eq("is_ride", true)
+    .neq("sport_type", "VirtualRide")
+    .gt("moving_time_seconds", 3600)
+    .gte("start_date", "2025-01-01");
+
+  if (!data) return [];
+
+  const map = new Map<string, { speed_sum: number; count: number }>();
+  for (const a of data) {
+    const d = new Date(a.start_date);
+    // ISO week calculation
+    const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+    const isoWeek = Math.ceil(((tmp.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+    const isoYear = tmp.getUTCFullYear();
+    const key = `${isoYear}-${isoWeek}`;
+    const entry = map.get(key) ?? { speed_sum: 0, count: 0 };
+    entry.speed_sum += a.average_speed * 3.6; // m/s → km/h
+    entry.count++;
+    map.set(key, entry);
+  }
+
+  return Array.from(map.entries())
+    .map(([key, entry]) => {
+      const [isoYear, isoWeek] = key.split("-").map(Number);
+      return {
+        iso_year: isoYear,
+        iso_week: isoWeek,
+        avg_speed_kmh: Math.round((entry.speed_sum / entry.count) * 10) / 10,
+        rides: entry.count,
+      };
+    })
+    .sort((a, b) => a.iso_year - b.iso_year || a.iso_week - b.iso_week);
 }
 
 export async function fetchPeriodCompare(type: "ytd" | "month"): Promise<PeriodCompare> {
@@ -262,6 +315,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     prevYearActivities,
     ytdCompare,
     monthPartialCompare,
+    weeklyAvgSpeed,
   ] = await Promise.all([
     fetchYtdProgress(),
     fetchCumulativeDaily(),
@@ -278,6 +332,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     fetchRecentActivities(CURRENT_YEAR - 1),
     fetchPeriodCompare("ytd"),
     fetchPeriodCompare("month"),
+    fetchWeeklyAvgSpeed(),
   ]);
 
   return {
@@ -296,5 +351,6 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     prevYearActivities,
     ytdCompare,
     monthPartialCompare,
+    weeklyAvgSpeed,
   };
 }

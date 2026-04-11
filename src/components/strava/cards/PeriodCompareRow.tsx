@@ -21,6 +21,9 @@ export function PeriodCompareRow({ data }: PeriodCompareRowProps) {
     { label: "Śr. HR (>1h)", value: current.avg_hr ?? 0, prev: previous.avg_hr ?? undefined, suffix: " bpm", invert: true },
     { label: "TSS", value: current.total_tss, prev: previous.total_tss },
     { label: "NP/HR", value: current.np_hr_ratio ?? 0, prev: previous.np_hr_ratio ?? undefined, decimals: 2 },
+    { label: "Kalorie", value: current.total_calories, prev: previous.total_calories, suffix: " kcal" },
+    { label: "Śr. km/h szosa (>1h)", value: current.avg_speed_road ?? 0, prev: previous.avg_speed_road ?? undefined, suffix: " km/h", decimals: 1 },
+    { label: "Obroty korb", value: current.total_pedal_strokes, prev: previous.total_pedal_strokes },
   ];
 
   return (
@@ -28,7 +31,7 @@ export function PeriodCompareRow({ data }: PeriodCompareRowProps) {
       <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-3 capitalize">
         {label}
       </h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-3 items-stretch">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-12 gap-3 items-stretch">
         {stats.map((s) => (
           <StatCard
             key={s.label}

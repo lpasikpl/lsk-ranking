@@ -118,6 +118,8 @@ export interface Activity {
   average_heartrate: number | null;
   max_heartrate: number | null;
   has_power_data: boolean;
+  calories: number | null;
+  total_cycles: number | null;
 }
 
 export interface MonthlyNpHr {
@@ -126,6 +128,13 @@ export interface MonthlyNpHr {
   avg_np: number | null;
   avg_hr: number | null;
   np_hr_ratio: number | null;
+}
+
+export interface WeeklyAvgSpeed {
+  iso_year: number;
+  iso_week: number;
+  avg_speed_kmh: number;
+  rides: number;
 }
 
 export interface PeriodStats {
@@ -139,6 +148,9 @@ export interface PeriodStats {
   active_days: number;
   total_tss: number;
   avg_distance_km: number | null;
+  total_calories: number;
+  avg_speed_road: number | null;
+  total_pedal_strokes: number;
 }
 
 export interface PeriodCompare {
@@ -163,4 +175,5 @@ export interface DashboardData {
   prevYearActivities: Activity[];
   ytdCompare: PeriodCompare;
   monthPartialCompare: PeriodCompare;
+  weeklyAvgSpeed: WeeklyAvgSpeed[];
 }

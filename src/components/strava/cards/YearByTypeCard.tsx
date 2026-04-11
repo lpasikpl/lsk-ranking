@@ -21,9 +21,9 @@ function sumGroup(items: YearlyByType[]) {
   };
 }
 
-function TypeTable({ data, title, groupBy }: { data: YearlyByType[]; title: string; groupBy: "ride_type" | "environment" }) {
-  const currentYear = data.filter((d) => d.year === CURRENT_YEAR);
-  const prevYear = data.filter((d) => d.year === CURRENT_YEAR - 1);
+function TypeTable({ data, title, groupBy, selectedYear }: { data: YearlyByType[]; title: string; groupBy: "ride_type" | "environment"; selectedYear: number }) {
+  const currentYear = data.filter((d) => d.year === selectedYear);
+  const prevYear = data.filter((d) => d.year === selectedYear - 1);
 
   const groups = [...new Set(data.map((d) => d[groupBy]))];
 
@@ -49,7 +49,7 @@ function TypeTable({ data, title, groupBy }: { data: YearlyByType[]; title: stri
               <th className="text-right px-4 py-2">Czas</th>
               <th className="text-right px-4 py-2">Dni</th>
               <th className="text-right px-4 py-2">Elev.</th>
-              <th className="text-right px-4 py-2">vs {CURRENT_YEAR - 1}</th>
+              <th className="text-right px-4 py-2">vs {selectedYear - 1}</th>
             </tr>
           </thead>
           <tbody>
@@ -137,15 +137,16 @@ function metricUnit(key: MetricKey): string {
   }
 }
 
-function TypePieChart({ data, title, groupBy, colors }: {
+function TypePieChart({ data, title, groupBy, colors, selectedYear }: {
   data: YearlyByType[];
   title: string;
   groupBy: "ride_type" | "environment";
   colors: Record<string, string>;
+  selectedYear: number;
 }) {
   const [metric, setMetric] = useState<MetricKey>("distance_km");
 
-  const currentYear = data.filter((d) => d.year === CURRENT_YEAR);
+  const currentYear = data.filter((d) => d.year === selectedYear);
   const groups = [...new Set(data.map((d) => d[groupBy]))];
 
   const rawSlices = groups.map((group) => {
@@ -260,18 +261,44 @@ function TypePieChart({ data, title, groupBy, colors }: {
 }
 
 export function YearByTypeCard({ data }: YearByTypeCardProps) {
+  const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
+  const years = [CURRENT_YEAR, CURRENT_YEAR - 1];
+
   return (
     <div>
-      <h2 className="text-sm font-medium text-[var(--text-secondary)] mb-3">
-        Sumy {CURRENT_YEAR} — podział wg typu
-      </h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-medium text-[var(--text-secondary)]">
+          Sumy {selectedYear} — podział wg typu
+        </h2>
+        <div style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: 2 }}>
+          {years.map((y) => (
+            <button
+              key={y}
+              onClick={() => setSelectedYear(y)}
+              style={{
+                fontSize: 12,
+                padding: "4px 12px",
+                borderRadius: 6,
+                border: "none",
+                background: selectedYear === y ? "rgba(252,82,0,0.2)" : "transparent",
+                color: selectedYear === y ? "#FC5200" : "rgba(255,255,255,0.35)",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                fontWeight: selectedYear === y ? 600 : 400,
+              }}
+            >
+              {y}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <TypeTable data={data} title="Wg dyscypliny" groupBy="ride_type" />
-        <TypeTable data={data} title="Outdoor vs Indoor" groupBy="environment" />
+        <TypeTable data={data} title="Wg dyscypliny" groupBy="ride_type" selectedYear={selectedYear} />
+        <TypeTable data={data} title="Outdoor vs Indoor" groupBy="environment" selectedYear={selectedYear} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-        <TypePieChart data={data} title="Wg dyscypliny" groupBy="ride_type" colors={RIDE_TYPE_COLORS} />
-        <TypePieChart data={data} title="Outdoor vs Indoor" groupBy="environment" colors={ENV_COLORS} />
+        <TypePieChart data={data} title="Wg dyscypliny" groupBy="ride_type" colors={RIDE_TYPE_COLORS} selectedYear={selectedYear} />
+        <TypePieChart data={data} title="Outdoor vs Indoor" groupBy="environment" colors={ENV_COLORS} selectedYear={selectedYear} />
       </div>
     </div>
   );

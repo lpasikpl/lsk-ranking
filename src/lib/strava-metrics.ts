@@ -41,6 +41,7 @@ export interface ActivityMetrics {
   trimp: number | null;
   effective_tss: number;
   ftp_at_time: number;
+  total_cycles: number | null;
   power_z1_seconds: number;
   power_z2_seconds: number;
   power_z3_seconds: number;
@@ -82,6 +83,7 @@ export function pickMetrics(m: ActivityMetrics) {
     hr_tss: m.hr_tss,
     effective_tss: m.effective_tss,
     ftp_at_time: m.ftp_at_time,
+    total_cycles: m.total_cycles,
     power_z1_seconds: m.power_z1_seconds,
     power_z2_seconds: m.power_z2_seconds,
     power_z3_seconds: m.power_z3_seconds,
@@ -103,11 +105,13 @@ export function calculateMetrics(activity: any, streams: StravaStream[]): Activi
   let wattsData: number[] | null = null;
   let hrData: number[] | null = null;
   let timeData: number[] | null = null;
+  let cadenceData: number[] | null = null;
 
   for (const stream of streams) {
     if (stream.type === "watts") wattsData = stream.data;
     if (stream.type === "heartrate") hrData = stream.data;
     if (stream.type === "time") timeData = stream.data;
+    if (stream.type === "cadence") cadenceData = stream.data;
   }
 
   const hasPowerData = wattsData !== null && wattsData.length > 0;
@@ -206,6 +210,18 @@ export function calculateMetrics(activity: any, streams: StravaStream[]): Activi
     errors.push("Power from Strava WAP fallback (no stream)");
   }
 
+  // --- Kadencja → total_cycles (suma obrotów korb) ---
+  let totalCycles: number | null = null;
+  if (cadenceData && cadenceData.length > 0) {
+    try {
+      const cadence = timeData ? expandToPerSecond(cadenceData, timeData) : cadenceData;
+      // cadence w RPM, każda sekunda = RPM/60 obrotów
+      totalCycles = Math.round(cadence.reduce((s, rpm) => s + rpm, 0) / 60);
+    } catch (e) {
+      errors.push(`Cadence calc error: ${e instanceof Error ? e.message : e}`);
+    }
+  }
+
   // --- Effective TSS ---
   let effectiveTss: number;
   if (tss !== null && tss > 0) {
@@ -220,7 +236,8 @@ export function calculateMetrics(activity: any, streams: StravaStream[]): Activi
   return {
     is_ride: isRide,
     has_power_data: hasPowerData || (stravaWap !== null && stravaWap > 0),
-    has_stream_data: hasStreamData,
+    has_stream_data: hasStreamData || (cadenceData !== null && cadenceData.length > 0),
+    total_cycles: totalCycles,
     normalized_power: normalizedPower,
     intensity_factor: intensityFactor,
     tss,

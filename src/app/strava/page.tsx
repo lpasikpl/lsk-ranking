@@ -14,6 +14,7 @@ import { MonthlyDistanceChart } from "@/components/strava/charts/MonthlyDistance
 import { MonthlyNpHrChart } from "@/components/strava/charts/MonthlyNpHrChart";
 import { PowerZonesChart } from "@/components/strava/charts/PowerZonesChart";
 import { HrZonesChart } from "@/components/strava/charts/HrZonesChart";
+import { WeeklySpeedChart } from "@/components/strava/charts/WeeklySpeedChart";
 import { RecentRidesTable } from "@/components/strava/tables/RecentRidesTable";
 
 async function getAdminUser(userId: string | undefined) {
@@ -71,6 +72,7 @@ export default async function StravaPage() {
         <MonthlyDistanceChart data={data.monthlyYoy} weeklyData={data.weeklySummaries} />
         <MonthlyNpHrChart data={data.monthlyNpHr} />
         <NpHrWeeklyChart data={data.weeklyNpHr} />
+        <WeeklySpeedChart data={data.weeklyAvgSpeed} />
       </section>
 
       <section>
