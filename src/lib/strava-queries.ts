@@ -253,6 +253,40 @@ export async function fetchWeeklyAvgSpeed(): Promise<import("./strava-types").We
     .sort((a, b) => a.iso_year - b.iso_year || a.iso_week - b.iso_week);
 }
 
+export async function fetchMonthlyAvgSpeed(): Promise<import("./strava-types").MonthlyAvgSpeed[]> {
+  const { data } = await supabase
+    .from("activities")
+    .select("start_date,average_speed,moving_time_seconds,sport_type")
+    .eq("is_ride", true)
+    .eq("sport_type", "Ride")
+    .gt("moving_time_seconds", 3600)
+    .gte("start_date", "2025-01-01");
+
+  if (!data) return [];
+
+  const map = new Map<string, { speed_sum: number; count: number }>();
+  for (const a of data) {
+    const d = new Date(a.start_date);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const entry = map.get(key) ?? { speed_sum: 0, count: 0 };
+    entry.speed_sum += a.average_speed * 3.6;
+    entry.count++;
+    map.set(key, entry);
+  }
+
+  return Array.from(map.entries())
+    .map(([key, entry]) => {
+      const [year, month] = key.split("-").map(Number);
+      return {
+        year,
+        month,
+        avg_speed_kmh: Math.round((entry.speed_sum / entry.count) * 10) / 10,
+        rides: entry.count,
+      };
+    })
+    .sort((a, b) => a.year - b.year || a.month - b.month);
+}
+
 export async function fetchPeriodCompare(type: "ytd" | "month"): Promise<PeriodCompare> {
   const now = new Date();
   const year = now.getFullYear();
@@ -316,6 +350,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     ytdCompare,
     monthPartialCompare,
     weeklyAvgSpeed,
+    monthlyAvgSpeed,
   ] = await Promise.all([
     fetchYtdProgress(),
     fetchCumulativeDaily(),
@@ -333,6 +368,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     fetchPeriodCompare("ytd"),
     fetchPeriodCompare("month"),
     fetchWeeklyAvgSpeed(),
+    fetchMonthlyAvgSpeed(),
   ]);
 
   return {
@@ -352,5 +388,6 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     ytdCompare,
     monthPartialCompare,
     weeklyAvgSpeed,
+    monthlyAvgSpeed,
   };
 }

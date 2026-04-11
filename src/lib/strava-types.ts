@@ -137,6 +137,13 @@ export interface WeeklyAvgSpeed {
   rides: number;
 }
 
+export interface MonthlyAvgSpeed {
+  year: number;
+  month: number;
+  avg_speed_kmh: number;
+  rides: number;
+}
+
 export interface PeriodStats {
   distance_km: number;
   hours: number;
@@ -176,4 +183,5 @@ export interface DashboardData {
   ytdCompare: PeriodCompare;
   monthPartialCompare: PeriodCompare;
   weeklyAvgSpeed: WeeklyAvgSpeed[];
+  monthlyAvgSpeed: MonthlyAvgSpeed[];
 }

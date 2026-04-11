@@ -72,11 +72,14 @@ export default async function StravaPage() {
         <MonthlyDistanceChart data={data.monthlyYoy} weeklyData={data.weeklySummaries} />
         <MonthlyNpHrChart data={data.monthlyNpHr} />
         <NpHrWeeklyChart data={data.weeklyNpHr} />
-        <WeeklySpeedChart data={data.weeklyAvgSpeed} />
       </section>
 
       <section>
         <WeeklyVolumeChart data={data.monthlyYoy} weeklyData={data.weeklySummaries} />
+      </section>
+
+      <section>
+        <WeeklySpeedChart weeklyData={data.weeklyAvgSpeed} monthlyData={data.monthlyAvgSpeed} />
       </section>
 
       <section className="space-y-6">
