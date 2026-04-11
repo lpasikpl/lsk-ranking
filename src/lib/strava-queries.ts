@@ -150,8 +150,8 @@ function aggregateActivities(activities: Activity[]): PeriodStats {
 
   const total_calories = Math.round(activities.reduce((s, a) => s + (a.calories ?? 0), 0));
 
-  // Średnia prędkość na szosie (outdoor, >1h) — average_speed z Strava jest w m/s
-  const roadLong = activities.filter((a) => a.sport_type !== "VirtualRide" && a.moving_time_seconds > 3600);
+  // Średnia prędkość na szosie (tylko Ride, >1h) — average_speed z Strava jest w m/s
+  const roadLong = activities.filter((a) => a.sport_type === "Ride" && a.moving_time_seconds > 3600);
   const avg_speed_road = roadLong.length > 0
     ? roadLong.reduce((s, a) => s + a.average_speed, 0) / roadLong.length * 3.6
     : null;
@@ -218,7 +218,7 @@ export async function fetchWeeklyAvgSpeed(): Promise<import("./strava-types").We
     .from("activities")
     .select("start_date,average_speed,moving_time_seconds,sport_type")
     .eq("is_ride", true)
-    .neq("sport_type", "VirtualRide")
+    .eq("sport_type", "Ride")
     .gt("moving_time_seconds", 3600)
     .gte("start_date", "2025-01-01");
 
