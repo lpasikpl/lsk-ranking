@@ -8,6 +8,16 @@ import type {
 
 const CURRENT_YEAR = new Date().getFullYear();
 
+function excludeByTags<T extends { tags?: string[] | null }>(activities: T[], excludeTags?: string[]): T[] {
+  if (!excludeTags || excludeTags.length === 0) return activities;
+  const ex = new Set(excludeTags);
+  return activities.filter((a) => {
+    const tags = a.tags ?? [];
+    for (const t of tags) if (ex.has(t)) return false;
+    return true;
+  });
+}
+
 export async function fetchYtdProgress(): Promise<YtdProgress | null> {
   const { data } = await supabase.from("ytd_progress").select("*").single();
   return data;
@@ -33,7 +43,7 @@ export async function fetchMonthlyYoy(): Promise<MonthlyYoy[]> {
   return data ?? [];
 }
 
-export async function fetchYearlyByType(): Promise<YearlyByType[]> {
+export async function fetchYearlyByType(excludeTags?: string[]): Promise<YearlyByType[]> {
   const now = new Date();
   const month = now.getMonth() + 1;
   const day = now.getDate();
@@ -49,8 +59,8 @@ export async function fetchYearlyByType(): Promise<YearlyByType[]> {
   const prevTo = nextDay(CURRENT_YEAR - 1, month, day);
 
   const [currentAct, prevAct] = await Promise.all([
-    fetchActivitiesForPeriod(currentFrom, currentTo),
-    fetchActivitiesForPeriod(prevFrom, prevTo),
+    fetchActivitiesForPeriod(currentFrom, currentTo, excludeTags),
+    fetchActivitiesForPeriod(prevFrom, prevTo, excludeTags),
   ]);
 
   function aggregate(activities: Activity[], year: number): YearlyByType[] {
@@ -107,15 +117,26 @@ export async function fetchWeeklySummaries(): Promise<WeeklySummary[]> {
   return data ?? [];
 }
 
-export async function fetchRecentActivities(year = CURRENT_YEAR): Promise<Activity[]> {
+export async function fetchRecentActivities(year = CURRENT_YEAR, excludeTags?: string[]): Promise<Activity[]> {
   const { data } = await supabaseStravaService
     .from("activities")
-    .select("id,strava_activity_id,name,sport_type,start_date,elapsed_time_seconds,moving_time_seconds,distance_meters,total_elevation_gain,average_speed,average_watts,normalized_power,intensity_factor,tss,effective_tss,average_heartrate,max_heartrate,has_power_data,calories,total_cycles")
+    .select("id,strava_activity_id,name,sport_type,start_date,elapsed_time_seconds,moving_time_seconds,distance_meters,total_elevation_gain,average_speed,average_watts,normalized_power,intensity_factor,tss,effective_tss,average_heartrate,max_heartrate,has_power_data,calories,total_cycles,tags")
     .eq("is_ride", true)
     .gte("start_date", `${year}-01-01`)
     .lt("start_date", `${year + 1}-01-01`)
     .order("start_date", { ascending: false });
-  return data ?? [];
+  return excludeByTags(data ?? [], excludeTags);
+}
+
+// Tagi twardo wykluczane z konkretnych metryk treningowych — niezależnie od globalnego filtra.
+// "Z dzieckiem" zaburza śr. dystans/NP/HR/NP-HR; "Obóz" zaburza śr. prędkość szosa.
+const TAG_EXCLUDE_TRAINING = new Set(["Z dzieckiem"]);
+const TAG_EXCLUDE_ROAD_SPEED = new Set(["Z dzieckiem", "Obóz"]);
+
+function hasAnyTag(a: Activity, set: Set<string>): boolean {
+  const tags = a.tags ?? [];
+  for (const t of tags) if (set.has(t)) return true;
+  return false;
 }
 
 function aggregateActivities(activities: Activity[]): PeriodStats {
@@ -124,12 +145,15 @@ function aggregateActivities(activities: Activity[]): PeriodStats {
   const rides = activities.length;
   const elevation_m = activities.reduce((s, a) => s + a.total_elevation_gain, 0);
 
-  const withPower = activities.filter((a) => a.has_power_data && a.normalized_power != null && a.moving_time_seconds > 3600);
+  // Z metryk treningowych (NP/HR/NP-HR/śr. dystans) zawsze pomijamy "Z dzieckiem".
+  const trainingPool = activities.filter((a) => !hasAnyTag(a, TAG_EXCLUDE_TRAINING));
+
+  const withPower = trainingPool.filter((a) => a.has_power_data && a.normalized_power != null && a.moving_time_seconds > 3600);
   const avg_np = withPower.length > 0
     ? withPower.reduce((s, a) => s + a.normalized_power!, 0) / withPower.length
     : null;
 
-  const withHr = activities.filter((a) => a.average_heartrate != null && a.average_heartrate > 0 && a.moving_time_seconds > 3600);
+  const withHr = trainingPool.filter((a) => a.average_heartrate != null && a.average_heartrate > 0 && a.moving_time_seconds > 3600);
   const avg_hr = withHr.length > 0
     ? withHr.reduce((s, a) => s + a.average_heartrate!, 0) / withHr.length
     : null;
@@ -143,15 +167,17 @@ function aggregateActivities(activities: Activity[]): PeriodStats {
 
   const total_tss = Math.round(activities.reduce((s, a) => s + (a.effective_tss ?? 0), 0));
 
-  const longRides = activities.filter((a) => a.moving_time_seconds > 3600);
+  const longRides = trainingPool.filter((a) => a.moving_time_seconds > 3600);
   const avg_distance_km = longRides.length > 0
     ? longRides.reduce((s, a) => s + a.distance_meters, 0) / longRides.length / 1000
     : null;
 
   const total_calories = Math.round(activities.reduce((s, a) => s + (a.calories ?? 0), 0));
 
-  // Średnia prędkość na szosie (tylko Ride, >1h) — average_speed z Strava jest w m/s
-  const roadLong = activities.filter((a) => a.sport_type === "Ride" && a.moving_time_seconds > 3600);
+  // Średnia prędkość na szosie (tylko Ride, >1h) — bez "Z dzieckiem" i bez "Obóz".
+  const roadLong = activities.filter(
+    (a) => a.sport_type === "Ride" && a.moving_time_seconds > 3600 && !hasAnyTag(a, TAG_EXCLUDE_ROAD_SPEED)
+  );
   const avg_speed_road = roadLong.length > 0
     ? roadLong.reduce((s, a) => s + a.average_speed, 0) / roadLong.length * 3.6
     : null;
@@ -164,28 +190,33 @@ function aggregateActivities(activities: Activity[]): PeriodStats {
   return { distance_km, hours, rides, elevation_m, avg_np, avg_hr, np_hr_ratio, active_days, total_tss, avg_distance_km, total_calories, avg_speed_road, total_pedal_strokes };
 }
 
-async function fetchActivitiesForPeriod(from: string, to: string): Promise<Activity[]> {
+async function fetchActivitiesForPeriod(from: string, to: string, excludeTags?: string[]): Promise<Activity[]> {
   const { data } = await supabase
     .from("activities")
-    .select("id,strava_activity_id,name,sport_type,start_date,elapsed_time_seconds,moving_time_seconds,distance_meters,total_elevation_gain,average_speed,average_watts,normalized_power,intensity_factor,tss,effective_tss,average_heartrate,max_heartrate,has_power_data,calories,total_cycles")
+    .select("id,strava_activity_id,name,sport_type,start_date,elapsed_time_seconds,moving_time_seconds,distance_meters,total_elevation_gain,average_speed,average_watts,normalized_power,intensity_factor,tss,effective_tss,average_heartrate,max_heartrate,has_power_data,calories,total_cycles,tags")
     .eq("is_ride", true)
     .gte("start_date", from)
     .lt("start_date", to);
-  return data ?? [];
+  return excludeByTags(data ?? [], excludeTags);
 }
 
-export async function fetchMonthlyNpHr(): Promise<MonthlyNpHr[]> {
+export async function fetchMonthlyNpHr(excludeTags?: string[]): Promise<MonthlyNpHr[]> {
   const { data } = await supabase
     .from("activities")
-    .select("start_date,normalized_power,average_heartrate,has_power_data,moving_time_seconds")
+    .select("start_date,normalized_power,average_heartrate,has_power_data,moving_time_seconds,tags")
     .eq("is_ride", true)
     .gte("start_date", "2025-01-01")
     .gt("moving_time_seconds", 3600);
 
-  if (!data) return [];
+  const afterGlobal = excludeByTags(data ?? [], excludeTags);
+  // Stałe wykluczenie z metryk treningowych
+  const filtered = afterGlobal.filter(
+    (a) => !(a.tags ?? []).some((t: string) => TAG_EXCLUDE_TRAINING.has(t))
+  );
+  if (filtered.length === 0) return [];
 
   const map = new Map<string, { ratio_sum: number; ratio_count: number; np_sum: number; hr_sum: number; count: number }>();
-  for (const a of data) {
+  for (const a of filtered) {
     // tylko jazdy gdzie ta sama jazda ma i moc i tętno (spójnie z weekly_np_hr view)
     if (!a.has_power_data || a.normalized_power == null) continue;
     if (a.average_heartrate == null || a.average_heartrate <= 0) continue;
@@ -213,19 +244,23 @@ export async function fetchMonthlyNpHr(): Promise<MonthlyNpHr[]> {
     });
 }
 
-export async function fetchWeeklyAvgSpeed(): Promise<import("./strava-types").WeeklyAvgSpeed[]> {
+export async function fetchWeeklyAvgSpeed(excludeTags?: string[]): Promise<import("./strava-types").WeeklyAvgSpeed[]> {
   const { data } = await supabase
     .from("activities")
-    .select("start_date,average_speed,moving_time_seconds,sport_type")
+    .select("start_date,average_speed,moving_time_seconds,sport_type,tags")
     .eq("is_ride", true)
     .eq("sport_type", "Ride")
     .gt("moving_time_seconds", 3600)
     .gte("start_date", "2025-01-01");
 
-  if (!data) return [];
+  const afterGlobal = excludeByTags(data ?? [], excludeTags);
+  const filtered = afterGlobal.filter(
+    (a) => !(a.tags ?? []).some((t: string) => TAG_EXCLUDE_ROAD_SPEED.has(t))
+  );
+  if (filtered.length === 0) return [];
 
   const map = new Map<string, { speed_sum: number; count: number }>();
-  for (const a of data) {
+  for (const a of filtered) {
     const d = new Date(a.start_date);
     // ISO week calculation
     const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -253,19 +288,23 @@ export async function fetchWeeklyAvgSpeed(): Promise<import("./strava-types").We
     .sort((a, b) => a.iso_year - b.iso_year || a.iso_week - b.iso_week);
 }
 
-export async function fetchMonthlyAvgSpeed(): Promise<import("./strava-types").MonthlyAvgSpeed[]> {
+export async function fetchMonthlyAvgSpeed(excludeTags?: string[]): Promise<import("./strava-types").MonthlyAvgSpeed[]> {
   const { data } = await supabase
     .from("activities")
-    .select("start_date,average_speed,moving_time_seconds,sport_type")
+    .select("start_date,average_speed,moving_time_seconds,sport_type,tags")
     .eq("is_ride", true)
     .eq("sport_type", "Ride")
     .gt("moving_time_seconds", 3600)
     .gte("start_date", "2025-01-01");
 
-  if (!data) return [];
+  const afterGlobal = excludeByTags(data ?? [], excludeTags);
+  const filtered = afterGlobal.filter(
+    (a) => !(a.tags ?? []).some((t: string) => TAG_EXCLUDE_ROAD_SPEED.has(t))
+  );
+  if (filtered.length === 0) return [];
 
   const map = new Map<string, { speed_sum: number; count: number }>();
-  for (const a of data) {
+  for (const a of filtered) {
     const d = new Date(a.start_date);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     const entry = map.get(key) ?? { speed_sum: 0, count: 0 };
@@ -287,7 +326,7 @@ export async function fetchMonthlyAvgSpeed(): Promise<import("./strava-types").M
     .sort((a, b) => a.year - b.year || a.month - b.month);
 }
 
-export async function fetchPeriodCompare(type: "ytd" | "month"): Promise<PeriodCompare> {
+export async function fetchPeriodCompare(type: "ytd" | "month", excludeTags?: string[]): Promise<PeriodCompare> {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
@@ -321,8 +360,8 @@ export async function fetchPeriodCompare(type: "ytd" | "month"): Promise<PeriodC
   }
 
   const [currentActivities, prevActivities] = await Promise.all([
-    fetchActivitiesForPeriod(currentFrom, currentTo),
-    fetchActivitiesForPeriod(prevFrom, prevTo),
+    fetchActivitiesForPeriod(currentFrom, currentTo, excludeTags),
+    fetchActivitiesForPeriod(prevFrom, prevTo, excludeTags),
   ]);
 
   return {
@@ -332,7 +371,12 @@ export async function fetchPeriodCompare(type: "ytd" | "month"): Promise<PeriodC
   };
 }
 
-export async function fetchDashboardData(): Promise<DashboardData> {
+export interface FetchDashboardOptions {
+  excludeTags?: string[];
+}
+
+export async function fetchDashboardData(opts: FetchDashboardOptions = {}): Promise<DashboardData> {
+  const { excludeTags } = opts;
   const [
     ytdProgress,
     cumulativeDaily,
@@ -356,19 +400,19 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     fetchCumulativeDaily(),
     fetchCumulativeByYear(CURRENT_YEAR - 1),
     fetchMonthlyYoy(),
-    fetchYearlyByType(),
+    fetchYearlyByType(excludeTags),
     fetchWeeklyNpHr(),
     fetchNpHrByYear(CURRENT_YEAR),
     fetchNpHrByYear(CURRENT_YEAR - 1),
     fetchTrainingLoad(),
     fetchWeeklySummaries(),
-    fetchMonthlyNpHr(),
-    fetchRecentActivities(),
-    fetchRecentActivities(CURRENT_YEAR - 1),
-    fetchPeriodCompare("ytd"),
-    fetchPeriodCompare("month"),
-    fetchWeeklyAvgSpeed(),
-    fetchMonthlyAvgSpeed(),
+    fetchMonthlyNpHr(excludeTags),
+    fetchRecentActivities(CURRENT_YEAR, excludeTags),
+    fetchRecentActivities(CURRENT_YEAR - 1, excludeTags),
+    fetchPeriodCompare("ytd", excludeTags),
+    fetchPeriodCompare("month", excludeTags),
+    fetchWeeklyAvgSpeed(excludeTags),
+    fetchMonthlyAvgSpeed(excludeTags),
   ]);
 
   return {

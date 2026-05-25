@@ -30,7 +30,11 @@ async function getAdminUser(userId: string | undefined) {
 
 export const revalidate = 0;
 
-export default async function StravaPage() {
+export default async function StravaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ excludeTags?: string }>;
+}) {
   const cookieStore = await cookies();
   const userId = cookieStore.get("lsk_user_id")?.value;
   const user = await getAdminUser(userId);
@@ -39,10 +43,15 @@ export default async function StravaPage() {
     redirect("/");
   }
 
-  const data = await fetchDashboardData();
+  const sp = await searchParams;
+  const excludeTags = sp.excludeTags
+    ? sp.excludeTags.split(",").map((t) => t.trim()).filter(Boolean)
+    : [];
+
+  const data = await fetchDashboardData({ excludeTags });
 
   return (
-    <DashboardShell>
+    <DashboardShell excludedTags={excludeTags}>
       <section>
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 xl:gap-6">
           <div className="lg:col-span-1">

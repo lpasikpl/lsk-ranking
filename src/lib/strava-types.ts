@@ -120,6 +120,7 @@ export interface Activity {
   has_power_data: boolean;
   calories: number | null;
   total_cycles: number | null;
+  tags: string[];
 }
 
 export interface MonthlyNpHr {

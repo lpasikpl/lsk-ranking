@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Activity } from "@/lib/strava-types";
 import { formatDuration, getRideType, getRideColor, formatKm } from "@/lib/utils";
 import Link from "next/link";
+import { ActivityTagsCell } from "./ActivityTagsCell";
 
 interface RecentRidesTableProps {
   data: Activity[];
@@ -35,6 +36,7 @@ const colgroup = (
   <colgroup>
     <col style={{ width: 110 }} />
     <col style={{ width: 120 }} />
+    <col style={{ width: 260 }} />
     <col />
     <col />
     <col />
@@ -55,6 +57,7 @@ const thead = (
     >
       <th className="text-left px-6 py-3">Data</th>
       <th className="text-left px-4 py-3">Typ</th>
+      <th className="text-left px-4 py-3">Tagi</th>
       <th className="text-right px-4 py-3">KM</th>
       <th className="text-right px-4 py-3">km/h</th>
       <th className="text-right px-4 py-3">Czas</th>
@@ -137,6 +140,9 @@ function MonthSection({ group, defaultOpen }: { group: ReturnType<typeof groupBy
                         <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
                         {type}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <ActivityTagsCell activityId={ride.id} initialTags={ride.tags ?? []} />
                     </td>
                     <td className="text-right px-4 py-3">
                       {(ride.distance_meters / 1000).toFixed(1)}

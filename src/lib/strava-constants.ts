@@ -41,3 +41,29 @@ export const RIDE_TYPE_COLORS: Record<string, string> = {
 };
 
 export const CURRENT_YEAR = new Date().getFullYear();
+
+export const AVAILABLE_TAGS = [
+  "Zawody",
+  "Trening",
+  "Aktywność w ramach dojazdu",
+  "W słusznej sprawie",
+  "Regeneracja",
+  "Z dzieckiem",
+  "Ze zwierzęciem",
+  "Jazda na rowerze stacjonarnym",
+  "Obóz",
+] as const;
+
+export type ActivityTag = (typeof AVAILABLE_TAGS)[number];
+
+export const TAG_COLORS: Record<string, string> = {
+  "Zawody": "#ef4444",
+  "Trening": "#f97316",
+  "Aktywność w ramach dojazdu": "#3b82f6",
+  "W słusznej sprawie": "#22c55e",
+  "Regeneracja": "#a855f7",
+  "Z dzieckiem": "#ec4899",
+  "Ze zwierzęciem": "#eab308",
+  "Jazda na rowerze stacjonarnym": "#64748b",
+  "Obóz": "#14b8a6",
+};
