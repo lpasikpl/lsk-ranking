@@ -3,7 +3,7 @@ import type {
   YtdProgress, CumulativeDay, CumulativeByYear,
   MonthlyYoy, YearlyByType, WeeklyNpHr, NpHrByYear,
   TrainingLoadDay, WeeklySummary, Activity, DashboardData,
-  PeriodStats, PeriodCompare, MonthlyNpHr,
+  PeriodStats, PeriodCompare, MonthlyNpHr, GarminDaily,
 } from "./strava-types";
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -375,6 +375,18 @@ export interface FetchDashboardOptions {
   excludeTags?: string[];
 }
 
+export async function fetchGarminDaily(days = 120): Promise<GarminDaily[]> {
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+  const sinceStr = since.toISOString().slice(0, 10);
+  const { data } = await supabaseStravaService
+    .from("garmin_daily")
+    .select("*")
+    .gte("calendar_date", sinceStr)
+    .order("calendar_date", { ascending: true });
+  return data ?? [];
+}
+
 export async function fetchDashboardData(opts: FetchDashboardOptions = {}): Promise<DashboardData> {
   const { excludeTags } = opts;
   const [
@@ -395,6 +407,7 @@ export async function fetchDashboardData(opts: FetchDashboardOptions = {}): Prom
     monthPartialCompare,
     weeklyAvgSpeed,
     monthlyAvgSpeed,
+    garminDaily,
   ] = await Promise.all([
     fetchYtdProgress(),
     fetchCumulativeDaily(),
@@ -413,6 +426,7 @@ export async function fetchDashboardData(opts: FetchDashboardOptions = {}): Prom
     fetchPeriodCompare("month", excludeTags),
     fetchWeeklyAvgSpeed(excludeTags),
     fetchMonthlyAvgSpeed(excludeTags),
+    fetchGarminDaily(),
   ]);
 
   return {
@@ -433,5 +447,6 @@ export async function fetchDashboardData(opts: FetchDashboardOptions = {}): Prom
     monthPartialCompare,
     weeklyAvgSpeed,
     monthlyAvgSpeed,
+    garminDaily,
   };
 }

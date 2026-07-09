@@ -16,6 +16,7 @@ import { PowerZonesChart } from "@/components/strava/charts/PowerZonesChart";
 import { HrZonesChart } from "@/components/strava/charts/HrZonesChart";
 import { WeeklySpeedChart } from "@/components/strava/charts/WeeklySpeedChart";
 import { RecentRidesTable } from "@/components/strava/tables/RecentRidesTable";
+import { GarminSection } from "@/components/strava/garmin/GarminSection";
 
 async function getAdminUser(userId: string | undefined) {
   if (!userId) return null;
@@ -71,6 +72,10 @@ export default async function StravaPage({
         <PeriodCompareRow data={data.ytdCompare} />
         <PeriodCompareRow data={data.monthPartialCompare} />
         <TrainingLoadChart data={data.trainingLoad} />
+      </section>
+
+      <section>
+        <GarminSection data={data.garminDaily} />
       </section>
 
       <section>

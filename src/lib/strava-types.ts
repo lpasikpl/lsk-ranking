@@ -167,6 +167,32 @@ export interface PeriodCompare {
   label: string;
 }
 
+export interface GarminDaily {
+  calendar_date: string; // YYYY-MM-DD
+  hrv_last_night: number | null;
+  hrv_weekly_avg: number | null;
+  hrv_status: string | null;
+  hrv_baseline_low: number | null;
+  hrv_baseline_upper: number | null;
+  resting_hr: number | null;
+  readiness_score: number | null;
+  readiness_level: string | null;
+  readiness_feedback: string | null;
+  acute_load: number | null;
+  recovery_time: number | null;
+  sleep_score: number | null;
+  sleep_seconds: number | null;
+  deep_seconds: number | null;
+  light_seconds: number | null;
+  rem_seconds: number | null;
+  awake_seconds: number | null;
+  sleep_avg_hr: number | null;
+  sleep_avg_overnight_hrv: number | null;
+  sleep_avg_stress: number | null;
+  sleep_avg_respiration: number | null;
+  sleep_feedback: string | null;
+}
+
 export interface DashboardData {
   ytdProgress: YtdProgress | null;
   cumulativeDaily: CumulativeDay[];
@@ -185,4 +211,5 @@ export interface DashboardData {
   monthPartialCompare: PeriodCompare;
   weeklyAvgSpeed: WeeklyAvgSpeed[];
   monthlyAvgSpeed: MonthlyAvgSpeed[];
+  garminDaily: GarminDaily[];
 }
